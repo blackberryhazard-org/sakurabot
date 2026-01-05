@@ -4,9 +4,11 @@ const fs = require('fs');
 const path = require('path');
 const moment = require('moment-timezone');
 const { Database } = require('simpl.db');
+const cron = require('node-cron');
+const archiver = require('archiver');
 
 const db = new Database({
-    dataFile: path.resolve(__dirname, 'database.json'),
+    dataFile: path.resolve(__dirname, '../database/tg/database.json'),
     autoSave: true,
     tabSize: 2
 });
@@ -53,8 +55,7 @@ const banMiddleware = (ctx, next) => {
     const userBan = activeBans.find(ban => ban.id === userId);
 
     if (userBan) {
-        const until = new Date(userBan.until);
-        return ctx.reply(`You are banned from using this bot. Your ban will be lifted on ${until.toUTCString()}.`);
+        return ctx.reply(config.msg.banned);
     }
 
     return next();
@@ -62,7 +63,7 @@ const banMiddleware = (ctx, next) => {
 
 // Helper function to check for owner
 const isOwner = (userId) => {
-    return config.bot.tg_owner.includes(userId);
+    return config.owner.id_tele === userId.toString();
 };
 
 // Helper function to check for premium
@@ -103,7 +104,8 @@ const launchTelegramBot = () => {
       getCoins,
       updateCoins,
       escapeMarkdown,
-      db // Pass the db instance
+      db, // Pass the db instance
+      config // Pass the full config
   };
 
   // Use middlewares
@@ -161,6 +163,36 @@ const launchTelegramBot = () => {
 
 
   bot.launch();
+
+  // Schedule a backup to run every 7 days if enabled
+  if (config.system.autoBackup) {
+    cron.schedule('0 0 */7 * *', () => {
+        const backupPath = path.resolve(__dirname, '../database');
+        const outputPath = path.resolve(__dirname, `../backup-${Date.now()}.zip`);
+        const output = fs.createWriteStream(outputPath);
+        const archive = archiver('zip', {
+            zlib: { level: 9 }
+        });
+
+        output.on('close', async () => {
+            try {
+                await bot.telegram.sendDocument(config.owner.id_tele, {
+                    source: outputPath,
+                    filename: path.basename(outputPath)
+                });
+                fs.unlinkSync(outputPath);
+            } catch (error) {
+                console.error('Failed to send scheduled backup:', error);
+            }
+        });
+        archive.on('error', (err) => {
+            console.error('Error during scheduled backup archiving:', err);
+        });
+        archive.pipe(output);
+        archive.directory(backupPath, false);
+        archive.finalize();
+    });
+  }
 
   console.log('Telegram bot is running...');
 };

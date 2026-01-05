@@ -1,9 +1,9 @@
 module.exports = {
     name: 'newtesti',
     category: 'owner',
-    code: async (ctx, { isOwner }) => {
+    code: async (ctx, { isOwner, config }) => {
         if (!isOwner(ctx.from.id)) {
-            return ctx.reply('This command is for owners only.');
+            return ctx.reply(config.msg.owner);
         }
 
         try {
@@ -15,10 +15,11 @@ module.exports = {
                 return ctx.reply('Usage: /newtesti {id_channel} {id_transaksi} {nama} {harga} {buyer} {pesan_tambahan}');
             }
 
+            const itemName = nama.replace(/\+/g, ' ');
             const caption = `Done wak😹
 
 ID Transaksi: ${id_transaksi}
-Nama Item: ${nama}
+Nama Item: ${itemName}
 Harga: ${harga}
 Buyer: ${buyer}
 
