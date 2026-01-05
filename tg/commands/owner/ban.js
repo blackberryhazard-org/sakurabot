@@ -2,9 +2,9 @@ module.exports = {
     name: 'ban',
     category: 'owner',
     description: 'Ban a user for a specified time.',
-    code: (ctx, { isOwner, db }) => {
+    code: (ctx, { isOwner, db, config }) => {
         if (!isOwner(ctx.from.id)) {
-            return ctx.reply('This command is only for the owner.');
+            return ctx.reply(config.msg.owner);
         }
 
         const args = ctx.message.text.split(' ');

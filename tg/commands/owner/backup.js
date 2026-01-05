@@ -5,9 +5,9 @@ const path = require('path');
 module.exports = {
     name: 'backup',
     category: 'owner',
-    code: async (ctx, { isOwner }) => {
+    code: async (ctx, { isOwner, config }) => {
         if (!isOwner(ctx.from.id)) {
-            return ctx.reply('This command is for owners only.');
+            return ctx.reply(config.msg.owner);
         }
 
         const backupPath = path.resolve(__dirname, '../../../database');

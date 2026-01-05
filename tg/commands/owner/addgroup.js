@@ -2,9 +2,9 @@ module.exports = {
     name: 'addgroup',
     category: 'owner',
     description: 'Adds the current group to the broadcast list.',
-    code: async (ctx, { isOwner, db }) => {
+    code: async (ctx, { isOwner, db, config }) => {
         if (!isOwner(ctx.from.id)) {
-            return ctx.reply('This command is for the owner only.');
+            return ctx.reply(config.msg.owner);
         }
 
         const chatType = ctx.chat.type;

@@ -1,9 +1,9 @@
 module.exports = {
     name: 'newtesti',
     category: 'owner',
-    code: async (ctx, { isOwner }) => {
+    code: async (ctx, { isOwner, config }) => {
         if (!isOwner(ctx.from.id)) {
-            return ctx.reply('This command is for owners only.');
+            return ctx.reply(config.msg.owner);
         }
 
         try {

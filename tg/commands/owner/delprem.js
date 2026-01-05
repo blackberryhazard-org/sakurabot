@@ -1,9 +1,9 @@
 module.exports = {
     name: 'delprem',
     category: 'owner',
-    code: async (ctx, { isOwner, db }) => {
+    code: async (ctx, { isOwner, db, config }) => {
         if (!isOwner(ctx.from.id)) {
-            return ctx.reply('This command is for owners only.');
+            return ctx.reply(config.msg.owner);
         }
 
         const args = ctx.message.text.split(' ').slice(1);

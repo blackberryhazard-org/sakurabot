@@ -2,9 +2,9 @@ module.exports = {
     name: 'addprem',
     category: 'owner',
     description: 'Add a user to the premium list.',
-    code: (ctx, { isOwner, db }) => {
+    code: (ctx, { isOwner, db, config }) => {
         if (!isOwner(ctx.from.id)) {
-            return ctx.reply('This command is only for the owner.');
+            return ctx.reply(config.msg.owner);
         }
 
         const args = ctx.message.text.split(' ');

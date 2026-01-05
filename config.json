@@ -8,8 +8,7 @@
         "prefix": "/",
         "pakasir_slug": "your-slug-here",
         "pakasir_apikey": "your-api-key-here",
-        "botfather_token": "YOUR_BOTFATHER_TOKEN",
-        "tg_owner": []
+        "botfather_token": "YOUR_BOTFATHER_TOKEN"
     },
     "msg": {
         "admin": "Perintah hanya dapat diakses oleh admin grup!",
@@ -34,9 +33,11 @@
         "urlInvalid": "URL tidak valid!"
     },
     "owner": {
+        "usn_tele": "@indra87g30spki",
         "name": "Indra",
         "organization": "PT. Pemakan Koruptor",
         "id": "6283172646529",
+        "id_tele": "id-telegram-owner",
         "report": true,
         "co": [{
             "name": "Broni",
@@ -53,6 +54,7 @@
         "alwaysOnline": true,
         "antiCall": true,
         "autoRead": true,
+        "autoBackup": true,
         "autoTypingOnCmd": true,
         "cooldown": 10000,
         "maxListeners": 50,

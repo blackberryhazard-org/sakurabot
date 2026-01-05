@@ -4,9 +4,9 @@ module.exports = {
     name: 'eval',
     category: 'owner',
     description: 'Execute a shell command (owner only).',
-    code: async (ctx, { isOwner }) => {
+    code: async (ctx, { isOwner, config }) => {
         if (!isOwner(ctx.from.id)) {
-            return ctx.reply('This command is for the owner only.');
+            return ctx.reply(config.msg.owner);
         }
 
         const command = ctx.message.text.split(' ').slice(1).join(' ');

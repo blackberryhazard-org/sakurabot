@@ -2,9 +2,9 @@ module.exports = {
     name: 'givecoin',
     category: 'owner',
     description: 'Give coins to a user.',
-    code: (ctx, { isOwner, db, getCoins, updateCoins }) => {
+    code: (ctx, { isOwner, db, getCoins, updateCoins, config }) => {
         if (!isOwner(ctx.from.id)) {
-            return ctx.reply('This command is only for the owner.');
+            return ctx.reply(config.msg.owner);
         }
 
         const args = ctx.message.text.split(' ');
