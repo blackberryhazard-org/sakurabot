@@ -7,8 +7,11 @@ const { Database } = require('simpl.db');
 const cron = require('node-cron');
 const archiver = require('archiver');
 
+const dbPath = path.resolve(__dirname, '../database/tg');
+fs.mkdirSync(dbPath, { recursive: true });
+
 const db = new Database({
-    dataFile: path.resolve(__dirname, '../database/tg/database.json'),
+    dataFile: path.join(dbPath, 'database.json'),
     autoSave: true,
     tabSize: 2
 });
