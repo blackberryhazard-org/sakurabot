@@ -15,10 +15,11 @@ module.exports = {
                 return ctx.reply('Usage: /newtesti {id_channel} {id_transaksi} {nama} {harga} {buyer} {pesan_tambahan}');
             }
 
+            const itemName = nama.replace(/\+/g, ' ');
             const caption = `Done wak😹
 
 ID Transaksi: ${id_transaksi}
-Nama Item: ${nama}
+Nama Item: ${itemName}
 Harga: ${harga}
 Buyer: ${buyer}
 

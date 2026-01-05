@@ -4,9 +4,11 @@ const fs = require('fs');
 const path = require('path');
 const moment = require('moment-timezone');
 const { Database } = require('simpl.db');
+const cron = require('node-cron');
+const archiver = require('archiver');
 
 const db = new Database({
-    dataFile: path.resolve(__dirname, 'database.json'),
+    dataFile: path.resolve(__dirname, '../database/tg/database.json'),
     autoSave: true,
     tabSize: 2
 });
@@ -161,6 +163,36 @@ const launchTelegramBot = () => {
 
 
   bot.launch();
+
+  // Schedule a backup to run every 7 days
+  cron.schedule('0 0 */7 * *', () => {
+    const backupPath = path.resolve(__dirname, '../database');
+    const outputPath = path.resolve(__dirname, `../backup-${Date.now()}.zip`);
+    const output = fs.createWriteStream(outputPath);
+    const archive = archiver('zip', {
+        zlib: { level: 9 }
+    });
+
+    output.on('close', async () => {
+        try {
+            for (const ownerId of config.bot.tg_owner) {
+                await bot.telegram.sendDocument(ownerId, {
+                    source: outputPath,
+                    filename: path.basename(outputPath)
+                });
+            }
+            fs.unlinkSync(outputPath);
+        } catch (error) {
+            console.error('Failed to send scheduled backup:', error);
+        }
+    });
+    archive.on('error', (err) => {
+        console.error('Error during scheduled backup archiving:', err);
+    });
+    archive.pipe(output);
+    archive.directory(backupPath, false);
+    archive.finalize();
+  });
 
   console.log('Telegram bot is running...');
 };

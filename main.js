@@ -12,7 +12,7 @@ const {
 } = config;
 const diretory = {
     auth: path.resolve(__dirname, "state"),
-    database: path.resolve(__dirname, "database"),
+    database: path.resolve(__dirname, "database", "wa"),
     command: path.resolve(__dirname, "wa", "commands")
 };
 

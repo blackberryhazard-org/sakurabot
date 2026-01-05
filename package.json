@@ -18,11 +18,13 @@
   "license": "MIT",
   "dependencies": {
     "@itsreimau/gktw": "github:itsreimau/gktw",
+    "archiver": "^7.0.1",
     "axios": "^1.13.2",
     "cfonts": "^3.3.1",
     "jimp": "^0.22.12",
     "link-preview-js": "^4.0.0",
     "moment-timezone": "^0.6.0",
+    "node-cron": "^3.0.3",
     "pakasir-sdk": "^1.0.5",
     "simpl.db": "^2.13.0",
     "telegraf": "^4.16.3",
