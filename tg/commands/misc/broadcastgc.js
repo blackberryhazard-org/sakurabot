@@ -44,8 +44,7 @@ module.exports = {
 
         for (const groupId of groups) {
             try {
-                const senderName = escapeMarkdown(ctx.from.first_name);
-                await ctx.telegram.sendMessage(groupId, `📢 *Broadcast Message* 📢\n\n${escapeMarkdown(message)}\n\n- Sent by ${senderName}`, { parse_mode: 'Markdown' });
+                await ctx.telegram.sendMessage(groupId, `${escapeMarkdown(message)}`, { parse_mode: 'Markdown' });
                 successCount++;
             } catch (error) {
                 console.error(`Failed to send message to group ${groupId}:`, error);
