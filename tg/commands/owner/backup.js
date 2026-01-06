@@ -25,9 +25,16 @@ module.exports = {
                     filename: path.basename(outputPath)
                 });
                 fs.unlinkSync(outputPath); // Clean up the zip file
+
+                // Send config.json
+                const configPath = path.resolve(__dirname, '../../../config.json');
+                await ctx.telegram.sendDocument(ctx.from.id, {
+                    source: configPath,
+                    filename: 'config.json'
+                });
             } catch (error) {
                 console.error('Failed to send backup:', error);
-                ctx.reply('Failed to send backup file.');
+                ctx.reply('Failed to send backup file(s).');
             }
         });
 

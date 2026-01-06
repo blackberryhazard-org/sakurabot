@@ -184,6 +184,13 @@ const launchTelegramBot = () => {
                     filename: path.basename(outputPath)
                 });
                 fs.unlinkSync(outputPath);
+
+                // Send config.json
+                const configPath = path.resolve(__dirname, '../config.json');
+                await bot.telegram.sendDocument(config.owner.id_tele, {
+                    source: configPath,
+                    filename: 'config.json'
+                });
             } catch (error) {
                 console.error('Failed to send scheduled backup:', error);
             }
