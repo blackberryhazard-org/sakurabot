@@ -4,7 +4,10 @@ const config = require("../../../config.json");
 module.exports = {
     name: 'newpayment',
     category: 'tool',
-    code: async (ctx) => {
+    code: async (ctx, { isLeader }) => {
+        if (!isLeader(ctx.from.id)) {
+            return ctx.reply(config.msg.owner);
+        }
         try {
             const args = ctx.message.text.split(' ');
             const nominal = parseInt(args[1]);

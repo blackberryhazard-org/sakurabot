@@ -22,6 +22,7 @@ if (!db.has('bans')) db.set('bans', []);
 if (!db.has('premium')) db.set('premium', []);
 if (!db.has('groups')) db.set('groups', []);
 if (!db.has('coins')) db.set('coins', {});
+if (!db.has('managers')) db.set('managers', []);
 
 // Middleware to save user IDs
 const addUserMiddleware = (ctx, next) => {
@@ -64,9 +65,15 @@ const banMiddleware = (ctx, next) => {
     return next();
 };
 
-// Helper function to check for owner
-const isOwner = (userId) => {
+// Helper function to check for leader
+const isLeader = (userId) => {
     return config.owner.id_tele === userId.toString();
+};
+
+// Helper function to check for owner (leader or manager)
+const isOwner = (userId) => {
+    const managers = db.get('managers') || [];
+    return isLeader(userId) || managers.includes(userId);
 };
 
 // Helper function to check for premium
@@ -95,6 +102,8 @@ const escapeMarkdown = (text) => {
 };
 
 
+const userCooldowns = new Map();
+
 const launchTelegramBot = () => {
   const token = config.bot.botfather_token;
   const bot = new Telegraf(token);
@@ -102,6 +111,7 @@ const launchTelegramBot = () => {
   global.botStartTime = Date.now(); // Store start time for uptime calculation
 
   const helpers = {
+      isLeader,
       isOwner,
       isPremium,
       getCoins,
@@ -111,9 +121,49 @@ const launchTelegramBot = () => {
       config // Pass the full config
   };
 
+  // Cooldown Middleware
+  const cooldownMiddleware = (ctx, next) => {
+    if (!ctx.from) {
+        return next();
+    }
+
+    // Extract command name from the message text
+    const messageText = ctx.message && ctx.message.text ? ctx.message.text : '';
+    const commandMatch = messageText.match(/^\/([a-zA-Z0-9_]+)/);
+    if (!commandMatch) {
+        return next();
+    }
+    const commandName = commandMatch[1];
+
+
+    const excludedCommands = ['start', 'menu', 'ping', 'me'];
+    if (excludedCommands.includes(commandName)) {
+        return next();
+    }
+
+    const userId = ctx.from.id;
+    if (isOwner(userId)) {
+        return next();
+    }
+
+    const now = Date.now();
+    const lastCommandTime = userCooldowns.get(userId) || 0;
+
+    const cooldownDuration = isPremium(userId) ? 3000 : 10000; // 3 seconds for premium, 10 for normal
+
+    if (now - lastCommandTime < cooldownDuration) {
+        const timeLeft = (cooldownDuration - (now - lastCommandTime)) / 1000;
+        return ctx.reply(`${config.msg.cooldown} ${timeLeft.toFixed(1)}s`);
+    }
+
+    userCooldowns.set(userId, now);
+    return next();
+  };
+
   // Use middlewares
   bot.use(banMiddleware);
   bot.use(addUserMiddleware);
+  bot.use(cooldownMiddleware);
 
   // Store commands in a map
   bot.cmd = new Map();

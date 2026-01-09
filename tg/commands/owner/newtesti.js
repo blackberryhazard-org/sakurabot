@@ -1,8 +1,8 @@
 module.exports = {
     name: 'newtesti',
     category: 'owner',
-    code: async (ctx, { isOwner, config }) => {
-        if (!isOwner(ctx.from.id)) {
+    code: async (ctx, { isLeader, config }) => {
+        if (!isLeader(ctx.from.id)) {
             return ctx.reply(config.msg.owner);
         }
 
