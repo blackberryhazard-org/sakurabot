@@ -4,7 +4,10 @@ const config = require("../../../config.json");
 module.exports = {
     name: 'infopayment',
     category: 'tool',
-    code: async (ctx) => {
+    code: async (ctx, { isLeader }) => {
+        if (!isLeader(ctx.from.id)) {
+            return ctx.reply(config.msg.owner);
+        }
         try {
             const args = ctx.message.text.split(' ');
             const fullOrderId = args[1];
