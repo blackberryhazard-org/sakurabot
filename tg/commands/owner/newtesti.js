@@ -7,12 +7,17 @@ module.exports = {
         }
 
         try {
+            const id_channel = config.bot.tg_newsletterid;
+            if (!id_channel) {
+                return ctx.reply('Telegram newsletter channel ID (`tg_newsletterid`) is not set in config.json.');
+            }
+
             const args = ctx.message.text.split(' ').slice(1);
-            const [id_channel, id_transaksi, nama, harga, buyer, ...pesan_tambahan_parts] = args;
+            const [id_transaksi, nama, harga, buyer, ...pesan_tambahan_parts] = args;
             const pesan_tambahan = pesan_tambahan_parts.join(' ');
 
-            if (!id_channel || !id_transaksi || !nama || !harga || !buyer) {
-                return ctx.reply('Usage: /newtesti {id_channel} {id_transaksi} {nama} {harga} {buyer} {pesan_tambahan}');
+            if (!id_transaksi || !nama || !harga || !buyer) {
+                return ctx.reply('Usage: /newtesti {id_transaksi} {nama} {harga} {buyer} {pesan_tambahan}');
             }
 
             const itemName = nama.replace(/\+/g, ' ');
