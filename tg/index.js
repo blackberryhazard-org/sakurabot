@@ -214,6 +214,19 @@ const launchTelegramBot = () => {
       );
   });
 
+  // --- Generic Callback Query Handler ---
+  bot.on('callback_query', (ctx) => {
+    // Iterate over all commands and let them decide if they can handle the callback
+    for (const command of bot.cmd.values()) {
+        if (typeof command.callback === 'function') {
+            try {
+                command.callback(ctx, helpers);
+            } catch (e) {
+                console.error(`Error in callback for command ${command.name}:`, e);
+            }
+        }
+    }
+  });
 
   bot.launch();
 
