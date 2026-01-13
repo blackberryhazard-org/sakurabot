@@ -14,9 +14,14 @@ module.exports = {
 
         try {
             const buffer = await ctx.msg.download() || await ctx.quoted.download();
+
+            // Provide default values if config strings are empty
+            const packname = config.sticker.packname || config.bot.name || "SakuraBot";
+            const author = config.sticker.author || "Made with ❤️ by Reimau";
+
             const sticker = await new Sticker(buffer)
-                .setPack(config.sticker.packname)
-                .setAuthor(config.sticker.author)
+                .setPack(packname)
+                .setAuthor(author)
                 .setType(StickerTypes.FULL)
                 .setCategories(["🌕"])
                 .setID(ctx.msg.key.id)
