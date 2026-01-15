@@ -11,9 +11,9 @@ module.exports = {
         }
 
         // Determine the cost
-        let cost = 3; // Default cost for regular users
+        let cost = 10; // Default cost for regular users
         if (isPremium(userId)) {
-            cost = 1;
+            cost = 5;
         }
         if (isOwner(userId)) {
             cost = 0;

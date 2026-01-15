@@ -8,7 +8,8 @@
         "prefix": "/",
         "pakasir_slug": "your-slug-here",
         "pakasir_apikey": "your-api-key-here",
-        "botfather_token": "YOUR_BOTFATHER_TOKEN"
+        "botfather_token": "YOUR_BOTFATHER_TOKEN",
+        "tg_newsletterid": "-1001234567890"
     },
     "msg": {
         "admin": "Perintah hanya dapat diakses oleh admin grup!",
