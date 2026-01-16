@@ -160,7 +160,27 @@ const launchTelegramBot = () => {
     return next();
   };
 
+  const channelSubMiddleware = async (ctx, next) => {
+    if (!config.bot.tg_newsletterid || !ctx.from || isOwner(ctx.from.id)) {
+        return next();
+    }
+
+    try {
+        const chatMember = await ctx.telegram.getChatMember(config.bot.tg_newsletterid, ctx.from.id);
+        if (['member', 'administrator', 'creator'].includes(chatMember.status)) {
+            return next();
+        } else {
+            const channelLink = `https://t.me/${(await ctx.telegram.getChat(config.bot.tg_newsletterid)).username}`;
+            return ctx.reply(`You must join our channel to use this bot. Please join here: ${channelLink}`);
+        }
+    } catch (error) {
+        console.error("Error in channel subscription middleware:", error);
+        return ctx.reply("Sorry, I couldn't verify your channel membership. Please try again later.");
+    }
+  };
+
   // Use middlewares
+  bot.use(channelSubMiddleware);
   bot.use(banMiddleware);
   bot.use(addUserMiddleware);
   bot.use(cooldownMiddleware);
@@ -268,6 +288,7 @@ const launchTelegramBot = () => {
   }
 
   console.log('Telegram bot is running...');
+  return bot;
 };
 
 module.exports = { launchTelegramBot };

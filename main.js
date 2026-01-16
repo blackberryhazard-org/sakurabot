@@ -51,3 +51,5 @@ const cmd = new CommandHandler(bot, diretory.command);
 cmd.load();
 
 bot.launch().catch(error => consolefy.error(`Error: ${util.format(error)}`)); // Luncurkan bot
+
+module.exports = bot;
