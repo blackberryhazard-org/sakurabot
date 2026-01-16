@@ -38,11 +38,9 @@ if (config.system && config.system.useServer) {
 const isWaBotConfigValid = config.bot && config.bot.phoneNumber && config.bot.phoneNumber !== "YOUR_PHONE_NUMBER";
 const isTgBotConfigValid = config.bot && config.bot.botfather_token && config.bot.botfather_token !== "YOUR_BOTFATHER_TOKEN";
 
-let waBot, tgBot;
-
 if (isWaBotConfigValid) {
     try {
-        waBot = require("./main.js");
+        require("./main.js");
         global.botStatus.wa = true;
     } catch (error) {
         consolefy.error("Failed to start WhatsApp bot:", error);
@@ -54,7 +52,7 @@ if (isWaBotConfigValid) {
 if (isTgBotConfigValid) {
     try {
         const { launchTelegramBot } = require("./tg/index.js");
-        tgBot = launchTelegramBot();
+        launchTelegramBot();
         global.botStatus.tg = true;
     } catch (error) {
         consolefy.error("Failed to start Telegram bot:", error);
@@ -62,26 +60,6 @@ if (isTgBotConfigValid) {
 } else {
     consolefy.warn("Telegram bot configuration is missing or invalid. Skipping...");
 }
-
-global.stopWA = () => {
-    if (waBot) {
-        waBot.ws.close();
-        consolefy.log("WhatsApp bot stopped.");
-        global.botStatus.wa = false;
-        return true;
-    }
-    return false;
-};
-
-global.stopTG = () => {
-    if (tgBot) {
-        tgBot.stop();
-        consolefy.log("Telegram bot stopped.");
-        global.botStatus.tg = false;
-        return true;
-    }
-    return false;
-};
 
 if (!isWaBotConfigValid && !isTgBotConfigValid) {
     consolefy.error("Both WhatsApp and Telegram bot configurations are invalid. Exiting...");

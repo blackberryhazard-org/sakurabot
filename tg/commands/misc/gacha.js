@@ -5,7 +5,7 @@ module.exports = {
     name: 'gacha',
     aliases: [],
     category: 'misc',
-    code: async (ctx, { isOwner, isPremium, getCoins, updateCoins, db }) => {
+    code: async (ctx, { isOwner, getGachaTickets, updateGachaTickets, getCoins, updateCoins, db }) => {
         const userId = ctx.from.id;
         const gachaDir = path.resolve(__dirname, '../../gacha');
 
@@ -19,37 +19,36 @@ module.exports = {
             return ctx.reply('The gacha is not ready yet. There are not enough items.');
         }
 
-        const userCoins = getCoins(userId);
-        let cost = 10;
-        if (isPremium(userId)) {
-            cost = 5;
-        }
-        if (isOwner(userId)) {
-            cost = 0;
-        }
-
-        if (userCoins < cost) {
-            return ctx.reply(`You don't have enough coins to play the gacha. You need ${cost} coins.`);
-        }
+        const userTickets = getGachaTickets(userId);
 
         if (!isOwner(userId)) {
-            updateCoins(userId, userCoins - cost);
+            if (userTickets < 1) {
+                return ctx.reply('You don\'t have any gacha tickets. Use the /daily command to get more.');
+            }
+            updateGachaTickets(userId, userTickets - 1);
         }
 
         const randomFile = files[Math.floor(Math.random() * files.length)];
         const filePath = path.join(gachaDir, randomFile);
 
+        let resultMessage = '🎁 HASIL GACHA\n\n';
+
         if (randomFile.toUpperCase() === 'ZONK') {
-            return ctx.reply('You got ZONK! Better luck next time.');
+            resultMessage += 'Maaf, kamu belum beruntung. Coba lagi!';
+            return ctx.reply(resultMessage);
         }
 
         if (randomFile.toUpperCase().startsWith('COINS-')) {
             const amount = parseInt(randomFile.split('-')[1], 10);
             if (!isNaN(amount)) {
                 updateCoins(userId, getCoins(userId) + amount);
-                return ctx.reply(`Congratulations! You won ${amount} coins.`);
+                resultMessage += `Kamu memenangkan ${amount} koin!`;
+                return ctx.reply(resultMessage);
             }
         }
+
+        resultMessage += `Kamu memenangkan ${randomFile}!`;
+        await ctx.reply(resultMessage);
 
         try {
             await ctx.replyWithDocument({ source: filePath });

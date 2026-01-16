@@ -23,6 +23,12 @@ if (!db.has('premium')) db.set('premium', []);
 if (!db.has('groups')) db.set('groups', []);
 if (!db.has('coins')) db.set('coins', {});
 if (!db.has('managers')) db.set('managers', []);
+if (!db.has('gacha_tickets')) db.set('gacha_tickets', {});
+if (!db.has('last_daily')) db.set('last_daily', {});
+if (!db.has('referred_by')) db.set('referred_by', {});
+if (!db.has('referrals')) db.set('referrals', {});
+if (!db.has('pending_referrals')) db.set('pending_referrals', {});
+
 
 // Middleware to save user IDs
 const addUserMiddleware = (ctx, next) => {
@@ -90,6 +96,14 @@ const getCoins = (userId) => {
 const updateCoins = (userId, amount) => {
     db.set(`coins.${userId}`, amount);
 };
+
+const getGachaTickets = (userId) => {
+    return db.get(`gacha_tickets.${userId}`) || 0;
+};
+
+const updateGachaTickets = (userId, amount) => {
+    db.set(`gacha_tickets.${userId}`, amount);
+};
 // -------------------------
 
 // Helper function to escape markdown characters for safe inclusion in messages
@@ -116,6 +130,8 @@ const launchTelegramBot = () => {
       isPremium,
       getCoins,
       updateCoins,
+      getGachaTickets,
+      updateGachaTickets,
       escapeMarkdown,
       db, // Pass the db instance
       config // Pass the full config
@@ -161,13 +177,42 @@ const launchTelegramBot = () => {
   };
 
   const channelSubMiddleware = async (ctx, next) => {
-    if (!config.bot.tg_newsletterid || !ctx.from || isOwner(ctx.from.id)) {
+    if (!ctx.from) return next();
+
+    // Function to process a successful referral
+    const processReferral = async () => {
+        const pendingReferral = db.get(`pending_referrals.${ctx.from.id}`);
+        if (pendingReferral) {
+            const referrerId = pendingReferral;
+            db.set(`referred_by.${ctx.from.id}`, referrerId);
+
+            let referrerReferrals = db.get(`referrals.${referrerId}`) || [];
+            if (!Array.isArray(referrerReferrals)) referrerReferrals = [];
+            referrerReferrals.push(ctx.from.id);
+            db.set(`referrals.${referrerId}`, referrerReferrals);
+
+            db.delete(`pending_referrals.${ctx.from.id}`);
+
+            updateCoins(referrerId, getCoins(referrerId) + 10);
+            updateGachaTickets(referrerId, getGachaTickets(referrerId) + 5);
+
+            try {
+                await bot.telegram.sendMessage(referrerId, `Congratulations! A user you referred (${ctx.from.first_name}) has successfully joined. You received 10 coins and 5 gacha tickets.`);
+            } catch (e) {
+                console.error(`Failed to send referral notification to ${referrerId}:`, e);
+            }
+        }
+    };
+
+    if (!config.bot.tg_newsletterid || isOwner(ctx.from.id)) {
+        await processReferral();
         return next();
     }
 
     try {
         const chatMember = await ctx.telegram.getChatMember(config.bot.tg_newsletterid, ctx.from.id);
         if (['member', 'administrator', 'creator'].includes(chatMember.status)) {
+            await processReferral();
             return next();
         } else {
             const channelLink = `https://t.me/${(await ctx.telegram.getChat(config.bot.tg_newsletterid)).username}`;
@@ -180,9 +225,9 @@ const launchTelegramBot = () => {
   };
 
   // Use middlewares
-  bot.use(channelSubMiddleware);
   bot.use(banMiddleware);
   bot.use(addUserMiddleware);
+  bot.use(channelSubMiddleware);
   bot.use(cooldownMiddleware);
 
   // Store commands in a map
@@ -223,6 +268,17 @@ const launchTelegramBot = () => {
 
   // --- /start command ---
   bot.command('start', async (ctx) => {
+      const args = ctx.message.text.split(' ');
+      if (args.length > 1 && args[1].startsWith('ref_')) {
+          const referrerId = args[1].split('_')[1];
+          if (referrerId && /^\d+$/.test(referrerId) && parseInt(referrerId) !== ctx.from.id) {
+              const users = db.get('users') || [];
+              if (!users.includes(ctx.from.id)) {
+                db.set(`pending_referrals.${ctx.from.id}`, parseInt(referrerId));
+              }
+          }
+      }
+
       const startTime = Date.now();
       const sentMessage = await ctx.reply('Pinging...');
       const endTime = Date.now();
@@ -288,7 +344,6 @@ const launchTelegramBot = () => {
   }
 
   console.log('Telegram bot is running...');
-  return bot;
 };
 
 module.exports = { launchTelegramBot };
