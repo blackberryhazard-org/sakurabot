@@ -177,7 +177,9 @@ const launchTelegramBot = () => {
   };
 
   const channelSubMiddleware = async (ctx, next) => {
-    if (!ctx.from) return next();
+    if (!ctx.from || ctx.chat.type !== 'private') {
+        return next();
+    }
 
     // Function to process a successful referral
     const processReferral = async () => {
