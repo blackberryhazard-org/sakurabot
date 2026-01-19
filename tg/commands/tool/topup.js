@@ -23,21 +23,15 @@ module.exports = {
         }
 
         const price = (coinAmount / 25) * 1000;
-        const orderId = `TOPUP-${crypto.randomBytes(4).toString('hex').toUpperCase()}-${coinAmount}`;
+        const randomPart = `TOPUP-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
+        const orderId = `${randomPart}-${price}`;
 
         try {
-            const payment = await pakasir.createPayment({
-                order_id: orderId,
-                amount: price,
-                customer: {
-                    name: ctx.from.first_name,
-                    email: `${userId}@sakurabot.com`
-                }
-            });
+            const payment = await pakasir.createPayment('qris', randomPart, price);
 
             await ctx.reply(`Please complete the payment of Rp${price.toLocaleString('id-ID')} for ${coinAmount} coins here: ${payment.payment_url}\n\nYou have 10 minutes to complete the payment. Use /cancel to cancel this transaction.`);
 
-            const watcher = pakasir.watchPayment(orderId, price, {
+            const watcher = pakasir.watchPayment(randomPart, price, {
                 interval: 3000,
                 timeout: 600000,
                 onStatusChange: async (payment) => {
