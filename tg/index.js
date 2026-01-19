@@ -6,7 +6,7 @@ const moment = require('moment-timezone');
 const { Database } = require('simpl.db');
 const cron = require('node-cron');
 const archiver = require('archiver');
-const Pakasir = require('pakasir-sdk');
+const { Pakasir } = require('pakasir-sdk');
 
 const dbPath = path.resolve(__dirname, '../database/tg');
 fs.mkdirSync(dbPath, { recursive: true });
