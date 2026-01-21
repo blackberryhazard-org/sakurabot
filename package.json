@@ -25,6 +25,7 @@
     "link-preview-js": "^4.0.0",
     "moment-timezone": "^0.6.0",
     "node-cron": "^3.0.3",
+    "node-fetch": "^2.7.0",
     "pakasir-sdk": "^1.0.5",
     "simpl.db": "^2.13.0",
     "telegraf": "^4.16.3",

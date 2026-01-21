@@ -1,25 +1,79 @@
 const crypto = require('crypto');
+const fetch = require('node-fetch');
+
+function watchPaymentFetch({
+    project,
+    amount,
+    orderId,
+    apiKey,
+    interval = 3000,
+    timeout = 600000,
+    onPaid,
+    onExpired,
+    onError
+}) {
+    const startTime = Date.now();
+
+    const timer = setInterval(async () => {
+        try {
+            if (Date.now() - startTime > timeout) {
+                clearInterval(timer);
+                return onExpired();
+            }
+
+            const url =
+                `https://app.pakasir.com/api/transactiondetail` +
+                `?project=${project}` +
+                `&amount=${amount}` +
+                `&order_id=${orderId}` +
+                `&api_key=${apiKey}`;
+
+            const res = await fetch(url);
+            const data = await res.json();
+
+            if (!data.transaction) return;
+
+            if (data.transaction.status === 'completed') {
+                clearInterval(timer);
+                onPaid(data.transaction);
+            }
+
+        } catch (err) {
+            clearInterval(timer);
+            onError(err);
+        }
+    }, interval);
+
+    return {
+        stop: () => clearInterval(timer)
+    };
+}
 
 module.exports = {
     name: 'topup',
     aliases: [],
     category: 'tool',
-    code: async (ctx, { pakasir, activeTopups, getCoins, updateCoins, db, config }) => {
+    code: async (ctx, { pakasir, activeTopups, getCoins, updateCoins, config }) => {
         const userId = ctx.from.id;
         const args = ctx.message.text.split(' ').slice(1);
 
         if (activeTopups.has(userId)) {
-            return ctx.reply('You already have an active top-up session. Please cancel it first with /cancel before starting a new one.');
+            return ctx.reply(
+                'You already have an active top-up session.\n' +
+                'Use /cancel before starting a new one.'
+            );
         }
 
         if (args.length === 0 || isNaN(parseInt(args[0]))) {
-            return ctx.reply('Please provide a valid number of coins to top up. Usage: /topup {amount}');
+            return ctx.reply('Usage: /topup {amount}');
         }
 
         const coinAmount = parseInt(args[0]);
 
         if (coinAmount <= 0 || coinAmount % 25 !== 0) {
-            return ctx.reply('Invalid amount. Please top up in multiples of 25 (e.g., 25, 50, 75).');
+            return ctx.reply(
+                'Invalid amount.\nTop up must be in multiples of 25.'
+            );
         }
 
         const price = (coinAmount / 25) * 1000;
@@ -27,60 +81,94 @@ module.exports = {
         const orderId = `${randomPart}-${price}`;
 
         try {
-            const payment = await pakasir.createPayment('qris', randomPart, price);
+            const payment = await pakasir.createPayment(
+                'qris',
+                randomPart,
+                price
+            );
 
-            await ctx.reply(`Please complete the payment of Rp${price.toLocaleString('id-ID')} for ${coinAmount} coins here: ${payment.payment_url}\n\nYou have 10 minutes to complete the payment. Use /cancel to cancel this transaction.`);
+            await ctx.reply(
+                `💳 *TOP UP INVOICE*\n\n` +
+                `Coins: *${coinAmount}*\n` +
+                `Price: *Rp${price.toLocaleString('id-ID')}*\n\n` +
+                `🔗 ${payment.payment_url}\n\n` +
+                `⏱ You have 10 minutes to complete the payment.\n` +
+                `Use /cancel to cancel.`,
+                { parse_mode: 'Markdown' }
+            );
 
-            const watcher = pakasir.watchPayment(randomPart, price, {
-                interval: 3000,
-                timeout: 600000,
-                onStatusChange: async (payment) => {
-                    if (payment.status === 'paid') {
-                        watcher.stop();
-                        activeTopups.delete(userId);
+            const watcher = watchPaymentFetch({
+                project: config.bot.pakasir_slug,
+                amount: price,
+                orderId: randomPart,
+                apiKey: config.bot.pakasir_apikey,
 
-                        updateCoins(userId, getCoins(userId) + coinAmount);
-                        await ctx.reply(`Your payment of Rp${price.toLocaleString('id-ID')} has been confirmed. ${coinAmount} coins have been added to your balance.`);
+                onPaid: async (trx) => {
+                    activeTopups.delete(userId);
 
-                        // Broadcast to newsletter channel
-                        const broadcastMessage = `
+                    updateCoins(
+                        userId,
+                        getCoins(userId) + coinAmount
+                    );
+
+                    await ctx.reply(
+                        `✅ *PAYMENT CONFIRMED*\n\n` +
+                        `${coinAmount} coins have been added to your balance.`,
+                        { parse_mode: 'Markdown' }
+                    );
+
+                    const broadcastMessage = `
 ✅ TRANSAKSI BERHASIL!
 
 ID Transaksi: \`${orderId}\`
 Item: ${coinAmount} Koin SakuraBot
 Harga: Rp${price.toLocaleString('id-ID')}
+Metode: ${trx.payment_method}
+Waktu: ${trx.completed_at}
 Buyer: ${ctx.from.first_name} (\`${userId}\`)
 
 Ketentuan:
 - Item yang sudah dibeli/dibayar tidak dapat dikembalikan
-- Untuk buyer, harap simpan baik baik pesan ini
-                        `;
+                    `;
 
-                        if (config.bot.tg_newsletterid) {
-                            try {
-                                await ctx.telegram.sendMessage(config.bot.tg_newsletterid, broadcastMessage, { parse_mode: 'Markdown' });
-                            } catch (e) {
-                                console.error('Failed to broadcast successful top-up:', e);
-                            }
+                    if (config.bot.tg_newsletterid) {
+                        try {
+                            await ctx.telegram.sendMessage(
+                                config.bot.tg_newsletterid,
+                                broadcastMessage,
+                                { parse_mode: 'Markdown' }
+                            );
+                        } catch (e) {
+                            console.error('Broadcast error:', e);
                         }
-                    } else if (payment.status === 'canceled' || payment.status === 'expired') {
-                        watcher.stop();
-                        activeTopups.delete(userId);
-                        await ctx.reply('Your top-up transaction has been canceled or has expired.');
                     }
                 },
-                onError: (error) => {
-                    console.error('Error watching payment:', error);
+
+                onExpired: async () => {
                     activeTopups.delete(userId);
-                    ctx.reply('An error occurred while monitoring your payment. Please contact an admin.');
+                    await ctx.reply('⏱ Transaction expired.');
+                },
+
+                onError: async (err) => {
+                    console.error('Watcher error:', err);
+                    activeTopups.delete(userId);
+                    await ctx.reply(
+                        '❌ Error while checking payment.\nContact admin.'
+                    );
                 }
             });
 
-            activeTopups.set(userId, { orderId, amount: price, watcher });
+            activeTopups.set(userId, {
+                orderId,
+                amount: price,
+                watcher
+            });
 
-        } catch (error) {
-            console.error('Failed to create payment:', error);
-            return ctx.reply('Sorry, I failed to create a payment link. Please try again later.');
+        } catch (err) {
+            console.error('Create payment failed:', err);
+            return ctx.reply(
+                '❌ Failed to create payment.\\nPlease try again later.'
+            );
         }
     }
 };
