@@ -1,22 +1,22 @@
 module.exports = {
     name: 'broadcastgc',
     category: 'misc',
-    description: 'Siarkan pesan ke semua grup terdaftar. Membutuhkan koin.',
-    code: async (ctx, { isOwner, isPremium, getCoins, updateCoins, db }) => {
+    description: 'Broadcast a message to all registered groups. Costs coins.',
+    code: async (ctx, { isOwner, isPremium, getCoins, updateCoins, db, escapeMarkdown }) => {
         const userId = ctx.from.id;
         const message = ctx.message.text.split(' ').slice(1).join(' ');
 
         if (!message) {
-            return ctx.reply('Penggunaan: /broadcastgc {pesan}');
+            return ctx.reply('Usage: /broadcastgc {message}');
         }
 
         const groups = db.get('groups');
         if (!groups || groups.length === 0) {
-            return ctx.reply('Tidak ada grup yang terdaftar untuk siaran.');
+            return ctx.reply('There are no groups registered for broadcast.');
         }
 
-        // Tentukan biaya per grup
-        let costPerGroup = 2; // Default untuk pengguna biasa
+        // Determine cost per group
+        let costPerGroup = 2; // Default for regular users
         if (isPremium(userId)) {
             costPerGroup = 1;
         }
@@ -27,12 +27,12 @@ module.exports = {
         const totalCost = groups.length * costPerGroup;
         const userCoins = getCoins(userId);
 
-        // Periksa apakah pengguna mampu
+        // Check if the user can afford it
         if (userCoins < totalCost) {
-            return ctx.reply(`Anda tidak punya cukup koin. Anda butuh ${totalCost} koin (${costPerGroup} per grup), tetapi Anda hanya punya ${userCoins}.`);
+            return ctx.reply(`You don't have enough coins. You need ${totalCost} coins (${costPerGroup} per group), but you only have ${userCoins}.`);
         }
 
-        // Kurangi koin jika bukan pemilik
+        // Deduct coins if not an owner
         if (!isOwner(userId)) {
             updateCoins(userId, userCoins - totalCost);
         }
@@ -40,21 +40,21 @@ module.exports = {
         let successCount = 0;
         let failureCount = 0;
 
-        await ctx.reply(`Memulai siaran ke ${groups.length} grup...`);
+        await ctx.reply(`Starting broadcast to ${groups.length} groups...`);
 
         for (const groupId of groups) {
             try {
-                await ctx.telegram.sendMessage(groupId, message);
+                await ctx.telegram.sendMessage(groupId, `${escapeMarkdown(message)}`, { parse_mode: 'Markdown' });
                 successCount++;
             } catch (error) {
-                console.error(`Gagal mengirim pesan ke grup ${groupId}:`, error);
+                console.error(`Failed to send message to group ${groupId}:`, error);
                 failureCount++;
             }
         }
 
-        let feedback = `Siaran selesai.\n✅ Terkirim ke ${successCount} grup.\n❌ Gagal untuk ${failureCount} grup.`;
+        let feedback = `Broadcast finished.\n✅ Sent to ${successCount} groups.\n❌ Failed for ${failureCount} groups.`;
         if (!isOwner(userId)) {
-            feedback += `\n\nAnda dikenakan biaya ${totalCost} koin. Saldo baru Anda adalah ${getCoins(userId)}.`;
+            feedback += `\n\nYou were charged ${totalCost} coins. Your new balance is ${getCoins(userId)}.`;
         }
 
         ctx.reply(feedback);

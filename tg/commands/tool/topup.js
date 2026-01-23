@@ -59,20 +59,20 @@ module.exports = {
 
         if (activeTopups.has(userId)) {
             return ctx.reply(
-                'Anda sudah memiliki sesi top-up aktif.\n' +
-                'Gunakan /cancel sebelum memulai yang baru.'
+                'You already have an active top-up session.\n' +
+                'Use /cancel before starting a new one.'
             );
         }
 
         if (args.length === 0 || isNaN(parseInt(args[0]))) {
-            return ctx.reply('Penggunaan: /topup {jumlah}');
+            return ctx.reply('Usage: /topup {amount}');
         }
 
         const coinAmount = parseInt(args[0]);
 
         if (coinAmount <= 0 || coinAmount % 25 !== 0) {
             return ctx.reply(
-                'Jumlah tidak valid.\nTop up harus dalam kelipatan 25.'
+                'Invalid amount.\nTop up must be in multiples of 25.'
             );
         }
 
@@ -96,18 +96,18 @@ module.exports = {
 
   `🔗 <a href="${payment.payment_url}">Klik di sini untuk bayar</a>\n\n` +
 
-  `⏱ Anda punya waktu 10 menit untuk menyelesaikan pembayaran.\n` +
+  `⏱ You have 10 minutes to complete the payment.\n` +
 
-  `Gunakan /cancel untuk membatalkan.`,
+  `Use /cancel to cancel.`,
 
   { parse_mode: 'HTML' }
 );
 
             const watcher = watchPaymentFetch({
-                project: process.env.PAKASIR_SLUG,
+                project: config.pakasir.slug,
                 amount: price,
                 orderId: randomPart,
-                apiKey: process.env.PAKASIR_APIKEY,
+                apiKey: config.pakasir.apikey,
 
                 onPaid: async (trx) => {
                     activeTopups.delete(userId);
@@ -118,22 +118,22 @@ module.exports = {
                     );
 
                     await ctx.reply(
-                        `✅ <b>PEMBAYARAN TERKONFIRMASI</b>\n\n` +
-                        `${coinAmount} koin telah ditambahkan ke saldo Anda.`,
-                        { parse_mode: 'HTML' }
+                        `✅ *PAYMENT CONFIRMED*\n\n` +
+                        `${coinAmount} coins have been added to your balance.`,
+                        { parse_mode: 'Markdown' }
                     );
 
                     const broadcastMessage = `
-✅ <b>TRANSAKSI BERHASIL!</b>
+✅ TRANSAKSI BERHASIL!
 
-<b>ID Transaksi:</b> <code>${orderId}</code>
-<b>Item:</b> ${coinAmount} Koin SakuraBot
-<b>Harga:</b> Rp${price.toLocaleString('id-ID')}
-<b>Metode:</b> ${trx.payment_method}
-<b>Waktu:</b> ${trx.completed_at}
-<b>Pembeli:</b> ${ctx.from.first_name} (<code>${userId}</code>)
+ID Transaksi: \`${orderId}\`
+Item: ${coinAmount} Koin SakuraBot
+Harga: Rp${price.toLocaleString('id-ID')}
+Metode: ${trx.payment_method}
+Waktu: ${trx.completed_at}
+Buyer: ${ctx.from.first_name} (\`${userId}\`)
 
-<b>Ketentuan:</b>
+Ketentuan:
 - Item yang sudah dibeli/dibayar tidak dapat dikembalikan
                     `;
 
@@ -142,7 +142,7 @@ module.exports = {
                             await ctx.telegram.sendMessage(
                                 config.bot.tg_newsletterid,
                                 broadcastMessage,
-                                { parse_mode: 'HTML' }
+                                { parse_mode: 'Markdown' }
                             );
                         } catch (e) {
                             console.error('Broadcast error:', e);
@@ -152,14 +152,14 @@ module.exports = {
 
                 onExpired: async () => {
                     activeTopups.delete(userId);
-                    await ctx.reply('⏱ Transaksi kedaluwarsa.');
+                    await ctx.reply('⏱ Transaction expired.');
                 },
 
                 onError: async (err) => {
                     console.error('Watcher error:', err);
                     activeTopups.delete(userId);
                     await ctx.reply(
-                        '❌ Terjadi kesalahan saat memeriksa pembayaran.\nHubungi admin.'
+                        '❌ Error while checking payment.\nContact admin.'
                     );
                 }
             });
@@ -173,7 +173,7 @@ module.exports = {
         } catch (err) {
             console.error('Create payment failed:', err);
             return ctx.reply(
-                '❌ Gagal membuat pembayaran.\\nSilakan coba lagi nanti.'
+                '❌ Failed to create payment.\\nPlease try again later.'
             );
         }
     }

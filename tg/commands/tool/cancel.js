@@ -6,7 +6,7 @@ module.exports = {
         const userId = ctx.from.id;
 
         if (!activeTopups.has(userId)) {
-            return ctx.reply('Anda tidak memiliki sesi top-up aktif.');
+            return ctx.reply('You do not have an active top-up session.');
         }
 
         const { watcher } = activeTopups.get(userId);
@@ -14,6 +14,6 @@ module.exports = {
         watcher.stop();
         activeTopups.delete(userId);
 
-        return ctx.reply('Transaksi top-up Anda telah dibatalkan.');
+        return ctx.reply('Your top-up transaction has been canceled.');
     }
 };

@@ -9,6 +9,10 @@
         "botfather_token": "YOUR_BOTFATHER_TOKEN",
         "tg_newsletterid": "-1001234567890"
     },
+    "pakasir": {
+        "slug": "twinightwheel",
+        "apikey": "1bAwXt2CM1w7CNipHRoFkYkFyFkqdEnC"
+    },
     "msg": {
         "admin": "Perintah hanya dapat diakses oleh admin grup!",
         "banned": "Anda telah dibanned!",

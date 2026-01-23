@@ -1,4 +1,3 @@
-require('dotenv').config();
 const { Telegraf } = require('telegraf');
 const config = require('../config.json');
 const fs = require('fs');
@@ -30,7 +29,6 @@ if (!db.has('last_daily')) db.set('last_daily', {});
 if (!db.has('referred_by')) db.set('referred_by', {});
 if (!db.has('referrals')) db.set('referrals', {});
 if (!db.has('pending_referrals')) db.set('pending_referrals', {});
-if (!db.has('redeem_codes')) db.set('redeem_codes', {});
 
 
 // Middleware to save user IDs
@@ -126,8 +124,8 @@ const launchTelegramBot = () => {
   const token = config.bot.botfather_token;
   const bot = new Telegraf(token);
   const pakasir = new Pakasir({
-    slug: process.env.PAKASIR_SLUG,
-    key: process.env.PAKASIR_APIKEY
+    slug: config.pakasir.slug,
+    key: config.pakasir.apikey
   });
 
   global.botStartTime = Date.now(); // Store start time for uptime calculation
