@@ -6,6 +6,7 @@ const moment = require('moment-timezone');
 const { Database } = require('simpl.db');
 const cron = require('node-cron');
 const archiver = require('archiver');
+const { Pakasir } = require('pakasir-sdk');
 
 const dbPath = path.resolve(__dirname, '../database/tg');
 fs.mkdirSync(dbPath, { recursive: true });
@@ -117,14 +118,21 @@ const escapeMarkdown = (text) => {
 
 
 const userCooldowns = new Map();
+const activeTopups = new Map();
 
 const launchTelegramBot = () => {
   const token = config.bot.botfather_token;
   const bot = new Telegraf(token);
+  const pakasir = new Pakasir({
+    slug: config.bot.pakasir_slug,
+    key: config.bot.pakasir_apikey
+  });
 
   global.botStartTime = Date.now(); // Store start time for uptime calculation
 
   const helpers = {
+      pakasir,
+      activeTopups,
       isLeader,
       isOwner,
       isPremium,
@@ -177,7 +185,9 @@ const launchTelegramBot = () => {
   };
 
   const channelSubMiddleware = async (ctx, next) => {
-    if (!ctx.from) return next();
+    if (!ctx.from || ctx.chat.type !== 'private') {
+        return next();
+    }
 
     // Function to process a successful referral
     const processReferral = async () => {
