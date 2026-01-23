@@ -77,7 +77,7 @@ module.exports = {
         }
 
         const price = (coinAmount / 25) * 1000;
-        const randomPart = `TOPUP-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
+        const randomPart = `TRX-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
         const orderId = `${randomPart}-${price}`;
 
         try {
@@ -88,14 +88,20 @@ module.exports = {
             );
 
             await ctx.reply(
-                `💳 *TOP UP INVOICE*\n\n` +
-                `Coins: *${coinAmount}*\n` +
-                `Price: *Rp${price.toLocaleString('id-ID')}*\n\n` +
-                `🔗 ${payment.payment_url}\n\n` +
-                `⏱ You have 10 minutes to complete the payment.\n` +
-                `Use /cancel to cancel.`,
-                { parse_mode: 'Markdown' }
-            );
+  `💳 <b>TOP UP INVOICE</b>\n\n` +
+
+  `Coins: <b>${coinAmount}</b>\n` +
+
+  `Price: <b>Rp${price.toLocaleString('id-ID')}</b>\n\n` +
+
+  `🔗 <a href="${payment.payment_url}">Klik di sini untuk bayar</a>\n\n` +
+
+  `⏱ You have 10 minutes to complete the payment.\n` +
+
+  `Use /cancel to cancel.`,
+
+  { parse_mode: 'HTML' }
+);
 
             const watcher = watchPaymentFetch({
                 project: config.bot.pakasir_slug,
