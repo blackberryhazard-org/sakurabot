@@ -29,6 +29,7 @@ if (!db.has('last_daily')) db.set('last_daily', {});
 if (!db.has('referred_by')) db.set('referred_by', {});
 if (!db.has('referrals')) db.set('referrals', {});
 if (!db.has('pending_referrals')) db.set('pending_referrals', {});
+if (!db.has('redeem_codes')) db.set('redeem_codes', {});
 
 
 // Middleware to save user IDs
