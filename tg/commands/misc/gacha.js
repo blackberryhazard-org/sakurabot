@@ -16,14 +16,14 @@ module.exports = {
         const files = fs.readdirSync(gachaDir);
 
         if (files.length < 5) {
-            return ctx.reply('The gacha is not ready yet. There are not enough items.');
+            return ctx.reply('Gacha belum siap. Item tidak cukup.');
         }
 
         const userTickets = getGachaTickets(userId);
 
         if (!isOwner(userId)) {
             if (userTickets < 1) {
-                return ctx.reply('You don\'t have any gacha tickets. Use the /daily command to get more.');
+                return ctx.reply('Anda tidak punya tiket gacha. Gunakan perintah /daily untuk mendapatkan lebih banyak.');
             }
             updateGachaTickets(userId, userTickets - 1);
         }
@@ -54,7 +54,7 @@ module.exports = {
             await ctx.replyWithDocument({ source: filePath });
         } catch (error) {
             console.error('Error sending gacha file:', error);
-            await ctx.reply('An error occurred while sending the gacha item.');
+            await ctx.reply('Terjadi kesalahan saat mengirim item gacha.');
         }
     }
 };

@@ -1,57 +1,57 @@
 module.exports = {
     name: 'me',
-    description: 'Get your user information.',
-    code: async (ctx, { isOwner, isPremium, getCoins, getGachaTickets, escapeMarkdown, db }) => {
+    description: 'Dapatkan informasi pengguna Anda.',
+    code: async (ctx, { isOwner, isPremium, getCoins, getGachaTickets, db }) => {
         const user = ctx.from;
         if (!user) {
-            return ctx.reply('Could not get user information.');
+            return ctx.reply('Tidak bisa mendapatkan informasi pengguna.');
         }
 
         const userId = user.id;
         const botUsername = ctx.botInfo.username;
-        const name = escapeMarkdown(user.first_name + (user.last_name ? ` ${user.last_name}` : ''));
-        const username = user.username ? escapeMarkdown(`@${user.username}`) : 'N/A';
+        const name = user.first_name + (user.last_name ? ` ${user.last_name}` : '');
+        const username = user.username ? `@${user.username}` : 'N/A';
         const coins = getCoins(userId);
         const tickets = getGachaTickets(userId);
 
-        let status = 'User';
+        let status = 'Pengguna';
         if (isOwner(userId)) {
-            status = 'Owner';
+            status = 'Pemilik';
         } else if (isPremium(userId)) {
             status = 'Premium';
         }
 
-        // Referral Info
+        // Info Rujukan
         const referredBy = db.get(`referred_by.${userId}`);
         const referrals = db.get(`referrals.${userId}`) || [];
         let referredByText = 'N/A';
         if (referredBy) {
             try {
                 const referrer = await ctx.telegram.getChat(referredBy);
-                referredByText = escapeMarkdown(referrer.first_name);
+                referredByText = referrer.first_name;
             } catch (e) {
-                referredByText = `ID: \`${referredBy}\``;
+                referredByText = `ID: <code>${referredBy}</code>`;
             }
         }
 
         const referralLink = `https://t.me/${botUsername}?start=ref_${userId}`;
 
         const message = `
-👤 *User Info*
+👤 <b>Info Pengguna</b>
 
-*Name:* ${name}
-*Username:* ${username}
-*Telegram ID:* \`${userId}\`
-*Status:* ${status}
-*Coins:* ${coins}
-*Gacha Tickets:* ${tickets}
+<b>Nama:</b> ${name}
+<b>Username:</b> ${username}
+<b>ID Telegram:</b> <code>${userId}</code>
+<b>Status:</b> ${status}
+<b>Koin:</b> ${coins}
+<b>Tiket Gacha:</b> ${tickets}
 
-📈 *Referral Info*
-*Referred By:* ${referredByText}
-*Total Invites:* ${Array.isArray(referrals) ? referrals.length : 0}
-*Your Referral Link:* \`${referralLink}\`
+📈 <b>Info Rujukan</b>
+<b>Dirujuk Oleh:</b> ${referredByText}
+<b>Total Undangan:</b> ${Array.isArray(referrals) ? referrals.length : 0}
+<b>Tautan Rujukan Anda:</b> <code>${referralLink}</code>
         `;
 
-        ctx.replyWithMarkdown(message);
+        ctx.reply(message, { parse_mode: 'HTML' });
     }
 };

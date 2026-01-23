@@ -10,7 +10,7 @@ module.exports = {
         const now = moment().tz('Asia/Jakarta');
 
         if (lastDaily && now.isSame(moment(lastDaily).tz('Asia/Jakarta'), 'day')) {
-            return ctx.reply('You have already claimed your daily reward today. Come back tomorrow!');
+            return ctx.reply('Anda sudah mengklaim hadiah harian Anda hari ini. Kembalilah besok!');
         }
 
         const coinsReward = Math.floor(Math.random() * 25) + 1;
@@ -23,6 +23,6 @@ module.exports = {
         updateGachaTickets(userId, currentTickets + ticketsReward);
         db.set(`last_daily.${userId}`, now.valueOf());
 
-        return ctx.reply(`🎉 Daily Reward Claimed! 🎉\n\nYou received:\n- ${coinsReward} Coins\n- ${ticketsReward} Gacha Tickets`);
+        return ctx.reply(`🎉 Hadiah Harian Diklaim! 🎉\n\nAnda menerima:\n- ${coinsReward} Koin\n- ${ticketsReward} Tiket Gacha`);
     }
 };

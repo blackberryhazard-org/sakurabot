@@ -1,17 +1,17 @@
 module.exports = {
     name: 'broadcast',
     category: 'misc',
-    description: 'Send a message to all users. Costs coins.',
+    description: 'Kirim pesan ke semua pengguna. Membutuhkan koin.',
     code: async (ctx, { isOwner, isPremium, getCoins, updateCoins, db }) => {
         const userId = ctx.from.id;
         const message = ctx.message.text.split(' ').slice(1).join(' ');
 
         if (!message) {
-            return ctx.reply('Please provide a message to broadcast.');
+            return ctx.reply('Harap berikan pesan untuk disiarkan.');
         }
 
-        // Determine the cost
-        let cost = 10; // Default cost for regular users
+        // Tentukan biaya
+        let cost = 10; // Biaya default untuk pengguna biasa
         if (isPremium(userId)) {
             cost = 5;
         }
@@ -21,17 +21,17 @@ module.exports = {
 
         const userCoins = getCoins(userId);
 
-        // Check if the user can afford it
+        // Periksa apakah pengguna mampu
         if (userCoins < cost) {
-            return ctx.reply(`You don't have enough coins to broadcast. You need ${cost} coins, but you only have ${userCoins}.`);
+            return ctx.reply(`Anda tidak punya cukup koin untuk siaran. Anda butuh ${cost} koin, tetapi Anda hanya punya ${userCoins}.`);
         }
 
         const users = db.get('users');
         if (!users || users.length === 0) {
-            return ctx.reply('There are no users to broadcast to.');
+            return ctx.reply('Tidak ada pengguna untuk disiarkan.');
         }
 
-        // Deduct coins if not an owner
+        // Kurangi koin jika bukan pemilik
         if (!isOwner(userId)) {
             updateCoins(userId, userCoins - cost);
         }
@@ -39,27 +39,27 @@ module.exports = {
         let successCount = 0;
         let failureCount = 0;
 
-        await ctx.reply(`Starting broadcast to ${users.length} users...`);
+        await ctx.reply(`Memulai siaran ke ${users.length} pengguna...`);
 
         for (const targetId of users) {
             try {
-                // Avoid sending to the user who initiated the broadcast to prevent spamming themselves
+                // Hindari mengirim ke pengguna yang memulai siaran untuk mencegah spamming diri sendiri
                 if (targetId !== userId) {
                     await ctx.telegram.sendMessage(targetId, message);
                     successCount++;
                 }
             } catch (error) {
-                console.error(`Failed to send message to user ${targetId}:`, error.description);
+                console.error(`Gagal mengirim pesan ke pengguna ${targetId}:`, error.description);
                 failureCount++;
             }
         }
 
-        // The sender is also a "success", so we add 1
+        // Pengirim juga dianggap "sukses", jadi kita tambahkan 1
         successCount++;
 
-        let feedback = `Broadcast finished.\n✅ Sent to ${successCount} users.\n❌ Failed for ${failureCount} users.`;
+        let feedback = `Siaran selesai.\n✅ Terkirim ke ${successCount} pengguna.\n❌ Gagal untuk ${failureCount} pengguna.`;
         if (!isOwner(userId)) {
-            feedback += `\n\nYou were charged ${cost} coins. Your new balance is ${getCoins(userId)}.`;
+            feedback += `\n\nAnda dikenakan biaya ${cost} koin. Saldo baru Anda adalah ${getCoins(userId)}.`;
         }
         ctx.reply(feedback);
     }

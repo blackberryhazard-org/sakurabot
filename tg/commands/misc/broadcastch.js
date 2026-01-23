@@ -10,9 +10,9 @@ function msToTime(ms) {
     let hours = Math.floor(ms / (1000 * 60 * 60));
 
     let str = "";
-    if (hours > 0) str += `${hours} hour(s) `;
-    if (minutes > 0) str += `${minutes} minute(s) `;
-    if (seconds > 0) str += `${seconds} second(s)`;
+    if (hours > 0) str += `${hours} jam `;
+    if (minutes > 0) str += `${minutes} menit `;
+    if (seconds > 0) str += `${seconds} detik`;
 
     return str.trim();
 }
@@ -20,18 +20,18 @@ function msToTime(ms) {
 module.exports = {
     name: 'broadcastch',
     category: 'misc',
-    description: 'Send a message to all registered channels.',
+    description: 'Kirim pesan ke semua channel terdaftar.',
     code: async (ctx, { isOwner, isPremium, getCoins, updateCoins, db }) => {
         const userId = ctx.from.id;
         const message = ctx.message.text.split(' ').slice(1).join(' ');
 
         if (!message) {
-            return ctx.reply('Please provide a message to broadcast to channels.');
+            return ctx.reply('Harap berikan pesan untuk disiarkan ke channel.');
         }
 
         const channels = db.get('channels') || [];
         if (channels.length === 0) {
-            return ctx.reply('There are no channels registered for broadcast.');
+            return ctx.reply('Tidak ada channel yang terdaftar untuk siaran.');
         }
 
         if (isOwner(userId)) {
@@ -54,14 +54,14 @@ module.exports = {
 
             if (userCoins >= COOLDOWN_BYPASS_COST) {
                 return ctx.reply(
-                    `You are on cooldown for another ${msToTime(remainingMs)}. Would you like to spend ${COOLDOWN_BYPASS_COST} coins to bypass this?`,
+                    `Anda sedang dalam cooldown selama ${msToTime(remainingMs)} lagi. Apakah Anda ingin menggunakan ${COOLDOWN_BYPASS_COST} koin untuk melewatinya?`,
                     Markup.inlineKeyboard([
-                        Markup.button.callback('Yes, spend 50 coins', `bypass_bch_${userId}`),
-                        Markup.button.callback('No, I will wait', 'cancel_bypass')
+                        Markup.button.callback('Ya, gunakan 50 koin', `bypass_bch_${userId}`),
+                        Markup.button.callback('Tidak, saya akan menunggu', 'cancel_bypass')
                     ])
                 );
             } else {
-                return ctx.reply(`You are on cooldown for another ${msToTime(remainingMs)}. You also do not have enough coins (${COOLDOWN_BYPASS_COST} required) to bypass it.`);
+                return ctx.reply(`Anda sedang dalam cooldown selama ${msToTime(remainingMs)} lagi. Anda juga tidak memiliki cukup koin (${COOLDOWN_BYPASS_COST} dibutuhkan) untuk melewatinya.`);
             }
         }
 
@@ -79,22 +79,22 @@ module.exports = {
         const query = ctx.callbackQuery.data;
 
         if (query === 'cancel_bypass') {
-            return ctx.editMessageText('Broadcast canceled. Please wait for your cooldown to expire.');
+            return ctx.editMessageText('Siaran dibatalkan. Harap tunggu hingga cooldown Anda berakhir.');
         }
 
         if (query.startsWith('bypass_bch_')) {
             const targetUserId = parseInt(query.split('_')[2]);
 
             if (userId !== targetUserId) {
-                return ctx.answerCbQuery('This is not for you.', { show_alert: true });
+                return ctx.answerCbQuery('Ini bukan untukmu.', { show_alert: true });
             }
 
             const userCoins = getCoins(userId);
             if (userCoins < COOLDOWN_BYPASS_COST) {
-                return ctx.editMessageText(`You no longer have enough coins to bypass the cooldown. You need ${COOLDOWN_BYPASS_COST}, but you only have ${userCoins}.`);
+                return ctx.editMessageText(`Anda tidak lagi memiliki cukup koin untuk melewati cooldown. Anda butuh ${COOLDOWN_BYPASS_COST}, tetapi Anda hanya punya ${userCoins}.`);
             }
 
-            await ctx.editMessageText('Cooldown bypassed. Starting broadcast...');
+            await ctx.editMessageText('Cooldown dilewati. Memulai siaran...');
 
             // Deduct coins
             updateCoins(userId, userCoins - COOLDOWN_BYPASS_COST);
@@ -118,21 +118,21 @@ async function broadcastMessage(ctx, message, channels, cost, userId, getCoins) 
     let failureCount = 0;
     const totalChannels = channels.length;
 
-    await ctx.reply(`Starting channel broadcast to ${totalChannels} channels...`);
+    await ctx.reply(`Memulai siaran channel ke ${totalChannels} channel...`);
 
     for (const channelId of channels) {
         try {
             await ctx.telegram.sendMessage(channelId, message);
             successCount++;
         } catch (error) {
-            console.error(`Failed to send message to channel ${channelId}:`, error.description);
+            console.error(`Gagal mengirim pesan ke channel ${channelId}:`, error.description);
             failureCount++;
         }
     }
 
-    let feedback = `Channel broadcast finished.\n✅ Sent to ${successCount} channels.\n❌ Failed for ${failureCount} channels.`;
+    let feedback = `Siaran channel selesai.\n✅ Terkirim ke ${successCount} channel.\n❌ Gagal untuk ${failureCount} channel.`;
     if (cost > 0) {
-        feedback += `\n\nYou were charged ${cost} coins. Your new balance is ${getCoins(userId)}.`;
+        feedback += `\n\nAnda dikenakan biaya ${cost} koin. Saldo baru Anda adalah ${getCoins(userId)}.`;
     }
     await ctx.reply(feedback);
     return { success: successCount, failed: failureCount };

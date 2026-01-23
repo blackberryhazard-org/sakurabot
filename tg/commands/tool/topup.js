@@ -59,20 +59,20 @@ module.exports = {
 
         if (activeTopups.has(userId)) {
             return ctx.reply(
-                'You already have an active top-up session.\n' +
-                'Use /cancel before starting a new one.'
+                'Anda sudah memiliki sesi top-up aktif.\n' +
+                'Gunakan /cancel sebelum memulai yang baru.'
             );
         }
 
         if (args.length === 0 || isNaN(parseInt(args[0]))) {
-            return ctx.reply('Usage: /topup {amount}');
+            return ctx.reply('Penggunaan: /topup {jumlah}');
         }
 
         const coinAmount = parseInt(args[0]);
 
         if (coinAmount <= 0 || coinAmount % 25 !== 0) {
             return ctx.reply(
-                'Invalid amount.\nTop up must be in multiples of 25.'
+                'Jumlah tidak valid.\nTop up harus dalam kelipatan 25.'
             );
         }
 
@@ -96,9 +96,9 @@ module.exports = {
 
   `🔗 <a href="${payment.payment_url}">Klik di sini untuk bayar</a>\n\n` +
 
-  `⏱ You have 10 minutes to complete the payment.\n` +
+  `⏱ Anda punya waktu 10 menit untuk menyelesaikan pembayaran.\n` +
 
-  `Use /cancel to cancel.`,
+  `Gunakan /cancel untuk membatalkan.`,
 
   { parse_mode: 'HTML' }
 );
@@ -118,22 +118,22 @@ module.exports = {
                     );
 
                     await ctx.reply(
-                        `✅ *PAYMENT CONFIRMED*\n\n` +
-                        `${coinAmount} coins have been added to your balance.`,
-                        { parse_mode: 'Markdown' }
+                        `✅ <b>PEMBAYARAN TERKONFIRMASI</b>\n\n` +
+                        `${coinAmount} koin telah ditambahkan ke saldo Anda.`,
+                        { parse_mode: 'HTML' }
                     );
 
                     const broadcastMessage = `
-✅ TRANSAKSI BERHASIL!
+✅ <b>TRANSAKSI BERHASIL!</b>
 
-ID Transaksi: \`${orderId}\`
-Item: ${coinAmount} Koin SakuraBot
-Harga: Rp${price.toLocaleString('id-ID')}
-Metode: ${trx.payment_method}
-Waktu: ${trx.completed_at}
-Buyer: ${ctx.from.first_name} (\`${userId}\`)
+<b>ID Transaksi:</b> <code>${orderId}</code>
+<b>Item:</b> ${coinAmount} Koin SakuraBot
+<b>Harga:</b> Rp${price.toLocaleString('id-ID')}
+<b>Metode:</b> ${trx.payment_method}
+<b>Waktu:</b> ${trx.completed_at}
+<b>Pembeli:</b> ${ctx.from.first_name} (<code>${userId}</code>)
 
-Ketentuan:
+<b>Ketentuan:</b>
 - Item yang sudah dibeli/dibayar tidak dapat dikembalikan
                     `;
 
@@ -142,7 +142,7 @@ Ketentuan:
                             await ctx.telegram.sendMessage(
                                 config.bot.tg_newsletterid,
                                 broadcastMessage,
-                                { parse_mode: 'Markdown' }
+                                { parse_mode: 'HTML' }
                             );
                         } catch (e) {
                             console.error('Broadcast error:', e);
@@ -152,14 +152,14 @@ Ketentuan:
 
                 onExpired: async () => {
                     activeTopups.delete(userId);
-                    await ctx.reply('⏱ Transaction expired.');
+                    await ctx.reply('⏱ Transaksi kedaluwarsa.');
                 },
 
                 onError: async (err) => {
                     console.error('Watcher error:', err);
                     activeTopups.delete(userId);
                     await ctx.reply(
-                        '❌ Error while checking payment.\nContact admin.'
+                        '❌ Terjadi kesalahan saat memeriksa pembayaran.\nHubungi admin.'
                     );
                 }
             });
@@ -173,7 +173,7 @@ Ketentuan:
         } catch (err) {
             console.error('Create payment failed:', err);
             return ctx.reply(
-                '❌ Failed to create payment.\\nPlease try again later.'
+                '❌ Gagal membuat pembayaran.\\nSilakan coba lagi nanti.'
             );
         }
     }

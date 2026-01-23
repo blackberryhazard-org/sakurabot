@@ -34,14 +34,14 @@ module.exports = {
 
         // If a valid category is requested, show only that category's commands
         if (categoryArg && commandsByCategory[categoryArg]) {
-            let categoryText = `*${categoryArg.charAt(0).toUpperCase() + categoryArg.slice(1)} Commands*\n\n`;
+            let categoryText = `<b>Perintah ${categoryArg.charAt(0).toUpperCase() + categoryArg.slice(1)}</b>\n\n`;
             const commandList = commandsByCategory[categoryArg];
 
             commandList.forEach(cmdName => {
                 categoryText += `➡️ /${cmdName}\n`;
             });
 
-            return await ctx.reply(categoryText, { parse_mode: 'Markdown' });
+            return await ctx.reply(categoryText, { parse_mode: 'HTML' });
         }
 
         // --- Full Menu Logic (if no valid category is specified) ---
@@ -71,14 +71,14 @@ module.exports = {
 ➛ Waktu: ${time}
 ➛ Uptime: ${uptime}
 ➛ Database: ${dbSizeFormatted} (Simpl.DB with JSON)
-➛ *Library*: telegraf
+➛ <b>Library</b>: telegraf
 
 ☆ Jangan lupa berdonasi agar bot tetap online.
 `;
 
         // If an invalid category was passed, add a notice
         if (categoryArg) {
-            menuText += `\n*Category "${categoryArg}" not found. Please choose from the list below.*\n`;
+            menuText += `\n<b>Kategori "${categoryArg}" tidak ditemukan. Silakan pilih dari daftar di bawah ini.</b>\n`;
         }
 
         menuText += `
@@ -100,12 +100,12 @@ Developed by ${ownerName} with ♡
         try {
             await ctx.replyWithPhoto(randomImageUrl, {
                 caption: menuText,
-                parse_mode: 'Markdown'
+                parse_mode: 'HTML'
             });
         } catch (error) {
             console.error("Error sending photo with caption:", error);
             // Fallback to text if photo fails
-            await ctx.reply(menuText, { parse_mode: 'Markdown' });
+            await ctx.reply(menuText, { parse_mode: 'HTML' });
         }
     }
 };
