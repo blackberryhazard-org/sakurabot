@@ -104,10 +104,10 @@ module.exports = {
 );
 
             const watcher = watchPaymentFetch({
-                project: config.bot.pakasir_slug,
+                project: process.env.PAKASIR_SLUG,
                 amount: price,
                 orderId: randomPart,
-                apiKey: config.bot.pakasir_apikey,
+                apiKey: process.env.PAKASIR_APIKEY,
 
                 onPaid: async (trx) => {
                     activeTopups.delete(userId);

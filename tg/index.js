@@ -1,3 +1,4 @@
+require('dotenv').config();
 const { Telegraf } = require('telegraf');
 const config = require('../config.json');
 const fs = require('fs');
@@ -125,8 +126,8 @@ const launchTelegramBot = () => {
   const token = config.bot.botfather_token;
   const bot = new Telegraf(token);
   const pakasir = new Pakasir({
-    slug: config.bot.pakasir_slug,
-    key: config.bot.pakasir_apikey
+    slug: process.env.PAKASIR_SLUG,
+    key: process.env.PAKASIR_APIKEY
   });
 
   global.botStartTime = Date.now(); // Store start time for uptime calculation
