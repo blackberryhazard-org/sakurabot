@@ -107,16 +107,6 @@ const updateGachaTickets = (userId, amount) => {
 };
 // -------------------------
 
-// Helper function to escape markdown characters for safe inclusion in messages
-const escapeMarkdown = (text) => {
-    if (typeof text !== 'string') {
-        return text;
-    }
-    // Escapes *, _, `, and [
-    return text.replace(/([_*`\[])/g, '\\$1');
-};
-
-
 const userCooldowns = new Map();
 const activeTopups = new Map();
 
@@ -140,7 +130,6 @@ const launchTelegramBot = () => {
       updateCoins,
       getGachaTickets,
       updateGachaTickets,
-      escapeMarkdown,
       db, // Pass the db instance
       config // Pass the full config
   };
