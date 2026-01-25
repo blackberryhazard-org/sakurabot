@@ -125,7 +125,7 @@ const launchTelegramBot = () => {
   const bot = new Telegraf(token);
   const pakasir = new Pakasir({
     slug: config.pakasir.slug,
-    key: config.pakasir.apikey
+    apikey: config.pakasir.apikey
   });
 
   global.botStartTime = Date.now(); // Store start time for uptime calculation
