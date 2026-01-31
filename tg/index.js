@@ -1,4 +1,4 @@
-const { Telegraf } = require('telegraf');
+const { Telegraf, Markup } = require('telegraf');
 const config = require('../config.json');
 const fs = require('fs');
 const path = require('path');
@@ -264,6 +264,52 @@ const launchTelegramBot = () => {
 
   // Attach bot.cmd to helpers so menu can access it
   helpers.bot = bot;
+
+  // Handler untuk klik kategori menu
+  bot.action(/^show_cat:(.+)$/, async (ctx) => {
+      const categoryName = ctx.match[1];
+
+      // Ambil daftar command berdasarkan kategori dari bot.cmd
+      const commands = Array.from(bot.cmd.values())
+          .filter((cmd, index, self) =>
+              cmd.category === categoryName &&
+              cmd.name !== undefined &&
+              self.findIndex(c => c.name === cmd.name) === index
+          )
+          .map(cmd => `➡️ \`/${cmd.name}\``)
+          .join('\n');
+
+      const text = `*Kategori: ${categoryName.toUpperCase()}*\n\n${commands || 'Tidak ada perintah.'}`;
+
+      try {
+          await ctx.editMessageCaption(text, {
+              parse_mode: 'Markdown',
+              ...Markup.inlineKeyboard([
+                  [Markup.button.callback('⬅️ Kembali ke Menu', 'back_to_menu')]
+              ])
+          });
+      } catch (e) {
+          await ctx.editMessageText(text, {
+              parse_mode: 'Markdown',
+              ...Markup.inlineKeyboard([
+                  [Markup.button.callback('⬅️ Kembali ke Menu', 'back_to_menu')]
+              ])
+          });
+      }
+  });
+
+  // Handler tombol kembali
+  bot.action('back_to_menu', async (ctx) => {
+      try {
+          await ctx.deleteMessage();
+      } catch (e) {
+          // Ignore if message already deleted
+      }
+      const menuCmd = bot.cmd.get('menu');
+      if (menuCmd) {
+          return menuCmd.code(ctx, helpers);
+      }
+  });
 
   // --- /start command ---
   bot.command('start', async (ctx) => {
