@@ -3,6 +3,15 @@ const config = require('../config.json');
 const fs = require('fs');
 const path = require('path');
 const moment = require('moment-timezone');
+
+const formatUptime = (startTime) => {
+    const uptime = Date.now() - startTime;
+    const seconds = Math.floor((uptime / 1000) % 60);
+    const minutes = Math.floor((uptime / (1000 * 60)) % 60);
+    const hours = Math.floor((uptime / (1000 * 60 * 60)) % 24);
+    const days = Math.floor(uptime / (1000 * 60 * 60 * 24));
+    return `${days}d ${hours}h ${minutes}m ${seconds}s`;
+};
 const { Database } = require('simpl.db');
 const cron = require('node-cron');
 const archiver = require('archiver');
@@ -285,29 +294,29 @@ const launchTelegramBot = () => {
           await ctx.editMessageCaption(text, {
               parse_mode: 'Markdown',
               ...Markup.inlineKeyboard([
-                  [Markup.button.callback('⬅️ Kembali ke Menu', 'back_to_menu')]
+                  [Markup.button.callback('⬅️ Kembali', 'back_to_help')]
               ])
           });
       } catch (e) {
           await ctx.editMessageText(text, {
               parse_mode: 'Markdown',
               ...Markup.inlineKeyboard([
-                  [Markup.button.callback('⬅️ Kembali ke Menu', 'back_to_menu')]
+                  [Markup.button.callback('⬅️ Kembali', 'back_to_help')]
               ])
           });
       }
   });
 
   // Handler tombol kembali
-  bot.action('back_to_menu', async (ctx) => {
+  bot.action('back_to_help', async (ctx) => {
       try {
           await ctx.deleteMessage();
       } catch (e) {
           // Ignore if message already deleted
       }
-      const menuCmd = bot.cmd.get('menu');
-      if (menuCmd) {
-          return menuCmd.code(ctx, helpers);
+      const helpCmd = bot.cmd.get('help');
+      if (helpCmd) {
+          return helpCmd.code(ctx, helpers);
       }
   });
 
@@ -324,15 +333,37 @@ const launchTelegramBot = () => {
           }
       }
 
-      const startTime = Date.now();
-      const sentMessage = await ctx.reply('Pinging...');
-      const endTime = Date.now();
-      await ctx.telegram.editMessageText(
-          ctx.chat.id,
-          sentMessage.message_id,
-          null,
-          `Hello, ${ctx.from.first_name}!\nMy latency is ${endTime - startTime}ms.\n\nType /menu to see the list of available commands.`
-      );
+      const userName = ctx.from.first_name;
+      const date = moment().tz('Asia/Jakarta').format('dddd, DD MMMM YYYY');
+      const time = moment().tz('Asia/Jakarta').format('HH:mm:ss');
+      const uptime = formatUptime(global.botStartTime);
+
+      let dbSize = 0;
+      try {
+          const dbFilePath = path.resolve(__dirname, '../database/tg/database.json');
+          const stats = fs.statSync(dbFilePath);
+          dbSize = stats.size;
+      } catch (e) {}
+      const dbSizeFormatted = (dbSize / 1024).toFixed(2) + ' KB';
+
+      const welcomeText = `— Halo, *${userName}*! 👋\n\n` +
+          `➛ *Tanggal*: ${date}\n` +
+          `➛ *Waktu*: ${time}\n` +
+          `➛ *Uptime*: ${uptime}\n` +
+          `➛ *Database*: ${dbSizeFormatted}\n` +
+          `➛ *Library*: Telegraf\n\n` +
+          `Type /help to see the list of available commands.`;
+
+      const randomImageUrl = `https://picsum.photos/500/300?random=${Date.now()}`;
+
+      try {
+          await ctx.replyWithPhoto(randomImageUrl, {
+              caption: welcomeText,
+              parse_mode: 'Markdown'
+          });
+      } catch (error) {
+          await ctx.reply(welcomeText, { parse_mode: 'Markdown' });
+      }
   });
 
   // --- Generic Callback Query Handler ---
