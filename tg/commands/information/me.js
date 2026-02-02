@@ -1,7 +1,7 @@
 module.exports = {
     name: 'me',
     description: 'Get your user information.',
-    code: async (ctx, { isOwner, isPremium, getCoins, getGachaTickets, escapeMarkdown, db }) => {
+    code: async (ctx, { isOwner, isPremium, getCoins, getGachaTickets, getSakuranite, escapeMarkdown, db }) => {
         const user = ctx.from;
         if (!user) {
             return ctx.reply('Could not get user information.');
@@ -12,6 +12,7 @@ module.exports = {
         const name = escapeMarkdown(user.first_name + (user.last_name ? ` ${user.last_name}` : ''));
         const username = user.username ? escapeMarkdown(`@${user.username}`) : 'N/A';
         const coins = getCoins(userId);
+        const sakuranite = getSakuranite(userId);
         const tickets = getGachaTickets(userId);
 
         let status = 'User';
@@ -44,6 +45,7 @@ module.exports = {
 *Telegram ID:* \`${userId}\`
 *Status:* ${status}
 *Coins:* ${coins}
+*Sakuranite:* ${sakuranite}
 *Gacha Tickets:* ${tickets}
 
 📈 *Referral Info*

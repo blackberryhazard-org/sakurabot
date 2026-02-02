@@ -38,6 +38,7 @@ if (!db.has('last_daily')) db.set('last_daily', {});
 if (!db.has('referred_by')) db.set('referred_by', {});
 if (!db.has('referrals')) db.set('referrals', {});
 if (!db.has('pending_referrals')) db.set('pending_referrals', {});
+if (!db.has('sakuranite')) db.set('sakuranite', {});
 
 
 // Middleware to save user IDs
@@ -114,6 +115,14 @@ const getGachaTickets = (userId) => {
 const updateGachaTickets = (userId, amount) => {
     db.set(`gacha_tickets.${userId}`, amount);
 };
+
+const getSakuranite = (userId) => {
+    return db.get(`sakuranite.${userId}`) || 0;
+};
+
+const updateSakuranite = (userId, amount) => {
+    db.set(`sakuranite.${userId}`, amount);
+};
 // -------------------------
 
 const userCooldowns = new Map();
@@ -139,6 +148,8 @@ const launchTelegramBot = () => {
       updateCoins,
       getGachaTickets,
       updateGachaTickets,
+      getSakuranite,
+      updateSakuranite,
       db, // Pass the db instance
       config // Pass the full config
   };
@@ -201,11 +212,11 @@ const launchTelegramBot = () => {
 
             db.delete(`pending_referrals.${ctx.from.id}`);
 
-            updateCoins(referrerId, getCoins(referrerId) + 10);
+            updateSakuranite(referrerId, getSakuranite(referrerId) + 1000);
             updateGachaTickets(referrerId, getGachaTickets(referrerId) + 5);
 
             try {
-                await bot.telegram.sendMessage(referrerId, `Congratulations! A user you referred (${ctx.from.first_name}) has successfully joined. You received 10 coins and 5 gacha tickets.`);
+                await bot.telegram.sendMessage(referrerId, `Congratulations! A user you referred (${ctx.from.first_name}) has successfully joined. You received 1000 Sakuranite and 5 gacha tickets.`);
             } catch (e) {
                 console.error(`Failed to send referral notification to ${referrerId}:`, e);
             }
