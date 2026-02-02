@@ -9,7 +9,7 @@ const getStatus = (userId, isOwner, isPremium) => {
 };
 
 const formatUserList = async (ctx, userIds, page, helpers) => {
-    const { isOwner, isPremium } = helpers;
+    const { isOwner, isPremium, escapeHTML } = helpers;
     const start = page * USERS_PER_PAGE;
     const end = start + USERS_PER_PAGE;
     const currentUsers = userIds.slice(start, end);
@@ -19,7 +19,7 @@ const formatUserList = async (ctx, userIds, page, helpers) => {
             const chat = await ctx.telegram.getChat(userId);
             return {
                 userId,
-                username: chat.username ? `@${chat.username}` : (chat.first_name || 'User')
+                username: chat.username ? `@${escapeHTML(chat.username)}` : escapeHTML(chat.first_name || 'User')
             };
         } catch (e) {
             return { userId, username: 'N/A' };
@@ -39,6 +39,24 @@ const formatUserList = async (ctx, userIds, page, helpers) => {
     return text;
 };
 
+const getPaginationButtons = (userIds, page) => {
+    const buttons = [];
+    const navRow = [];
+    if (page > 0) {
+        navRow.push(Markup.button.callback('◀️ Sebelumnya', `listusers_page:${page - 1}`));
+    }
+    if ((page + 1) * USERS_PER_PAGE < userIds.length) {
+        navRow.push(Markup.button.callback('▶️ Selanjutnya', `listusers_page:${page + 1}`));
+    }
+    if (navRow.length > 0) buttons.push(navRow);
+
+    buttons.push([
+        Markup.button.callback('⚠️ Purge', 'purge_users'),
+        Markup.button.callback('📊 Analytics', 'show_analytics')
+    ]);
+    return buttons;
+};
+
 module.exports = {
     name: 'listusers',
     category: 'owner',
@@ -52,46 +70,112 @@ module.exports = {
         }
 
         const text = await formatUserList(ctx, userIds, 0, helpers);
-
-        const buttons = [];
-        if (userIds.length > USERS_PER_PAGE) {
-            buttons.push(Markup.button.callback('▶️ Selanjutnya', 'listusers_page:1'));
-        }
+        const buttons = getPaginationButtons(userIds, 0);
 
         await ctx.reply(text, {
             parse_mode: 'HTML',
-            ...Markup.inlineKeyboard([buttons])
+            ...Markup.inlineKeyboard(buttons)
         });
     },
     callback: async (ctx, helpers) => {
-        const { isOwner, db } = helpers;
-        if (!ctx.callbackQuery || !ctx.callbackQuery.data || !ctx.callbackQuery.data.startsWith('listusers_page:')) return;
-        if (!isOwner(ctx.from.id)) return ctx.answerCbQuery('Akses ditolak.');
+        const { isOwner, isPremium, db } = helpers;
+        if (!ctx.callbackQuery || !ctx.callbackQuery.data) return;
+        const data = ctx.callbackQuery.data;
 
-        const page = parseInt(ctx.callbackQuery.data.split(':')[1], 10);
-        let userIds = db.get('users') || [];
-        if (!Array.isArray(userIds)) {
-            userIds = Object.keys(userIds);
-        }
+        if (data.startsWith('listusers_page:')) {
+            if (!isOwner(ctx.from.id)) return ctx.answerCbQuery('Akses ditolak.');
+            const page = parseInt(data.split(':')[1], 10);
+            let userIds = db.get('users') || [];
+            if (!Array.isArray(userIds)) {
+                userIds = Object.keys(userIds);
+            }
 
-        const text = await formatUserList(ctx, userIds, page, helpers);
+            const text = await formatUserList(ctx, userIds, page, helpers);
+            const buttons = getPaginationButtons(userIds, page);
 
-        const buttons = [];
-        if (page > 0) {
-            buttons.push(Markup.button.callback('◀️ Sebelumnya', `listusers_page:${page - 1}`));
-        }
-        if ((page + 1) * USERS_PER_PAGE < userIds.length) {
-            buttons.push(Markup.button.callback('▶️ Selanjutnya', `listusers_page:${page + 1}`));
-        }
+            try {
+                await ctx.editMessageText(text, {
+                    parse_mode: 'HTML',
+                    ...Markup.inlineKeyboard(buttons)
+                });
+            } catch (e) {
+                // Message might be the same or already edited
+            }
+            await ctx.answerCbQuery();
+        } else if (data === 'purge_users') {
+            if (!isOwner(ctx.from.id)) return ctx.answerCbQuery('Akses ditolak.');
 
-        try {
-            await ctx.editMessageText(text, {
-                parse_mode: 'HTML',
-                ...Markup.inlineKeyboard([buttons])
-            });
-        } catch (e) {
-            // Message might be the same or already edited
+            let userIds = db.get('users') || [];
+            if (!Array.isArray(userIds)) {
+                userIds = Object.keys(userIds);
+            }
+
+            if (userIds.length > 500) {
+                await ctx.answerCbQuery('Database is too large for bulk purge. Operation cancelled.', { show_alert: true });
+                return;
+            }
+
+            await ctx.answerCbQuery('Purging users... Please wait.', { show_alert: true });
+
+            const newUsers = [];
+            let purgedCount = 0;
+
+            for (const userId of userIds) {
+                try {
+                    await ctx.telegram.getChat(userId);
+                    newUsers.push(userId);
+                    // Sleep 100ms to avoid rate limiting
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                } catch (e) {
+                    purgedCount++;
+                }
+            }
+
+            db.set('users', newUsers);
+            await ctx.reply(`Purge complete! Removed ${purgedCount} users with no accessible info (N/A).`);
+        } else if (data === 'show_analytics') {
+            if (!isOwner(ctx.from.id)) return ctx.answerCbQuery('Akses ditolak.');
+            await ctx.answerCbQuery('Generating analytics...');
+
+            let userIds = db.get('users') || [];
+            if (!Array.isArray(userIds)) {
+                userIds = Object.keys(userIds);
+            }
+
+            let owners = 0, premium = 0, regular = 0;
+            for (const userId of userIds) {
+                if (isOwner(userId)) owners++;
+                else if (isPremium(userId)) premium++;
+                else regular++;
+            }
+
+            const chartConfig = {
+                type: 'pie',
+                data: {
+                    labels: ['User', 'Premium', 'Owner'],
+                    datasets: [{
+                        data: [regular, premium, owners],
+                        backgroundColor: ['#36a2eb', '#ffce56', '#ff6384']
+                    }]
+                },
+                options: {
+                    title: {
+                        display: true,
+                        text: 'User Distribution'
+                    }
+                }
+            };
+
+            const chartUrl = `https://quickchart.io/chart?c=${encodeURIComponent(JSON.stringify(chartConfig))}`;
+
+            try {
+                await ctx.replyWithPhoto(chartUrl, {
+                    caption: `📊 <b>User Analytics</b>\n\nTotal User: ${userIds.length}\n- User: ${regular}\n- Premium: ${premium}\n- Owner: ${owners}`,
+                    parse_mode: 'HTML'
+                });
+            } catch (e) {
+                await ctx.reply(`Gagal mengirim analytics: ${e.message}`);
+            }
         }
-        await ctx.answerCbQuery();
     }
 };

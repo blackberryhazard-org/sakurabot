@@ -124,6 +124,16 @@ const getSakuranite = (userId) => {
 const updateSakuranite = (userId, amount) => {
     db.set(`sakuranite.${userId}`, amount);
 };
+
+const escapeHTML = (text) => {
+    if (!text) return '';
+    return text.toString()
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+};
 // -------------------------
 
 const userCooldowns = new Map();
@@ -151,6 +161,7 @@ const launchTelegramBot = () => {
       updateGachaTickets,
       getSakuranite,
       updateSakuranite,
+      escapeHTML,
       db, // Pass the db instance
       config // Pass the full config
   };

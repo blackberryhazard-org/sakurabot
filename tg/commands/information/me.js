@@ -1,7 +1,7 @@
 module.exports = {
     name: 'me',
     description: 'Dapatkan informasi pengguna Anda.',
-    code: async (ctx, { isOwner, isPremium, getCoins, getGachaTickets, getSakuranite, db }) => {
+    code: async (ctx, { isOwner, isPremium, getCoins, getGachaTickets, getSakuranite, escapeHTML, db }) => {
         const user = ctx.from;
         if (!user) {
             return ctx.reply('Tidak bisa mendapatkan informasi pengguna.');
@@ -9,8 +9,8 @@ module.exports = {
 
         const userId = user.id;
         const botUsername = ctx.botInfo.username;
-        const name = user.first_name + (user.last_name ? ` ${user.last_name}` : '');
-        const username = user.username ? `@${user.username}` : 'N/A';
+        const name = escapeHTML(user.first_name + (user.last_name ? ` ${user.last_name}` : ''));
+        const username = user.username ? escapeHTML(`@${user.username}`) : 'N/A';
         const coins = getCoins(userId);
         const sakuranite = getSakuranite(userId);
         const tickets = getGachaTickets(userId);
@@ -29,7 +29,7 @@ module.exports = {
         if (referredBy) {
             try {
                 const referrer = await ctx.telegram.getChat(referredBy);
-                referredByText = referrer.first_name;
+                referredByText = escapeHTML(referrer.first_name);
             } catch (e) {
                 referredByText = `ID: <code>${referredBy}</code>`;
             }
