@@ -44,9 +44,10 @@ if (!db.has('sakuranite')) db.set('sakuranite', {});
 // Middleware to save user IDs
 const addUserMiddleware = (ctx, next) => {
     if (ctx.from && ctx.from.id) {
-        const users = db.get('users');
+        const users = db.get('users') || [];
         if (!users.includes(ctx.from.id)) {
-            db.push('users', ctx.from.id);
+            users.push(ctx.from.id);
+            db.set('users', users);
         }
     }
     return next();
@@ -379,9 +380,11 @@ const launchTelegramBot = () => {
 
   // --- Generic Callback Query Handler ---
   bot.on('callback_query', (ctx) => {
-    // Iterate over all commands and let them decide if they can handle the callback
+    // Iterate over all unique commands and let them decide if they can handle the callback
+    const seenCallbacks = new Set();
     for (const command of bot.cmd.values()) {
-        if (typeof command.callback === 'function') {
+        if (typeof command.callback === 'function' && !seenCallbacks.has(command.callback)) {
+            seenCallbacks.add(command.callback);
             try {
                 command.callback(ctx, helpers);
             } catch (e) {
