@@ -20,7 +20,6 @@
     "@whiskeysockets/baileys": "^7.0.0-rc.9",
     "archiver": "^7.0.1",
     "axios": "^1.13.2",
-    "cfonts": "^3.3.1",
     "consolefy": "^1.0.3",
     "jimp": "^0.22.12",
     "link-preview-js": "^4.0.0",
