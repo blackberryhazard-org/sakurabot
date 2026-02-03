@@ -1,11 +1,14 @@
 const { downloadContentFromMessage } = require("@whiskeysockets/baileys");
 const { Sticker, StickerTypes } = require("wa-sticker-formatter");
 const moment = require("moment-timezone");
+const fs = require("fs");
+const path = require("path");
 
 module.exports = async (sock, m, db) => {
     const from = m.key.remoteJid;
     const sender = m.key.participant || m.key.remoteJid;
     const type = Object.keys(m.message)[0];
+    const pushName = m.pushName || "User";
 
     // Track users in database
     const users = db.get("users") || [];
@@ -35,14 +38,40 @@ module.exports = async (sock, m, db) => {
     if (!isCmd) return;
 
     switch (command) {
-        case "ping": {
+        case "menu":
+        case "help": {
+            const date = moment().tz('Asia/Jakarta').format('dddd, DD MMMM YYYY');
+            const time = moment().tz('Asia/Jakarta').format('HH:mm:ss');
             const uptime = global.formatUptime(global.botStartTime);
+
+            let dbSize = 0;
+            try {
+                const dbFilePath = path.resolve(__dirname, '../database/wa/database.json');
+                const stats = fs.statSync(dbFilePath);
+                dbSize = stats.size;
+            } catch (e) {}
+            const dbSizeFormatted = (dbSize / 1024).toFixed(2) + ' KB';
+
+            const menuText = `— Halo, *${pushName}*! 👋\n\n` +
+                `➛ *Tanggal*: ${date}\n` +
+                `➛ *Waktu*: ${time}\n` +
+                `➛ *Uptime*: ${uptime}\n` +
+                `➛ *Database*: ${dbSizeFormatted}\n` +
+                `➛ *Library*: Baileys\n\n` +
+                `*Command List*:\n` +
+                `➛ ${prefix}s - Create sticker from image/video\n` +
+                `➛ ${prefix}ping - Check bot status`;
+
+            await sock.sendMessage(from, {
+                image: { url: config.bot.thumbnail },
+                caption: menuText
+            }, { quoted: m });
+            break;
+        }
+        case "ping": {
             const tgStatus = global.botStatus.tg ? "Online" : "Offline";
             const text = `*PONG!*\n\n` +
-                         `*WA Bot Status*: Online\n` +
-                         `*TG Bot Status*: ${tgStatus}\n` +
-                         `*Uptime*: ${uptime}\n` +
-                         `*Time*: ${moment().tz("Asia/Jakarta").format("HH:mm:ss")}`;
+                         `*TG Bot Status*: ${tgStatus}`;
             await sock.sendMessage(from, { text }, { quoted: m });
             break;
         }
@@ -58,7 +87,7 @@ module.exports = async (sock, m, db) => {
                 await sock.sendMessage(from, { text: config.msg.wait }, { quoted: m });
 
                 const messageType = qType.replace("Message", "");
-                const stream = await downloadContentFromMessage(mediaMessage, messageType === 'extendedText' ? 'image' : messageType); // fallback for some weird cases
+                const stream = await downloadContentFromMessage(mediaMessage, messageType === 'extendedText' ? 'image' : messageType);
                 let buffer = Buffer.from([]);
                 for await (const chunk of stream) {
                     buffer = Buffer.concat([buffer, chunk]);

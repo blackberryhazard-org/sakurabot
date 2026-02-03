@@ -3,6 +3,7 @@ const fs = require("node:fs");
 const http = require("node:http");
 const path = require("node:path");
 const CFonts = require("cfonts");
+const { Consolefy } = require("consolefy");
 
 // Replacement for @itsreimau/gktw utilities
 class Config {
@@ -10,17 +11,6 @@ class Config {
         const data = JSON.parse(fs.readFileSync(filePath, "utf-8"));
         Object.assign(this, data);
     }
-}
-
-class Consolefy {
-    constructor(opts) {
-        this.tag = opts.tag;
-    }
-    log(...args) { console.log(`[${this.tag}]`, ...args); }
-    error(...args) { console.error(`[${this.tag}]`, ...args); }
-    warn(...args) { console.warn(`[${this.tag}]`, ...args); }
-    success(...args) { console.log(`[${this.tag}] SUCCESS:`, ...args); }
-    info(...args) { console.info(`[${this.tag}] INFO:`, ...args); }
 }
 
 const Formatter = {
@@ -53,7 +43,7 @@ Object.assign(global, {
     }
 });
 
-consolefy.log("Starting...");
+consolefy.info("Starting...");
 
 CFonts.say(pkg.name, {
     colors: ["#00A1E0", "#00FFFF"],

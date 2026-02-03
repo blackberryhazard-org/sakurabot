@@ -41,7 +41,7 @@ const startWaBot = async () => {
         const phoneNumber = config.bot.phoneNumber;
         if (phoneNumber) {
             setTimeout(async () => {
-                let code = await sock.requestPairingCode(phoneNumber);
+                let code = await sock.requestPairingCode(phoneNumber, config.system.customPairingCode);
                 code = code?.match(/.{1,4}/g)?.join("-") || code;
                 consolefy.info(`Pairing Code: ${code}`);
             }, 3000);
