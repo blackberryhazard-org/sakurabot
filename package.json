@@ -17,7 +17,7 @@
   "author": "Ikbal Maulana (ItsReimau)",
   "license": "MIT",
   "dependencies": {
-    "@itsreimau/gktw": "github:itsreimau/gktw",
+    "@whiskeysockets/baileys": "^7.0.0-rc.9",
     "archiver": "^7.0.1",
     "axios": "^1.13.2",
     "cfonts": "^3.3.1",
@@ -27,8 +27,10 @@
     "node-cron": "^3.0.3",
     "node-fetch": "^2.7.0",
     "pakasir-sdk": "^1.0.5",
+    "pino": "^10.3.0",
+    "qrcode-terminal": "^0.12.0",
     "simpl.db": "^2.13.0",
     "telegraf": "^4.16.3",
-    "wa-sticker-formatter": "^3.6.0"
+    "wa-sticker-formatter": "^4.4.4"
   }
 }

@@ -1,8 +1,25 @@
 // Impor modul dan dependensi yang diperlukan
 const api = require("./api.js");
-const { Baileys, MessageType, Gktw } = require("@itsreimau/gktw");
 const axios = require("axios");
 const util = require("node:util");
+
+const MessageType = {
+    audioMessage: 'audioMessage',
+    documentMessage: 'documentMessage',
+    documentWithCaptionMessage: 'documentWithCaptionMessage',
+    imageMessage: 'imageMessage',
+    stickerMessage: 'stickerMessage',
+    videoMessage: 'videoMessage',
+    conversation: 'conversation',
+    extendedTextMessage: 'extendedTextMessage'
+};
+const Baileys = {
+    PSA_WID: '0@s.whatsapp.net',
+    S_WHATSAPP_NET: '@s.whatsapp.net'
+};
+const Gktw = {
+    didYouMean: () => null
+};
 
 const formatBotName = botName => {
     if (!botName) return null;
@@ -116,31 +133,33 @@ function getReportOwner() {
 }
 
 async function handleError(ctx, error, useAxios = false, reportToOwner = true) {
-    const isGroup = ctx.isGroup();
+    const isGroup = typeof ctx.isGroup === 'function' ? ctx.isGroup() : false;
     const groupJid = isGroup ? ctx.id : null;
-    const groupSubject = isGroup ? await ctx.group(groupJid).name() : null;
+    const groupSubject = isGroup ? (typeof ctx.group === 'function' ? await ctx.group(groupJid).name() : null) : null;
     const errorText = util.format(error);
     const reportOwner = getReportOwner();
 
     consolefy.error(`Error: ${errorText}`);
     if (reportToOwner && reportOwner && reportOwner.length > 0) {
         for (const ownerId of reportOwner) {
-            await ctx.replyWithJid(ownerId + Baileys.S_WHATSAPP_NET, {
-                text: `ⓘ ${formatter.italic(isGroup ? `Terjadi kesalahan dari grup: @${groupJid}, oleh: @${ctx.getId(ctx.sender.jid)}` : `Terjadi kesalahan dari: @${ctx.getId(ctx.sender.jid)}`)}\n` +
-                    formatter.monospace(errorText),
-                contextInfo: {
-                    mentionedJid: [ctx.sender.jid],
-                    groupMentions: isGroup ? [{
-                        groupJid,
-                        groupSubject
-                    }] : []
-                }
-            });
+            if (typeof ctx.replyWithJid === 'function') {
+                await ctx.replyWithJid(ownerId + Baileys.S_WHATSAPP_NET, {
+                    text: `ⓘ ${formatter.italic(isGroup ? `Terjadi kesalahan dari grup: @${groupJid}, oleh: @${ctx.getId(ctx.sender.jid)}` : `Terjadi kesalahan dari: @${ctx.getId(ctx.sender.jid)}`)}\n` +
+                        formatter.monospace(errorText),
+                    contextInfo: {
+                        mentionedJid: [ctx.sender.jid],
+                        groupMentions: isGroup ? [{
+                            groupJid,
+                            groupSubject
+                        }] : []
+                    }
+                });
+            }
             await delay(500);
         }
     }
-    if (useAxios && error.status !== 200) return await ctx.reply(`ⓘ ${formatter.italic(config.msg.notFound)}`);
-    await ctx.reply(`ⓘ ${formatter.italic(`Terjadi kesalahan: ${error.message}`)}`);
+    if (useAxios && error.status !== 200) return (typeof ctx.reply === 'function' ? await ctx.reply(`ⓘ ${formatter.italic(config.msg.notFound)}`) : null);
+    if (typeof ctx.reply === 'function') await ctx.reply(`ⓘ ${formatter.italic(`Terjadi kesalahan: ${error.message}`)}`);
 }
 
 function isCmd(text, ctxBot) {

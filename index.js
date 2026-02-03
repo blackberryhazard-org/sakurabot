@@ -1,9 +1,44 @@
 const pkg = require("./package.json");
-const { Config, Consolefy, Formatter } = require("@itsreimau/gktw");
-const CFonts = require("cfonts");
 const fs = require("node:fs");
 const http = require("node:http");
 const path = require("node:path");
+const CFonts = require("cfonts");
+
+// Replacement for @itsreimau/gktw utilities
+class Config {
+    constructor(filePath) {
+        const data = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+        Object.assign(this, data);
+    }
+}
+
+class Consolefy {
+    constructor(opts) {
+        this.tag = opts.tag;
+    }
+    log(...args) { console.log(`[${this.tag}]`, ...args); }
+    error(...args) { console.error(`[${this.tag}]`, ...args); }
+    warn(...args) { console.warn(`[${this.tag}]`, ...args); }
+    success(...args) { console.log(`[${this.tag}] SUCCESS:`, ...args); }
+    info(...args) { console.info(`[${this.tag}] INFO:`, ...args); }
+}
+
+const Formatter = {
+    bold: (text) => `*${text}*`,
+    italic: (text) => `_${text}_`,
+    inlineCode: (text) => `\`${text}\``,
+    monospace: (text) => `\`\`\`${text}\`\`\``,
+};
+
+global.botStartTime = Date.now();
+global.formatUptime = (startTime) => {
+    const uptime = Date.now() - startTime;
+    const seconds = Math.floor((uptime / 1000) % 60);
+    const minutes = Math.floor((uptime / (1000 * 60)) % 60);
+    const hours = Math.floor((uptime / (1000 * 60 * 60)) % 24);
+    const days = Math.floor(uptime / (1000 * 60 * 60 * 24));
+    return `${days}d ${hours}h ${minutes}m ${seconds}s`;
+};
 
 Object.assign(global, {
     config: new Config(path.resolve(__dirname, "config.json")),
@@ -40,8 +75,8 @@ const isTgBotConfigValid = config.bot && config.bot.botfather_token && config.bo
 
 if (isWaBotConfigValid) {
     try {
-        require("./main.js");
-        global.botStatus.wa = true;
+        const startWaBot = require("./wa/index.js");
+        startWaBot();
     } catch (error) {
         consolefy.error("Failed to start WhatsApp bot:", error);
     }
