@@ -1,12 +1,21 @@
-// Impor modul dan dependensi yang diperlukan
-const { Gktw } = require("@itsreimau/gktw");
-
 // Ekspor modul atau fungsi yang diperlukan
 const tools = {
     api: require("./api.js"),
     cmd: require("./cmd.js"),
     list: require("./list.js"),
-    mime: Gktw.mime,
+    mime: (ext) => {
+        const mimes = {
+            'jpg': 'image/jpeg',
+            'jpeg': 'image/jpeg',
+            'png': 'image/png',
+            'gif': 'image/gif',
+            'mp4': 'video/mp4',
+            'mp3': 'audio/mpeg',
+            'pdf': 'application/pdf',
+            'zip': 'application/zip'
+        };
+        return mimes[ext.toLowerCase()] || 'application/octet-stream';
+    },
     msg: require("./msg.js")
 };
 
