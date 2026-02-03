@@ -5,7 +5,7 @@ module.exports = {
     name: 'gacha',
     aliases: [],
     category: 'misc',
-    code: async (ctx, { isOwner, getGachaTickets, updateGachaTickets, getCoins, updateCoins, db }) => {
+    code: async (ctx, { isOwner, getGachaTickets, updateGachaTickets, getSakuranite, updateSakuranite, db }) => {
         const userId = ctx.from.id;
         const gachaDir = path.resolve(__dirname, '../../gacha');
 
@@ -41,8 +41,26 @@ module.exports = {
         if (randomFile.toUpperCase().startsWith('COINS-')) {
             const amount = parseInt(randomFile.split('-')[1], 10);
             if (!isNaN(amount)) {
-                updateCoins(userId, getCoins(userId) + amount);
-                resultMessage += `Kamu memenangkan ${amount} koin!`;
+                const sakuraniteAmount = amount * 100;
+                if (!isOwner(userId)) {
+                    updateSakuranite(userId, getSakuranite(userId) + sakuraniteAmount);
+                    resultMessage += `Kamu memenangkan ${sakuraniteAmount} Sakuranite!`;
+                } else {
+                    resultMessage += `Kamu memenangkan ${sakuraniteAmount} Sakuranite! (Hanya untuk User)`;
+                }
+                return ctx.reply(resultMessage);
+            }
+        }
+
+        if (randomFile.toUpperCase().startsWith('SAKURANITE-')) {
+            const amount = parseInt(randomFile.split('-')[1], 10);
+            if (!isNaN(amount)) {
+                if (!isOwner(userId)) {
+                    updateSakuranite(userId, getSakuranite(userId) + amount);
+                    resultMessage += `Kamu memenangkan ${amount} Sakuranite!`;
+                } else {
+                    resultMessage += `Kamu memenangkan ${amount} Sakuranite! (Hanya untuk User)`;
+                }
                 return ctx.reply(resultMessage);
             }
         }

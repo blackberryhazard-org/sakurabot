@@ -1,8 +1,17 @@
-const { Telegraf } = require('telegraf');
+const { Telegraf, Markup } = require('telegraf');
 const config = require('../config.json');
 const fs = require('fs');
 const path = require('path');
 const moment = require('moment-timezone');
+
+const formatUptime = (startTime) => {
+    const uptime = Date.now() - startTime;
+    const seconds = Math.floor((uptime / 1000) % 60);
+    const minutes = Math.floor((uptime / (1000 * 60)) % 60);
+    const hours = Math.floor((uptime / (1000 * 60 * 60)) % 24);
+    const days = Math.floor(uptime / (1000 * 60 * 60 * 24));
+    return `${days}d ${hours}h ${minutes}m ${seconds}s`;
+};
 const { Database } = require('simpl.db');
 const cron = require('node-cron');
 const archiver = require('archiver');
@@ -29,14 +38,16 @@ if (!db.has('last_daily')) db.set('last_daily', {});
 if (!db.has('referred_by')) db.set('referred_by', {});
 if (!db.has('referrals')) db.set('referrals', {});
 if (!db.has('pending_referrals')) db.set('pending_referrals', {});
+if (!db.has('sakuranite')) db.set('sakuranite', {});
 
 
 // Middleware to save user IDs
 const addUserMiddleware = (ctx, next) => {
     if (ctx.from && ctx.from.id) {
-        const users = db.get('users');
+        const users = db.get('users') || [];
         if (!users.includes(ctx.from.id)) {
-            db.push('users', ctx.from.id);
+            users.push(ctx.from.id);
+            db.set('users', users);
         }
     }
     return next();
@@ -105,6 +116,24 @@ const getGachaTickets = (userId) => {
 const updateGachaTickets = (userId, amount) => {
     db.set(`gacha_tickets.${userId}`, amount);
 };
+
+const getSakuranite = (userId) => {
+    return db.get(`sakuranite.${userId}`) || 0;
+};
+
+const updateSakuranite = (userId, amount) => {
+    db.set(`sakuranite.${userId}`, amount);
+};
+
+const escapeHTML = (text) => {
+    if (!text) return '';
+    return text.toString()
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+};
 // -------------------------
 
 const userCooldowns = new Map();
@@ -130,6 +159,9 @@ const launchTelegramBot = () => {
       updateCoins,
       getGachaTickets,
       updateGachaTickets,
+      getSakuranite,
+      updateSakuranite,
+      escapeHTML,
       db, // Pass the db instance
       config // Pass the full config
   };
@@ -192,11 +224,11 @@ const launchTelegramBot = () => {
 
             db.delete(`pending_referrals.${ctx.from.id}`);
 
-            updateCoins(referrerId, getCoins(referrerId) + 10);
+            updateSakuranite(referrerId, getSakuranite(referrerId) + 1000);
             updateGachaTickets(referrerId, getGachaTickets(referrerId) + 5);
 
             try {
-                await bot.telegram.sendMessage(referrerId, `Congratulations! A user you referred (${ctx.from.first_name}) has successfully joined. You received 10 coins and 5 gacha tickets.`);
+                await bot.telegram.sendMessage(referrerId, `Congratulations! A user you referred (${ctx.from.first_name}) has successfully joined. You received 1000 Sakuranite and 5 gacha tickets.`);
             } catch (e) {
                 console.error(`Failed to send referral notification to ${referrerId}:`, e);
             }
@@ -265,6 +297,52 @@ const launchTelegramBot = () => {
   // Attach bot.cmd to helpers so menu can access it
   helpers.bot = bot;
 
+  // Handler untuk klik kategori menu
+  bot.action(/^show_cat:(.+)$/, async (ctx) => {
+      const categoryName = ctx.match[1];
+
+      // Ambil daftar command berdasarkan kategori dari bot.cmd
+      const commands = Array.from(bot.cmd.values())
+          .filter((cmd, index, self) =>
+              cmd.category === categoryName &&
+              cmd.name !== undefined &&
+              self.findIndex(c => c.name === cmd.name) === index
+          )
+          .map(cmd => `➡️ \`/${cmd.name}\``)
+          .join('\n');
+
+      const text = `*Kategori: ${categoryName.toUpperCase()}*\n\n${commands || 'Tidak ada perintah.'}`;
+
+      try {
+          await ctx.editMessageCaption(text, {
+              parse_mode: 'Markdown',
+              ...Markup.inlineKeyboard([
+                  [Markup.button.callback('⬅️ Kembali', 'back_to_help')]
+              ])
+          });
+      } catch (e) {
+          await ctx.editMessageText(text, {
+              parse_mode: 'Markdown',
+              ...Markup.inlineKeyboard([
+                  [Markup.button.callback('⬅️ Kembali', 'back_to_help')]
+              ])
+          });
+      }
+  });
+
+  // Handler tombol kembali
+  bot.action('back_to_help', async (ctx) => {
+      try {
+          await ctx.deleteMessage();
+      } catch (e) {
+          // Ignore if message already deleted
+      }
+      const helpCmd = bot.cmd.get('help');
+      if (helpCmd) {
+          return helpCmd.code(ctx, helpers);
+      }
+  });
+
   // --- /start command ---
   bot.command('start', async (ctx) => {
       const args = ctx.message.text.split(' ');
@@ -278,22 +356,46 @@ const launchTelegramBot = () => {
           }
       }
 
-      const startTime = Date.now();
-      const sentMessage = await ctx.reply('Pinging...');
-      const endTime = Date.now();
-      await ctx.telegram.editMessageText(
-          ctx.chat.id,
-          sentMessage.message_id,
-          null,
-          `Hello, ${ctx.from.first_name}!\nMy latency is ${endTime - startTime}ms.\n\nType /menu to see the list of available commands.`
-      );
+      const userName = ctx.from.first_name;
+      const date = moment().tz('Asia/Jakarta').format('dddd, DD MMMM YYYY');
+      const time = moment().tz('Asia/Jakarta').format('HH:mm:ss');
+      const uptime = formatUptime(global.botStartTime);
+
+      let dbSize = 0;
+      try {
+          const dbFilePath = path.resolve(__dirname, '../database/tg/database.json');
+          const stats = fs.statSync(dbFilePath);
+          dbSize = stats.size;
+      } catch (e) {}
+      const dbSizeFormatted = (dbSize / 1024).toFixed(2) + ' KB';
+
+      const welcomeText = `— Halo, *${userName}*! 👋\n\n` +
+          `➛ *Tanggal*: ${date}\n` +
+          `➛ *Waktu*: ${time}\n` +
+          `➛ *Uptime*: ${uptime}\n` +
+          `➛ *Database*: ${dbSizeFormatted}\n` +
+          `➛ *Library*: Telegraf\n\n` +
+          `Type /help to see the list of available commands.`;
+
+      const randomImageUrl = `https://picsum.photos/500/300?random=${Date.now()}`;
+
+      try {
+          await ctx.replyWithPhoto(randomImageUrl, {
+              caption: welcomeText,
+              parse_mode: 'Markdown'
+          });
+      } catch (error) {
+          await ctx.reply(welcomeText, { parse_mode: 'Markdown' });
+      }
   });
 
   // --- Generic Callback Query Handler ---
   bot.on('callback_query', (ctx) => {
-    // Iterate over all commands and let them decide if they can handle the callback
+    // Iterate over all unique commands and let them decide if they can handle the callback
+    const seenCallbacks = new Set();
     for (const command of bot.cmd.values()) {
-        if (typeof command.callback === 'function') {
+        if (typeof command.callback === 'function' && !seenCallbacks.has(command.callback)) {
+            seenCallbacks.add(command.callback);
             try {
                 command.callback(ctx, helpers);
             } catch (e) {

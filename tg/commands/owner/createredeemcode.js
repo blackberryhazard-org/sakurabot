@@ -17,8 +17,8 @@ module.exports = {
         }
 
         const normalizedType = type.toLowerCase();
-        if (!['coins', 'gacha'].includes(normalizedType)) {
-            return ctx.reply('Jenis hadiah tidak valid. Gunakan "coins" atau "gacha".');
+        if (!['coins', 'gacha', 'sakuranite'].includes(normalizedType)) {
+            return ctx.reply('Jenis hadiah tidak valid. Gunakan "sakuranite", "coins", atau "gacha".');
         }
 
         if (normalizedType === 'coins' && !isLeader(ctx.from.id)) {
@@ -49,13 +49,22 @@ module.exports = {
 
         db.set(`redeem_codes.${code}`, newCode);
 
-        await ctx.reply(`Kode redeem berhasil dibuat:\n<code>${code}</code>`);
+        await ctx.reply(`Kode redeem berhasil dibuat:\n<code>${code}</code>`, { parse_mode: 'HTML' });
 
         if (config.bot.tg_newsletterid) {
+            let rewardText = '';
+            if (normalizedType === 'sakuranite') {
+                rewardText = `${amount} Sakuranite`;
+            } else if (normalizedType === 'coins') {
+                rewardText = `${amount} Koin`;
+            } else if (normalizedType === 'gacha') {
+                rewardText = `${amount} Tiket Gacha`;
+            }
+
             const broadcastMessage = `
 <b>🎁 KODE REDEEM BARU</b>
 Kode: <code>${code}</code>
-Hadiah: <i>${normalizedType === 'coins' ? `${amount} Koin` : `${amount} Tiket Gacha`}</i>
+Hadiah: <i>${rewardText}</i>
 Kedaluwarsa: <i>${expiryHours > 0 ? `${expiryHours} Jam` : 'Tidak ada'}</i>
 Kuota: <i>${quota > 0 ? `${quota} Pengguna` : 'Tidak terbatas'}</i>
 

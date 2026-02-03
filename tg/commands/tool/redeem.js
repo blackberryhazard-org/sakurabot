@@ -1,7 +1,7 @@
 module.exports = {
     name: 'redeem',
     category: 'tool',
-    code: async (ctx, { db, getCoins, updateCoins, getGachaTickets, updateGachaTickets, config, bot }) => {
+    code: async (ctx, { db, isOwner, getCoins, updateCoins, getGachaTickets, updateGachaTickets, getSakuranite, updateSakuranite, config, bot }) => {
         const userId = ctx.from.id;
         const args = ctx.message.text.split(' ').slice(1);
         const code = args[0];
@@ -31,8 +31,20 @@ module.exports = {
 
         let rewardMessage = '';
         if (redeemCode.type === 'coins') {
-            updateCoins(userId, getCoins(userId) + redeemCode.amount);
-            rewardMessage = `${redeemCode.amount} koin`;
+            const sakuraniteAmount = redeemCode.amount * 100;
+            if (!isOwner(userId)) {
+                updateSakuranite(userId, getSakuranite(userId) + sakuraniteAmount);
+                rewardMessage = `${sakuraniteAmount} Sakuranite`;
+            } else {
+                rewardMessage = `${sakuraniteAmount} Sakuranite (Hanya untuk User)`;
+            }
+        } else if (redeemCode.type === 'sakuranite') {
+            if (!isOwner(userId)) {
+                updateSakuranite(userId, getSakuranite(userId) + redeemCode.amount);
+                rewardMessage = `${redeemCode.amount} Sakuranite`;
+            } else {
+                rewardMessage = `${redeemCode.amount} Sakuranite (Hanya untuk User)`;
+            }
         } else if (redeemCode.type === 'gacha') {
             updateGachaTickets(userId, getGachaTickets(userId) + redeemCode.amount);
             rewardMessage = `${redeemCode.amount} tiket gacha`;
