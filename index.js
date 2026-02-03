@@ -2,7 +2,6 @@ const pkg = require("./package.json");
 const fs = require("node:fs");
 const http = require("node:http");
 const path = require("node:path");
-const CFonts = require("cfonts");
 const { Consolefy } = require("consolefy");
 
 class Config {
