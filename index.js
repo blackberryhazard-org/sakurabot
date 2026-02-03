@@ -5,7 +5,6 @@ const path = require("node:path");
 const CFonts = require("cfonts");
 const { Consolefy } = require("consolefy");
 
-// Replacement for @itsreimau/gktw utilities
 class Config {
     constructor(filePath) {
         const data = JSON.parse(fs.readFileSync(filePath, "utf-8"));
@@ -45,16 +44,6 @@ Object.assign(global, {
 
 consolefy.info("Starting...");
 
-CFonts.say(pkg.name, {
-    colors: ["#00A1E0", "#00FFFF"],
-    align: "center"
-});
-CFonts.say(`${pkg.description} - By ${pkg.author}`, {
-    font: "console",
-    colors: ["#E0F7FF"],
-    align: "center"
-});
-
 if (config.system && config.system.useServer) {
     const port = config.system.port;
     http.createServer((_, res) => res.end(`${pkg.name} berjalan di port ${port}`)).listen(port, () => consolefy.success(`${pkg.name} runs on port ${port}`));
@@ -67,6 +56,7 @@ if (isWaBotConfigValid) {
     try {
         const startWaBot = require("./wa/index.js");
         startWaBot();
+        global.botStatus.wa = true;
     } catch (error) {
         consolefy.error("Failed to start WhatsApp bot:", error);
     }
