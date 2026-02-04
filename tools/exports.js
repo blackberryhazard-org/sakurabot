@@ -1,6 +1,5 @@
-// Ekspor modul atau fungsi yang diperlukan
 const tools = {
-    api: require("./api.js"),
+    utils: require("./utils.js"),
     cmd: require("./cmd.js"),
     list: require("./list.js"),
     mime: (ext) => {
