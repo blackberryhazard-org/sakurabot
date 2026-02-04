@@ -57,9 +57,46 @@ const getPaginationButtons = (userIds, page) => {
     return buttons;
 };
 
+const getAnalyticsData = (userIds, isOwner, isPremium) => {
+    let owners = 0, premium = 0, regular = 0;
+    for (const userId of userIds) {
+        if (isOwner(userId)) owners++;
+        else if (isPremium(userId)) premium++;
+        else regular++;
+    }
+    return { regular, premium, owners, total: userIds.length };
+};
+
+const getAnalyticsChartUrl = (data) => {
+    const chartConfig = {
+        type: 'pie',
+        data: {
+            labels: ['User', 'Premium', 'Owner'],
+            datasets: [{
+                data: [data.regular, data.premium, data.owners],
+                backgroundColor: ['#36a2eb', '#ffce56', '#ff6384']
+            }]
+        },
+        options: {
+            title: {
+                display: true,
+                text: 'User Distribution'
+            }
+        }
+    };
+    return `https://quickchart.io/chart?c=${encodeURIComponent(JSON.stringify(chartConfig))}`;
+};
+
+const getAnalyticsText = (data) => {
+    return `📊 <b>User Analytics</b>\n\nTotal User: ${data.total}\n- User: ${data.regular}\n- Premium: ${data.premium}\n- Owner: ${data.owners}`;
+};
+
 module.exports = {
     name: 'listusers',
     category: 'owner',
+    getAnalyticsData,
+    getAnalyticsChartUrl,
+    getAnalyticsText,
     code: async (ctx, helpers) => {
         const { isOwner, db } = helpers;
         if (!isOwner(ctx.from.id)) return;
@@ -132,6 +169,23 @@ module.exports = {
             }
 
             db.set('users', newUsers);
+
+            // Send notification to newsletter
+            const config = helpers.config;
+            if (config.bot.tg_newsletterid) {
+                try {
+                    await ctx.telegram.sendVideo(config.bot.tg_newsletterid, 'https://files.catbox.moe/51ib0k.mp4', {
+                        caption: `⚠️ <b>User Purge Notification</b>\n\n` +
+                                 `Owner <b>${ctx.from.first_name}</b> baru saja melakukan pembersihan database user.\n\n` +
+                                 `- User dihapus: ${purgedCount}\n` +
+                                 `- User tersisa: ${newUsers.length}`,
+                        parse_mode: 'HTML'
+                    });
+                } catch (e) {
+                    console.error('Failed to send purge notification to newsletter:', e);
+                }
+            }
+
             await ctx.reply(`Purge complete! Removed ${purgedCount} users with no accessible info (N/A).`);
         } else if (data === 'show_analytics') {
             if (!isOwner(ctx.from.id)) return ctx.answerCbQuery('Akses ditolak.');
@@ -142,35 +196,13 @@ module.exports = {
                 userIds = Object.keys(userIds);
             }
 
-            let owners = 0, premium = 0, regular = 0;
-            for (const userId of userIds) {
-                if (isOwner(userId)) owners++;
-                else if (isPremium(userId)) premium++;
-                else regular++;
-            }
-
-            const chartConfig = {
-                type: 'pie',
-                data: {
-                    labels: ['User', 'Premium', 'Owner'],
-                    datasets: [{
-                        data: [regular, premium, owners],
-                        backgroundColor: ['#36a2eb', '#ffce56', '#ff6384']
-                    }]
-                },
-                options: {
-                    title: {
-                        display: true,
-                        text: 'User Distribution'
-                    }
-                }
-            };
-
-            const chartUrl = `https://quickchart.io/chart?c=${encodeURIComponent(JSON.stringify(chartConfig))}`;
+            const analyticsData = getAnalyticsData(userIds, isOwner, isPremium);
+            const chartUrl = getAnalyticsChartUrl(analyticsData);
+            const caption = getAnalyticsText(analyticsData);
 
             try {
                 await ctx.replyWithPhoto(chartUrl, {
-                    caption: `📊 <b>User Analytics</b>\n\nTotal User: ${userIds.length}\n- User: ${regular}\n- Premium: ${premium}\n- Owner: ${owners}`,
+                    caption: caption,
                     parse_mode: 'HTML'
                 });
             } catch (e) {

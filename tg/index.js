@@ -387,6 +387,30 @@ const launchTelegramBot = () => {
 
   bot.launch();
 
+  // Schedule user statistics every 7 days
+  cron.schedule('0 0 */7 * *', async () => {
+    if (!config.bot.tg_newsletterid) return;
+
+    try {
+        const listusers = require('./commands/owner/listusers');
+        let userIds = db.get('users') || [];
+        if (!Array.isArray(userIds)) {
+            userIds = Object.keys(userIds);
+        }
+
+        const analyticsData = listusers.getAnalyticsData(userIds, isOwner, isPremium);
+        const chartUrl = listusers.getAnalyticsChartUrl(analyticsData);
+        const caption = listusers.getAnalyticsText(analyticsData);
+
+        await bot.telegram.sendPhoto(config.bot.tg_newsletterid, chartUrl, {
+            caption: `📅 <b>Weekly User Statistics Report</b>\n\n${caption}`,
+            parse_mode: 'HTML'
+        });
+    } catch (error) {
+        console.error('Failed to send weekly user statistics:', error);
+    }
+  });
+
   // Schedule a backup to run every 7 days if enabled
   if (config.system.autoBackup) {
     cron.schedule('0 0 */7 * *', () => {
