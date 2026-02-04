@@ -174,13 +174,18 @@ module.exports = {
             const config = helpers.config;
             if (config.bot.tg_newsletterid) {
                 try {
-                    await ctx.telegram.sendVideo(config.bot.tg_newsletterid, 'https://files.catbox.moe/51ib0k.mp4', {
-                        caption: `⚠️ <b>User Purge Notification</b>\n\n` +
-                                 `Owner <b>${ctx.from.first_name}</b> baru saja melakukan pembersihan database user.\n\n` +
-                                 `- User dihapus: ${purgedCount}\n` +
-                                 `- User tersisa: ${newUsers.length}`,
-                        parse_mode: 'HTML'
-                    });
+                    await ctx.telegram.sendVideo(
+                        config.bot.tg_newsletterid,
+                        { url: 'https://files.catbox.moe/51ib0k.mp4' },
+                        {
+                            caption: `⚠️ <b>User Purge Notification</b>\n\n` +
+                                     `Owner <b>${ctx.from.first_name}</b> baru saja melakukan pembersihan database user.\n\n` +
+                                     `- User dihapus: ${purgedCount}\n` +
+                                     `- User tersisa: ${newUsers.length}`,
+                            parse_mode: 'HTML',
+                            supports_streaming: true
+                        }
+                    );
                 } catch (e) {
                     console.error('Failed to send purge notification to newsletter:', e);
                 }
