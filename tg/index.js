@@ -121,14 +121,13 @@ const userCooldowns = new Map();
 const activeTopups = new Map();
 
 const launchTelegramBot = () => {
+  const { escapeHTML, formatUptime } = global;
   const token = config.bot.botfather_token;
   const bot = new Telegraf(token);
   const pakasir = new Pakasir({
     slug: config.pakasir.slug,
     apikey: config.pakasir.apikey
   });
-
-  global.botStartTime = Date.now(); // Store start time for uptime calculation
 
   const helpers = {
       pakasir,
