@@ -76,6 +76,8 @@ function listUrl() {
 }
 
 module.exports = {
+    formatUptime,
+    escapeHTML,
     createUrl,
     listUrl
 };

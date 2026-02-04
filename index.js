@@ -19,14 +19,7 @@ const Formatter = {
 };
 
 global.botStartTime = Date.now();
-global.formatUptime = (startTime) => {
-    const uptime = Date.now() - startTime;
-    const seconds = Math.floor((uptime / 1000) % 60);
-    const minutes = Math.floor((uptime / (1000 * 60)) % 60);
-    const hours = Math.floor((uptime / (1000 * 60 * 60)) % 24);
-    const days = Math.floor(uptime / (1000 * 60 * 60 * 24));
-    return `${days}d ${hours}h ${minutes}m ${seconds}s`;
-};
+const tools = require("./tools/exports.js");
 
 Object.assign(global, {
     config: new Config(path.resolve(__dirname, "config.json")),
@@ -34,7 +27,9 @@ Object.assign(global, {
         tag: pkg.name
     }),
     formatter: Formatter,
-    tools: require("./tools/exports.js"),
+    tools: tools,
+    formatUptime: tools.utils.formatUptime,
+    escapeHTML: tools.utils.escapeHTML,
     botStatus: {
         wa: false,
         tg: false

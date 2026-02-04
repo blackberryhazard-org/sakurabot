@@ -22,6 +22,55 @@ const db = new Database({
     tabSize: 2
 });
 
+// Initialize database keys
+if (!db.has('users')) db.set('users', []);
+if (!db.has('premium')) db.set('premium', []);
+if (!db.has('managers')) db.set('managers', []);
+if (!db.has('sakuranite')) db.set('sakuranite', {});
+if (!db.has('inventory')) db.set('inventory', {});
+if (!db.has('last_daily')) db.set('last_daily', {});
+
+const waBot = {
+    cmd: new Map()
+};
+
+// Items definition
+const items = {
+    Beryllium: 100,
+    Graphite: 200,
+    Tungsten: 500,
+    Thorium: 1000,
+    Oxide: 2000,
+    Carbide: 5000
+};
+
+// Helper function to load commands
+const loadCommands = (dir) => {
+    const files = fs.readdirSync(dir, { withFileTypes: true });
+    for (const file of files) {
+        const fullPath = path.join(dir, file.name);
+        if (file.isDirectory()) {
+            loadCommands(fullPath);
+        } else if (file.name.endsWith('.js')) {
+            try {
+                const command = require(fullPath);
+                if (command.name) {
+                    const category = path.basename(dir);
+                    command.category = category;
+                    waBot.cmd.set(command.name, command);
+                    if (command.aliases && Array.isArray(command.aliases)) {
+                        command.aliases.forEach(alias => waBot.cmd.set(alias, command));
+                    }
+                }
+            } catch (e) {
+                consolefy.error(`Error loading command from ${fullPath}:`, e);
+            }
+        }
+    }
+};
+
+loadCommands(path.resolve(__dirname, 'commands'));
+
 const startWaBot = async () => {
     const { state, saveCreds } = await useMultiFileAuthState(path.resolve(__dirname, '../state'));
     const { version } = await fetchLatestBaileysVersion();
@@ -69,7 +118,7 @@ const startWaBot = async () => {
             if (m.key.fromMe) return;
 
             // Call message handler
-            await handler(sock, m, db);
+            await handler(sock, m, db, waBot, items);
         } catch (err) {
             consolefy.error(err);
         }

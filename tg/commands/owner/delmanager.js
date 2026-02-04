@@ -1,7 +1,7 @@
 module.exports = {
     name: 'delmanager',
     aliases: [],
-    category: 'leader',
+    category: 'owner',
     code: async (ctx, { isLeader, db }) => {
         if (!isLeader(ctx.from.id)) {
             return ctx.reply(global.config.msg.notLeader);
