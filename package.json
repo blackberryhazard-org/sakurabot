@@ -1,7 +1,7 @@
 {
   "name": "sakurabot",
   "version": "0.1.0",
-  "description": "Useless WhatsApp Bot",
+  "description": "Super Useless WhatsApp Bot",
   "main": "index.js",
   "directories": {
     "commands": "commands",
@@ -9,20 +9,17 @@
     "tools": "tools"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "setup": "cp config.example.json config.json && npm install",
-    "start": "node .",
-    "start:pm2": "pm2 start ./index.js --name $(basename $(pwd))"
+    "start": "node ."
   },
-  "author": "Ikbal Maulana (ItsReimau)",
+  "author": "Indra Sah Noeldy (indra87g)",
   "license": "MIT",
   "dependencies": {
     "@whiskeysockets/baileys": "^7.0.0-rc.9",
     "archiver": "^7.0.1",
     "axios": "^1.13.2",
     "consolefy": "^1.0.3",
-    "jimp": "^0.22.12",
-    "link-preview-js": "^4.0.0",
+    "jimp": "^1.6.0",
+    "link-preview-js": "^3.2.0",
     "moment-timezone": "^0.6.0",
     "node-cron": "^3.0.3",
     "node-fetch": "^2.7.0",
