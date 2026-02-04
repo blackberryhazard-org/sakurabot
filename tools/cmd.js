@@ -1,4 +1,3 @@
-// Impor modul dan dependensi yang diperlukan
 const api = require("./api.js");
 const axios = require("axios");
 const util = require("node:util");
@@ -15,9 +14,7 @@ const MessageType = {
 };
 const Baileys = {
     PSA_WID: '0@s.whatsapp.net',
-    S_WHATSAPP_NET: '@s.whatsapp.net'
-};
-const Gktw = {
+    S_WHATSAPP_NET: '@s.whatsapp.net',
     didYouMean: () => null
 };
 
@@ -182,7 +179,7 @@ function isCmd(text, ctxBot) {
             input
         };
 
-    const mean = Gktw.didYouMean(cmdName, cmds.flatMap(cmd => [cmd.name, ...(cmd.aliases || [])]));
+    const mean = Baileys.didYouMean(cmdName, cmds.flatMap(cmd => [cmd.name, ...(cmd.aliases || [])]));
     return mean ? {
         msg: text,
         prefix,
