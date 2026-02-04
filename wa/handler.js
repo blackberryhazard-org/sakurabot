@@ -4,7 +4,7 @@ const moment = require("moment-timezone");
 const fs = require("fs");
 const path = require("path");
 
-module.exports = async (sock, m, db) => {
+module.exports = async (sock, m, db, waBot, items) => {
     const from = m.key.remoteJid;
     const sender = m.key.participant || m.key.remoteJid;
     const type = Object.keys(m.message)[0];
@@ -32,80 +32,76 @@ module.exports = async (sock, m, db) => {
 
     const prefix = config.bot.prefix || "/";
     const isCmd = body.startsWith(prefix);
-    const command = isCmd ? body.slice(prefix.length).trim().split(" ")[0].toLowerCase() : "";
+    const commandName = isCmd ? body.slice(prefix.length).trim().split(" ")[0].toLowerCase() : "";
     const args = body.trim().split(/ +/).slice(1);
 
-    if (!isCmd) return;
+    const isLeader = (jid) => {
+        return config.owner.id === jid.split('@')[0];
+    };
 
-    switch (command) {
-        case "menu":
-        case "help": {
-            const date = moment().tz('Asia/Jakarta').format('dddd, DD MMMM YYYY');
-            const time = moment().tz('Asia/Jakarta').format('HH:mm:ss');
-            const uptime = global.formatUptime(global.botStartTime);
+    const isOwner = (jid) => {
+        const managers = db.get('managers') || [];
+        const cos = config.owner.co || [];
+        const coIds = cos.map(co => co.id);
+        const jidId = jid.split('@')[0];
+        return isLeader(jid) || managers.includes(jid) || coIds.includes(jidId);
+    };
 
-            let dbSize = 0;
+    const isPremium = (jid) => {
+        const premiumUsers = db.get('premium') || [];
+        return premiumUsers.includes(jid);
+    };
+
+    const getSakuranite = (jid) => {
+        return db.get(`sakuranite.${jid}`) || 0;
+    };
+
+    const updateSakuranite = (jid, amount) => {
+        db.set(`sakuranite.${jid}`, amount);
+    };
+
+    const getInventory = (jid) => {
+        return db.get(`inventory.${jid}`) || {};
+    };
+
+    const updateInventory = (jid, item, amount) => {
+        const inv = getInventory(jid);
+        inv[item] = (inv[item] || 0) + amount;
+        if (inv[item] <= 0) delete inv[item];
+        db.set(`inventory.${jid}`, inv);
+    };
+
+    const helpers = {
+        isLeader,
+        isOwner,
+        isPremium,
+        getSakuranite,
+        updateSakuranite,
+        getInventory,
+        updateInventory,
+        db,
+        config,
+        waBot,
+        items,
+        downloadContentFromMessage,
+        Sticker,
+        StickerTypes,
+        prefix,
+        pushName,
+        sender,
+        from,
+        args
+    };
+
+    if (isCmd) {
+        const cmd = waBot.cmd.get(commandName);
+        if (cmd) {
             try {
-                const dbFilePath = path.resolve(__dirname, '../database/wa/database.json');
-                const stats = fs.statSync(dbFilePath);
-                dbSize = stats.size;
-            } catch (e) {}
-            const dbSizeFormatted = (dbSize / 1024).toFixed(2) + ' KB';
-
-            const menuText = `— Halo, *${pushName}*! 👋\n\n` +
-                `➛ *Tanggal*: ${date}\n` +
-                `➛ *Waktu*: ${time}\n` +
-                `➛ *Uptime*: ${uptime}\n` +
-                `➛ *Database*: ${dbSizeFormatted}\n` +
-                `➛ *Library*: Baileys\n\n` +
-                `*Command List*:\n` +
-                `➛ ${prefix}s - Create sticker from image/video\n` +
-                `➛ ${prefix}ping - Check bot status`;
-
-            await sock.sendMessage(from, {
-                image: { url: config.bot.thumbnail },
-                caption: menuText
-            }, { quoted: m });
-            break;
-        }
-        case "ping": {
-            const tgStatus = global.botStatus.tg ? "Online" : "Offline";
-            const text = `*PONG!*\n\n` +
-                         `*TG Bot Status*: ${tgStatus}`;
-            await sock.sendMessage(from, { text }, { quoted: m });
-            break;
-        }
-        case "s":
-        case "sticker": {
-            // Get the message to be converted to sticker (check quoted first)
-            const q = m.message.extendedTextMessage?.contextInfo?.quotedMessage ? m.message.extendedTextMessage.contextInfo.quotedMessage : m.message;
-            const qType = Object.keys(q)[0];
-            const mediaMessage = q[qType] || q;
-            const mime = mediaMessage?.mimetype || "";
-
-            if (/image|video/.test(mime)) {
-                await sock.sendMessage(from, { text: config.msg.wait }, { quoted: m });
-
-                const messageType = qType.replace("Message", "");
-                const stream = await downloadContentFromMessage(mediaMessage, messageType === 'extendedText' ? 'image' : messageType);
-                let buffer = Buffer.from([]);
-                for await (const chunk of stream) {
-                    buffer = Buffer.concat([buffer, chunk]);
-                }
-
-                const sticker = new Sticker(buffer, {
-                    pack: config.sticker.packname || config.bot.name,
-                    author: config.sticker.author || "SakuraBot",
-                    type: StickerTypes.FULL,
-                    categories: ["🤩", "🎉"],
-                    quality: 50,
-                });
-
-                await sock.sendMessage(from, { sticker: await sticker.toBuffer() }, { quoted: m });
-            } else {
-                await sock.sendMessage(from, { text: `Reply or send an image/video with ${prefix}${command}` }, { quoted: m });
+                await cmd.code(sock, m, helpers);
+            } catch (err) {
+                consolefy.error(`Error executing command ${commandName}:`, err);
+                await sock.sendMessage(from, { text: `Terjadi kesalahan: ${err.message}` }, { quoted: m });
             }
-            break;
         }
     }
 };

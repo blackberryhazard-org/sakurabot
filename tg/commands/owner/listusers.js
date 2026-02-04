@@ -98,7 +98,7 @@ module.exports = {
     getAnalyticsChartUrl,
     getAnalyticsText,
     code: async (ctx, helpers) => {
-        const { isOwner, db } = helpers;
+        const { isOwner, isPremium, db } = helpers;
         if (!isOwner(ctx.from.id)) return;
 
         let userIds = db.get('users') || [];
