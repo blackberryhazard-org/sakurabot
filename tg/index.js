@@ -4,14 +4,6 @@ const fs = require('fs');
 const path = require('path');
 const moment = require('moment-timezone');
 
-const formatUptime = (startTime) => {
-    const uptime = Date.now() - startTime;
-    const seconds = Math.floor((uptime / 1000) % 60);
-    const minutes = Math.floor((uptime / (1000 * 60)) % 60);
-    const hours = Math.floor((uptime / (1000 * 60 * 60)) % 24);
-    const days = Math.floor(uptime / (1000 * 60 * 60 * 24));
-    return `${days}d ${hours}h ${minutes}m ${seconds}s`;
-};
 const { Database } = require('simpl.db');
 const cron = require('node-cron');
 const archiver = require('archiver');
@@ -124,17 +116,6 @@ const getSakuranite = (userId) => {
 const updateSakuranite = (userId, amount) => {
     db.set(`sakuranite.${userId}`, amount);
 };
-
-const escapeHTML = (text) => {
-    if (!text) return '';
-    return text.toString()
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-};
-// -------------------------
 
 const userCooldowns = new Map();
 const activeTopups = new Map();
