@@ -36,10 +36,12 @@ module.exports = async (sock, m, db, waBot, items) => {
     const args = body.trim().split(/ +/).slice(1);
 
     const isLeader = (jid) => {
+        if (!jid) return false;
         return config.owner.id === jid.split('@')[0];
     };
 
     const isOwner = (jid) => {
+        if (!jid) return false;
         const managers = db.get('managers') || [];
         const cos = config.owner.co || [];
         const coIds = cos.map(co => co.id);
