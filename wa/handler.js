@@ -93,6 +93,73 @@ module.exports = async (sock, m, db, waBot, items) => {
         args
     };
 
+    const bodyLower = body.toLowerCase();
+    const activeGame = waBot.games.get(from);
+    if (activeGame && !isCmd) {
+        if (activeGame.answers) {
+            // Multi-answer game (like Family 100)
+            if (activeGame.answers.includes(bodyLower)) {
+                if (activeGame.answered.includes(bodyLower)) {
+                    return await sock.sendMessage(from, { text: `Jawaban *${bodyLower.toUpperCase()}* sudah terjawab!` }, { quoted: m });
+                }
+
+                activeGame.answered.push(bodyLower);
+                const reward = activeGame.rewardPerAnswer || 100;
+                updateSakuranite(sender, getSakuranite(sender) + reward);
+
+                const remaining = activeGame.answers.length - activeGame.answered.length;
+                if (remaining === 0) {
+                    const totalReward = activeGame.rewardAllAnswered || 500;
+                    updateSakuranite(sender, getSakuranite(sender) + totalReward);
+                    if (activeGame.timeoutRef) clearTimeout(activeGame.timeoutRef);
+                    waBot.games.delete(from);
+                    return await sock.sendMessage(from, {
+                        text: `Selamat @${sender.split('@')[0]}! Jawaban *${bodyLower.toUpperCase()}* benar!\n\n` +
+                              `Semua jawaban telah terjawab! Anda mendapatkan bonus tambahan ${totalReward} Sakuranite.`,
+                        mentions: [sender]
+                    }, { quoted: m });
+                } else {
+                    return await sock.sendMessage(from, {
+                        text: `Selamat @${sender.split('@')[0]}! Jawaban *${bodyLower.toUpperCase()}* benar!\n` +
+                              `Tersisa ${remaining} jawaban lagi.`,
+                        mentions: [sender]
+                    }, { quoted: m });
+                }
+            }
+        } else if (bodyLower === activeGame.answer) {
+            const reward = activeGame.reward || 500;
+            updateSakuranite(sender, getSakuranite(sender) + reward);
+            if (activeGame.timeoutRef) clearTimeout(activeGame.timeoutRef);
+            waBot.games.delete(from);
+            return await sock.sendMessage(from, {
+                text: `Selamat @${sender.split('@')[0]}! Jawaban Anda benar: *${activeGame.answer.toUpperCase()}*\n\n` +
+                      (activeGame.description ? `Deskripsi: ${activeGame.description}\n\n` : "") +
+                      `Anda mendapatkan ${reward} Sakuranite!`,
+                mentions: [sender]
+            }, { quoted: m });
+        }
+
+        if (bodyLower === 'hint') {
+            if (activeGame.answer) {
+                const clue = activeGame.answer.replace(/[aiueo]/g, "_").toUpperCase();
+                return await sock.sendMessage(from, { text: `Petunjuk: \`${clue}\`` }, { quoted: m });
+            } else {
+                return await sock.sendMessage(from, { text: `Petunjuk tidak tersedia untuk game ini.` }, { quoted: m });
+            }
+        } else if (bodyLower === 'surrender') {
+            if (activeGame.timeoutRef) clearTimeout(activeGame.timeoutRef);
+            if (activeGame.answers) {
+                const remaining = activeGame.answers.filter(ans => !activeGame.answered.includes(ans));
+                waBot.games.delete(from);
+                return await sock.sendMessage(from, { text: `Anda menyerah! Jawaban yang belum terjawab adalah: *${remaining.join(", ").toUpperCase()}*` }, { quoted: m });
+            } else {
+                const ans = activeGame.answer;
+                waBot.games.delete(from);
+                return await sock.sendMessage(from, { text: `Anda menyerah! Jawabannya adalah *${ans.toUpperCase()}*.` }, { quoted: m });
+            }
+        }
+    }
+
     if (isCmd) {
         const cmd = waBot.cmd.get(commandName);
         if (cmd) {
