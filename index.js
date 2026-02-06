@@ -36,11 +36,19 @@ Object.assign(global, {
     }
 });
 
+process.on('uncaughtException', (err) => {
+    consolefy.error('Uncaught Exception:', err.message);
+});
+
+process.on('unhandledRejection', (err) => {
+    consolefy.error('Unhandled Rejection:', err.message || err);
+});
+
 consolefy.info("Starting...");
 
 if (config.system && config.system.useServer) {
     const port = config.system.port;
-    http.createServer((_, res) => res.end(`${pkg.name} berjalan di port ${port}`)).listen(port, () => consolefy.success(`${pkg.name} runs on port ${port}`));
+    http.createServer((_, res) => res.end(`${pkg.name} berjalan di port ${port}`)).listen(port, "0.0.0.0", () => consolefy.success(`${pkg.name} runs on port ${port}`));
 }
 
 const isWaBotConfigValid = config.bot && config.bot.phoneNumber && config.bot.phoneNumber !== "YOUR_PHONE_NUMBER";

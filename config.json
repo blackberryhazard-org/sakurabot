@@ -61,7 +61,7 @@
         "autoTypingOnCmd": true,
         "cooldown": 10000,
         "maxListeners": 50,
-        "port": 3000,
+        "port": 5000,
         "privatePremiumOnly": false,
         "restrict": false,
         "requireBotGroupMembership": false,
@@ -73,6 +73,6 @@
         "usePairingCode": true,
         "customPairingCode": "S4KUR4BT",
         "useStore": false,
-        "useServer": false
+        "useServer": true
     }
 }
