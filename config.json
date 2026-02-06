@@ -3,15 +3,14 @@
         "name": "SAKURABOT",
         "phoneNumber": "6281263780655",
         "thumbnail": "https://repository-images.githubusercontent.com/753096396/3f4b7686-0f1d-43f2-8293-2ae1b4487220",
-        "groupJid": "",
-        "newsletterJid": "120363416372653441@newsletter",
+        "wa_newsletterJid": "WHATSAPP_NEWSLETTER_JID",
+        "tg_newsletterid": "TELEGRAM_NEWSLETTER_ID",
         "prefix": "/",
-        "botfather_token": "YOUR_BOTFATHER_TOKEN",
-        "tg_newsletterid": "-1001234567890"
+        "botfather_token": "BOTFATHER_TOKEN"
     },
     "pakasir": {
-        "slug": "twinightwheel",
-        "apikey": "1bAwXt2CM1w7CNipHRoFkYkFyFkqdEnC"
+        "slug": "PAKASIR_SLUG",
+        "apikey": "PAKASIR_APIKEY"
     },
     "msg": {
         "admin": "Perintah hanya dapat diakses oleh admin grup!",
