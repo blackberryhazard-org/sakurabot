@@ -31,7 +31,8 @@ if (!db.has('inventory')) db.set('inventory', {});
 if (!db.has('last_daily')) db.set('last_daily', {});
 
 const waBot = {
-    cmd: new Map()
+    cmd: new Map(),
+    games: new Map()
 };
 
 // Items definition

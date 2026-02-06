@@ -1,111 +1,45 @@
-const { Gktw } = require("@itsreimau/gktw");
 const axios = require("axios");
-
-const session = new Map();
 
 module.exports = {
     name: "family100",
-    category: "game",
-    permissions: {
-        group: true
-    },
-    code: async (ctx) => {
-        if (session.has(ctx.id)) return await ctx.reply(`ⓘ ${formatter.italic("Sesi permainan sedang berjalan!")}`);
+    code: async (sock, m, { from, waBot }) => {
+        if (waBot.games.has(from)) return await sock.sendMessage(from, { text: "Sesi permainan sedang berjalan di chat ini!" }, { quoted: m });
 
         try {
-            const apiUrl = tools.api.createUrl("https://raw.githubusercontent.com", "/BochilTeam/database/refs/heads/master/games/family100.json");
-            const result = tools.cmd.getRandomElement((await axios.get(apiUrl)).data);
+            const apiUrl = "https://raw.githubusercontent.com/BochilTeam/database/refs/heads/master/games/family100.json";
+            const { data } = await axios.get(apiUrl);
+            const result = tools.cmd.getRandomElement(data);
 
             const game = {
-                coin: {
-                    answered: 10,
-                    allAnswered: 100
-                },
+                name: "family100",
+                answers: result.jawaban.map(ans => ans.toLowerCase()),
+                answered: [],
+                rewardPerAnswer: 100,
+                rewardAllAnswered: 500,
                 timeout: 90000,
-                answers: new Set(result.jawaban.map(ans => ans.toLowerCase())),
-                participants: new Set()
+                startTime: Date.now()
             };
 
-            session.set(ctx.id, true);
+            waBot.games.set(from, game);
 
-            await ctx.reply({
-                text: `— ${result.soal}\n` +
-                    "\n" +
-                    `➛ ${formatter.bold("Bonus")}: ${game.coin.answered} Koin untuk 1 jawaban benar, ${game.coin.allAnswered} Koin untuk semua jawaban benar\n` +
-                    `➛ ${formatter.bold("Jumlah jawaban")}: ${game.answers.size}\n` +
-                    `➛ ${formatter.bold("Batas waktu")}: ${tools.msg.convertMsToDuration(game.timeout)}`,
-                buttons: [{
-                    buttonId: `surrender_${ctx.used.command}`,
-                    buttonText: {
-                        displayText: "Menyerah"
-                    }
-                }]
-            });
+            await sock.sendMessage(from, {
+                text: `— *FAMILY 100* —\n\n${result.soal}\n\n` +
+                    `➛ *Total Jawaban*: ${game.answers.length}\n` +
+                    `➛ *Bonus*: ${game.rewardPerAnswer} Sakuranite per jawaban\n` +
+                    `➛ *Batas waktu*: ${tools.msg.convertMsToDuration(game.timeout)}\n\n` +
+                    `Ketik jawaban Anda langsung. Ketik *surrender* untuk menyerah.`
+            }, { quoted: m });
 
-            const collector = ctx.MessageCollector({
-                time: game.timeout
-            });
-
-            const playAgain = [{
-                buttonId: ctx.used.prefix + ctx.used.command,
-                buttonText: {
-                    displayText: "Main Lagi"
+            game.timeoutRef = setTimeout(async () => {
+                if (waBot.games.has(from) && waBot.games.get(from).startTime === game.startTime) {
+                    const remaining = game.answers.filter(ans => !game.answered.includes(ans));
+                    waBot.games.delete(from);
+                    await sock.sendMessage(from, { text: `Waktu habis! Jawaban yang belum terjawab adalah: *${remaining.join(", ").toUpperCase()}*` });
                 }
-            }];
-
-            collector.on("collect", async (collCtx) => {
-                const participantAnswer = collCtx.msg.text.toLowerCase();
-                const participantDb = ctx.getDb("users", collCtx.sender.jid);
-
-                if (game.answers.has(participantAnswer)) {
-                    game.answers.delete(participantAnswer);
-                    game.participants.add(participantId);
-
-                    participantDb.coin += game.coin.answered;
-                    participantDb.save();
-                    await collCtx.reply({
-                        text: `ⓘ ${formatter.italic(`${tools.msg.ucwords(participantAnswer)} benar! Jawaban tersisa: ${game.answers.size}`)}`
-                    });
-
-                    if (game.answers.size === 0) {
-                        session.delete(ctx.id);
-                        collector.stop();
-                        for (const participant of game.participants) {
-                            participantDb.coin += game.coin.allAnswered;
-                            participantDb.winGame += 1;
-                            participantDb.save();
-                        }
-                        await collCtx.reply({
-                            text: `ⓘ ${formatter.italic(`Selamat! Semua jawaban telah terjawab! Setiap anggota yang menjawab mendapat ${game.coin.allAnswered} koin.`)}`,
-                            buttons: playAgain
-                        });
-                    }
-                } else if (participantAnswer === `surrender_${ctx.used.command}`) {
-                    const remaining = [...game.answers].map(tools.msg.ucwords).join(", ").replace(/, ([^,]*)$/, ", dan $1");
-                    session.delete(ctx.id);
-                    collector.stop();
-                    await collCtx.reply({
-                        text: `ⓘ ${formatter.italic(`Anda menyerah! Jawaban yang belum terjawab adalah ${remaining}.`)}`,
-                        buttons: playAgain
-                    });
-                } else if (Gktw.didYouMean(participantAnswer, [game.answer]) === game.answer) {
-                    await collCtx.reply(`ⓘ ${formatter.italic("Sedikit lagi!")}`);
-                }
-            });
-
-            collector.on("end", async () => {
-                const remaining = [...game.answers].map(tools.msg.ucwords).join(", ").replace(/, ([^,]*)$/, ", dan $1");
-
-                if (session.has(ctx.id)) {
-                    session.delete(ctx.id);
-                    await ctx.reply({
-                        text: `ⓘ ${formatter.italic(`Waktu habis! Jawaban yang belum terjawab adalah ${remaining}.`)}`,
-                        buttons: playAgain
-                    });
-                }
-            });
+            }, game.timeout);
         } catch (error) {
-            await tools.cmd.handleError(ctx, error, true);
+            consolefy.error(error);
+            await sock.sendMessage(from, { text: "Terjadi kesalahan saat mengambil soal." }, { quoted: m });
         }
     }
 };
