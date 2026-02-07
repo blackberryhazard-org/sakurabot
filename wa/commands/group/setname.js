@@ -6,7 +6,7 @@ module.exports = {
         botAdmin: true,
         group: true
     },
-    code: async (ctx) => {
+    code: async (sock, m, { ctx }) => {
         const input = ctx.text || null;
 
         if (!input)

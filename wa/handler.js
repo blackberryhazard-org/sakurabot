@@ -40,13 +40,14 @@ module.exports = async (sock, m, db, waBot, items) => {
         return config.owner.id === jid.split('@')[0];
     };
 
-    const isOwner = (jid) => {
+    const isManager = (jid) => {
         if (!jid) return false;
         const managers = db.get('managers') || [];
-        const cos = config.owner.co || [];
-        const coIds = cos.map(co => co.id);
-        const jidId = jid.split('@')[0];
-        return isLeader(jid) || managers.includes(jid) || coIds.includes(jidId);
+        return managers.includes(jid);
+    };
+
+    const isOwner = (jid) => {
+        return isLeader(jid) || isManager(jid);
     };
 
     const isPremium = (jid) => {
@@ -73,8 +74,172 @@ module.exports = async (sock, m, db, waBot, items) => {
         db.set(`inventory.${jid}`, inv);
     };
 
+    const getTarget = (m, args, types = ["quoted", "mentioned", "text"]) => {
+        const type = Object.keys(m.message)[0];
+        const contextInfo = m.message[type]?.contextInfo;
+        let target = "";
+        if (types.includes("quoted") && contextInfo?.participant) {
+            target = contextInfo.participant;
+        } else if (types.includes("mentioned") && contextInfo?.mentionedJid?.length > 0) {
+            target = contextInfo.mentionedJid[0];
+        } else if (types.includes("text") && args.length > 0) {
+            const t = args[0].replace(/[^0-9]/g, '');
+            if (t.length > 0) target = t + '@s.whatsapp.net';
+        }
+        return target;
+    };
+
+    const ctxType = Object.keys(m.message)[0];
+    const contextInfo = m.message[ctxType]?.contextInfo;
+
+    const downloadMedia = async (message) => {
+        const mType = Object.keys(message)[0];
+        const mediaMessage = message[mType];
+        if (!mediaMessage) return null;
+        const stream = await downloadContentFromMessage(mediaMessage, mType.replace('Message', ''));
+        let buffer = Buffer.from([]);
+        for await (const chunk of stream) {
+            buffer = Buffer.concat([buffer, chunk]);
+        }
+        return buffer;
+    };
+
+    const getGroupDb = (jid) => {
+        let groupData = db.get(`groups.${jid}`) || {};
+        return new Proxy(groupData, {
+            get(target, prop) {
+                if (prop === 'save') {
+                    return () => db.set(`groups.${jid}`, groupData);
+                }
+                return target[prop];
+            },
+            set(target, prop, value) {
+                target[prop] = value;
+                return true;
+            }
+        });
+    };
+
+    const ctx = {
+        id: from,
+        args,
+        prefix,
+        sender: { jid: sender },
+        me: { lid: sock.user.id.split(':')[0] + '@s.whatsapp.net' },
+        isGroup: () => from.endsWith('@g.us'),
+        getId: (jid) => jid.split('@')[0],
+        reply: async (content, options = {}) => {
+            if (typeof content === 'string') {
+                return await sock.sendMessage(from, { text: content, ...options }, { quoted: m });
+            } else {
+                return await sock.sendMessage(from, { ...content, ...options }, { quoted: m });
+            }
+        },
+        replyWithJid: async (jid, content, options = {}) => {
+            if (typeof content === 'string') {
+                return await sock.sendMessage(jid, { text: content, ...options });
+            } else {
+                return await sock.sendMessage(jid, { ...content, ...options });
+            }
+        },
+        target: async (types) => getTarget(m, args, types),
+        db: {
+            group: from.endsWith('@g.us') ? getGroupDb(from) : null
+        },
+        core: {
+            onWhatsApp: async (jid) => {
+                const [result] = await sock.onWhatsApp(jid);
+                return result ? [result] : [];
+            }
+        },
+        msg: {
+            messageType: type,
+            download: async () => await downloadMedia(m.message)
+        },
+        group: (jid = from) => ({
+            name: async () => {
+                if (!jid.endsWith('@g.us')) return null;
+                const metadata = await sock.groupMetadata(jid);
+                return metadata.subject;
+            },
+            isOwner: async (participantJid) => {
+                if (!jid.endsWith('@g.us')) return false;
+                const metadata = await sock.groupMetadata(jid);
+                return metadata.owner === participantJid || metadata.owner === participantJid.replace('@s.whatsapp.net', '@c.us');
+            },
+            kick: async (participantJid) => {
+                if (!jid.endsWith('@g.us')) return false;
+                return await sock.groupParticipantsUpdate(jid, [participantJid], "remove");
+            },
+            add: async (participantJid) => {
+                if (!jid.endsWith('@g.us')) return false;
+                return await sock.groupParticipantsUpdate(jid, [participantJid], "add");
+            },
+            promote: async (participantJid) => {
+                if (!jid.endsWith('@g.us')) return false;
+                return await sock.groupParticipantsUpdate(jid, [participantJid], "promote");
+            },
+            demote: async (participantJid) => {
+                if (!jid.endsWith('@g.us')) return false;
+                return await sock.groupParticipantsUpdate(jid, [participantJid], "demote");
+            },
+            inviteCode: async () => {
+                if (!jid.endsWith('@g.us')) return null;
+                return await sock.groupInviteCode(jid);
+            },
+            members: async () => {
+                if (!jid.endsWith('@g.us')) return [];
+                const metadata = await sock.groupMetadata(jid);
+                return metadata.participants.map(p => ({ ...p, jid: p.id }));
+            },
+            pendingMembers: async () => {
+                if (!jid.endsWith('@g.us')) return [];
+                return await sock.groupRequestParticipantsList(jid);
+            },
+            approve: async (participantJid) => {
+                if (!jid.endsWith('@g.us')) return false;
+                return await sock.groupRequestParticipantsUpdate(jid, [participantJid], "approve");
+            },
+            reject: async (participantJid) => {
+                if (!jid.endsWith('@g.us')) return false;
+                return await sock.groupRequestParticipantsUpdate(jid, [participantJid], "reject");
+            },
+            setSubject: async (subject) => {
+                if (!jid.endsWith('@g.us')) return false;
+                return await sock.groupUpdateSubject(jid, subject);
+            },
+            setDescription: async (description) => {
+                if (!jid.endsWith('@g.us')) return false;
+                return await sock.groupUpdateDescription(jid, description);
+            },
+            leave: async () => {
+                if (!jid.endsWith('@g.us')) return false;
+                return await sock.groupLeave(jid);
+            },
+            setting: async (setting) => {
+                if (!jid.endsWith('@g.us')) return false;
+                // setting can be 'announcement' or 'not_announcement' etc
+                return await sock.groupSettingUpdate(jid, setting);
+            }
+        }),
+        text: args.join(" "),
+        quoted: contextInfo?.quotedMessage ? {
+            text: contextInfo.quotedMessage.conversation ||
+                  contextInfo.quotedMessage.extendedTextMessage?.text ||
+                  contextInfo.quotedMessage.imageMessage?.caption ||
+                  contextInfo.quotedMessage.videoMessage?.caption,
+            download: async () => await downloadMedia(contextInfo.quotedMessage)
+        } : null,
+        used: {
+            prefix,
+            command: commandName
+        }
+    };
+
     const helpers = {
+        ctx,
         isLeader,
+        isManager,
         isOwner,
         isPremium,
         getSakuranite,
@@ -166,6 +331,45 @@ module.exports = async (sock, m, db, waBot, items) => {
         const cmd = waBot.cmd.get(commandName);
         if (cmd) {
             try {
+                // Permission checking
+                if (cmd.permissions) {
+                    const isGroup = from.endsWith('@g.us');
+                    const senderIsOwner = isOwner(sender);
+                    const senderIsLeader = isLeader(sender);
+                    const senderIsPremium = isPremium(sender);
+
+                    if (cmd.permissions.owner && !senderIsOwner) {
+                        return await sock.sendMessage(from, { text: config.msg.owner }, { quoted: m });
+                    }
+
+                    if (cmd.permissions.leader && !senderIsLeader) {
+                        return await sock.sendMessage(from, { text: "Perintah ini hanya untuk Leader!" }, { quoted: m });
+                    }
+
+                    if (cmd.permissions.premium && !senderIsPremium && !senderIsOwner) {
+                        return await sock.sendMessage(from, { text: config.msg.premium }, { quoted: m });
+                    }
+
+                    if (cmd.permissions.group && !isGroup) {
+                        return await sock.sendMessage(from, { text: config.msg.group }, { quoted: m });
+                    }
+
+                    if (isGroup && (cmd.permissions.admin || cmd.permissions.botAdmin)) {
+                        const groupMetadata = await sock.groupMetadata(from);
+                        const participants = groupMetadata.participants;
+                        const admins = participants.filter(p => p.admin).map(p => p.id);
+                        const botId = sock.user.id.split(':')[0] + '@s.whatsapp.net';
+
+                        if (cmd.permissions.admin && !admins.includes(sender) && !senderIsOwner) {
+                            return await sock.sendMessage(from, { text: config.msg.admin }, { quoted: m });
+                        }
+
+                        if (cmd.permissions.botAdmin && !admins.includes(botId)) {
+                            return await sock.sendMessage(from, { text: config.msg.botAdmin }, { quoted: m });
+                        }
+                    }
+                }
+
                 await cmd.code(sock, m, helpers);
             } catch (err) {
                 consolefy.error(`Error executing command ${commandName}:`, err);

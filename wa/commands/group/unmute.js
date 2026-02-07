@@ -6,7 +6,7 @@ module.exports = {
         botAdmin: true,
         group: true
     },
-    code: async (ctx) => {
+    code: async (sock, m, { ctx }) => {
         const groupDb = ctx.db.group;
 
         if (ctx.args[0]?.toLowerCase() === "bot") {

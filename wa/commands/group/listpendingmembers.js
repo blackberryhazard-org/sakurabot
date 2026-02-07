@@ -7,10 +7,10 @@ module.exports = {
         botAdmin: true,
         group: true
     },
-    code: async (ctx) => {
+    code: async (sock, m, { ctx }) => {
         const pending = await ctx.group().pendingMembers();
 
-        if (!pending.length === 0) return await ctx.reply(`ⓘ ${formatter.italic("Tidak ada anggota yang menunggu persetujuan.")}`);
+        if (pending.length === 0) return await ctx.reply(`ⓘ ${formatter.italic("Tidak ada anggota yang menunggu persetujuan.")}`);
 
         try {
             const resultText = pending.map((member, index) => `${index + 1}. ${ctx.getId(member.jid)}`).join("\n");

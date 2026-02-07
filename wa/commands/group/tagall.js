@@ -5,7 +5,7 @@ module.exports = {
         admin: true,
         group: true
     },
-    code: async (ctx) => {
+    code: async (sock, m, { ctx }) => {
         const input = ctx.text || ctx.quoted?.text || `>ᴗ< ${formatter.italic("Halo, Dunia!")}`;
 
         try {

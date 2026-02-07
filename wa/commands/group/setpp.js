@@ -7,7 +7,7 @@ module.exports = {
         botAdmin: true,
         group: true
     },
-    code: async (ctx) => {
+    code: async (sock, m, { ctx }) => {
         const [checkMedia, checkQuotedMedia] = [
             tools.cmd.checkMedia(ctx.msg.messageType, "image"),
             tools.cmd.checkQuotedMedia(ctx.quoted?.messageType, "image")
