@@ -37,6 +37,9 @@ module.exports = {
 
         const referralLink = `https://t.me/${botUsername}?start=ref_${userId}`;
 
+        const link = db.get(`links.${userId}`);
+        const linkStatus = link ? `✅ Terhubung (${link.split('@')[0]})` : '❌ Tidak Terhubung';
+
         const message = `
 👤 <b>Info Pengguna</b>
 
@@ -47,6 +50,9 @@ module.exports = {
 <b>Koin:</b> ${coins}
 <b>Sakuranite:</b> ${sakuranite}
 <b>Tiket Gacha:</b> ${tickets}
+
+🔗 <b>Integrasi WhatsApp</b>
+<b>Status:</b> ${linkStatus}
 
 📈 <b>Info Rujukan</b>
 <b>Dirujuk Oleh:</b> ${referredByText}

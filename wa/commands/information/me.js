@@ -1,10 +1,13 @@
 module.exports = {
     name: 'me',
     aliases: ['profil'],
-    code: async (sock, m, { sender, pushName, isOwner, isPremium, getSakuranite, getInventory }) => {
+    code: async (sock, m, { sender, pushName, isOwner, isPremium, getSakuranite, getInventory, db }) => {
         const sakuranite = getSakuranite(sender);
         const inv = getInventory(sender);
         const role = isOwner(sender) ? 'Owner' : (isPremium(sender) ? 'Premium' : 'User');
+
+        const link = db.get(`links.${sender}`);
+        const linkStatus = link ? `✅ Terhubung (${link})` : '❌ Tidak Terhubung';
 
         let invText = '';
         Object.keys(inv).forEach(item => {
@@ -17,6 +20,8 @@ module.exports = {
             `➛ *Tag*: @${sender.split('@')[0]}\n` +
             `➛ *Role*: ${role}\n` +
             `➛ *Sakuranite*: ${sakuranite}\n\n` +
+            `*Integrasi Telegram*:\n` +
+            `➛ *Status*: ${linkStatus}\n\n` +
             `*Inventory*:\n${invText}`;
 
         await sock.sendMessage(m.key.remoteJid, {
