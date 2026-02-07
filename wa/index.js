@@ -29,20 +29,21 @@ if (!db.has('managers')) db.set('managers', []);
 if (!db.has('sakuranite')) db.set('sakuranite', {});
 if (!db.has('inventory')) db.set('inventory', {});
 if (!db.has('last_daily')) db.set('last_daily', {});
+if (!db.has('links')) db.set('links', {});
 
 const waBot = {
     cmd: new Map(),
-    games: new Map()
+    games: new Map(),
+    sessions: new Map()
 };
 
 // Items definition
 const items = {
-    Beryllium: 100,
-    Graphite: 200,
-    Tungsten: 500,
-    Thorium: 1000,
-    Oxide: 2000,
-    Carbide: 5000
+    Copper: 50,
+    Lead: 100,
+    Titanium: 250,
+    Thorium: 500,
+    Plastanium: 1000
 };
 
 // Helper function to load commands
@@ -109,6 +110,8 @@ const startWaBot = async () => {
         } else if (connection === "open") {
             consolefy.success("WhatsApp bot connected!");
             global.botStatus.wa = true;
+            global.waSock = sock;
+            global.waBot = waBot;
         }
     });
 

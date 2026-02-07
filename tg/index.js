@@ -31,6 +31,8 @@ if (!db.has('referred_by')) db.set('referred_by', {});
 if (!db.has('referrals')) db.set('referrals', {});
 if (!db.has('pending_referrals')) db.set('pending_referrals', {});
 if (!db.has('sakuranite')) db.set('sakuranite', {});
+if (!db.has('inventory')) db.set('inventory', {});
+if (!db.has('links')) db.set('links', {});
 
 
 // Middleware to save user IDs
@@ -386,6 +388,7 @@ const launchTelegramBot = () => {
   });
 
   bot.launch();
+  global.tgBot = bot;
 
   // Schedule user statistics every 7 days
   cron.schedule('0 0 */7 * *', async () => {

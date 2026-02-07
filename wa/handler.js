@@ -327,6 +327,37 @@ module.exports = async (sock, m, db, waBot, items) => {
         }
     }
 
+    // Handle Sessions (e.g., for /link)
+    const session = waBot.sessions.get(sender);
+    if (session && !isCmd) {
+        if (session.type === 'linking' && /^\d{4}$/.test(body)) {
+            if (body === session.code) {
+                // Link success
+                const waLinks = db.get('links') || {};
+                waLinks[sender] = session.tgId;
+                db.set('links', waLinks);
+
+                // Also update TG database
+                const { Database } = require('simpl.db');
+                const tgDbPath = path.resolve(__dirname, '../database/tg/database.json');
+                const tgDb = new Database({ dataFile: tgDbPath });
+                const tgLinks = tgDb.get('links') || {};
+                tgLinks[session.tgId] = sender;
+                tgDb.set('links', tgLinks);
+
+                waBot.sessions.delete(sender);
+                return await sock.sendMessage(from, { text: `✅ Integrasi berhasil! Akun WhatsApp Anda sekarang terhubung dengan ID Telegram ${session.tgId}.` }, { quoted: m });
+            } else {
+                session.attempts = (session.attempts || 0) + 1;
+                if (session.attempts >= 3) {
+                    waBot.sessions.delete(sender);
+                    return await sock.sendMessage(from, { text: `❌ Kode salah 3 kali. Sesi integrasi dibatalkan.` }, { quoted: m });
+                }
+                return await sock.sendMessage(from, { text: `❌ Kode salah. Silakan coba lagi (Sisa percobaan: ${3 - session.attempts})` }, { quoted: m });
+            }
+        }
+    }
+
     if (isCmd) {
         const cmd = waBot.cmd.get(commandName);
         if (cmd) {
