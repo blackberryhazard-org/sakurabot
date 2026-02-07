@@ -40,13 +40,7 @@
         "organization": "PT. Pemakan Koruptor",
         "id": "6283172646529",
         "id_tele": "id-telegram-owner",
-        "report": true,
-        "co": [{
-            "name": "Broni",
-            "organization": "PT. Pemakan Koruptor",
-            "id": "6281263780655",
-            "report": false
-        }]
+        "report": true
     },
     "sticker": {
         "packname": "",
@@ -61,17 +55,12 @@
         "cooldown": 10000,
         "maxListeners": 50,
         "port": 5000,
-        "privatePremiumOnly": false,
         "restrict": false,
-        "requireBotGroupMembership": false,
-        "requireGroupSewa": false,
         "selfReply": true,
         "timeZone": "Asia/Jakarta",
         "unavailableAtNight": false,
-        "useCoin": true,
         "usePairingCode": true,
         "customPairingCode": "S4KUR4BT",
-        "useStore": false,
         "useServer": true
     }
 }
