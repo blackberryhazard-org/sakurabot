@@ -387,6 +387,54 @@ const launchTelegramBot = () => {
     }
   });
 
+  // --- Payment Handlers (Telegram Stars) ---
+  bot.on('pre_checkout_query', (ctx) => ctx.answerPreCheckoutQuery(true));
+
+  bot.on('successful_payment', async (ctx) => {
+    try {
+      const payload = JSON.parse(ctx.message.successful_payment.invoice_payload);
+      const { userId, coinAmount, method } = payload;
+
+      if (method === 'stars') {
+        updateCoins(userId, getCoins(userId) + coinAmount);
+
+        await ctx.reply(
+          `✅ *PAYMENT CONFIRMED (Stars)*
+
+` +
+          `${coinAmount} coins have been added to your balance.`,
+          { parse_mode: 'Markdown' }
+        );
+
+        const broadcastMessage = `
+✅ TRANSAKSI BERHASIL (STARS)!
+
+Item: ${coinAmount} Koin SakuraBot
+Harga: ${ctx.message.successful_payment.total_amount} ⭐️
+Waktu: ${moment().tz('Asia/Jakarta').format('YYYY-MM-DD HH:mm:ss')}
+Buyer: ${ctx.from.first_name} (\`${userId}\`)
+
+Ketentuan:
+- Item yang sudah dibeli/dibayar tidak dapat dikembalikan
+        `;
+
+        if (config.bot.tg_newsletterid) {
+          try {
+            await bot.telegram.sendMessage(
+              config.bot.tg_newsletterid,
+              broadcastMessage,
+              { parse_mode: 'Markdown' }
+            );
+          } catch (e) {
+            console.error('Broadcast error:', e);
+          }
+        }
+      }
+    } catch (e) {
+      console.error('Error handling successful payment:', e);
+    }
+  });
+
   bot.launch();
   global.tgBot = bot;
 
