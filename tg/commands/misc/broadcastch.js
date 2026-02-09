@@ -55,10 +55,13 @@ module.exports = {
             if (userCoins >= COOLDOWN_BYPASS_COST) {
                 return ctx.reply(
                     `You are on cooldown for another ${msToTime(remainingMs)}. Would you like to spend ${COOLDOWN_BYPASS_COST} coins to bypass this?`,
-                    Markup.inlineKeyboard([
-                        Markup.button.callback('Yes, spend 50 coins', `bypass_bch_${userId}`),
-                        Markup.button.callback('No, I will wait', 'cancel_bypass')
-                    ])
+                    {
+                        reply_to_message_id: ctx.message.message_id,
+                        ...Markup.inlineKeyboard([
+                            Markup.button.callback('Yes, spend 50 coins', `bypass_bch_${userId}`),
+                            Markup.button.callback('No, I will wait', 'cancel_bypass')
+                        ])
+                    }
                 );
             } else {
                 return ctx.reply(`You are on cooldown for another ${msToTime(remainingMs)}. You also do not have enough coins (${COOLDOWN_BYPASS_COST} required) to bypass it.`);
@@ -75,6 +78,7 @@ module.exports = {
     },
 
     callback: async (ctx, { isOwner, isPremium, getCoins, updateCoins, db }) => {
+        if (!ctx.callbackQuery || !ctx.callbackQuery.data) return;
         const userId = ctx.from.id;
         const query = ctx.callbackQuery.data;
 
@@ -92,6 +96,10 @@ module.exports = {
             const userCoins = getCoins(userId);
             if (userCoins < COOLDOWN_BYPASS_COST) {
                 return ctx.editMessageText(`You no longer have enough coins to bypass the cooldown. You need ${COOLDOWN_BYPASS_COST}, but you only have ${userCoins}.`);
+            }
+
+            if (!ctx.callbackQuery.message.reply_to_message) {
+                return ctx.editMessageText('Cannot find the original message. Broadcast failed.');
             }
 
             await ctx.editMessageText('Cooldown bypassed. Starting broadcast...');
@@ -122,7 +130,7 @@ async function broadcastMessage(ctx, message, channels, cost, userId, getCoins) 
 
     for (const channelId of channels) {
         try {
-            await ctx.telegram.sendMessage(channelId, message);
+            await ctx.telegram.sendMessage(channelId, message, { parse_mode: 'HTML' });
             successCount++;
         } catch (error) {
             console.error(`Failed to send message to channel ${channelId}:`, error.description);
