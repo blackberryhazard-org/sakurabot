@@ -4,8 +4,7 @@ const itemsList = [
     { name: 'Copper', weight: 60 },
     { name: 'Lead', weight: 25 },
     { name: 'Titanium', weight: 10 },
-    { name: 'Thorium', weight: 4 },
-    { name: 'Plastanium', weight: 1 }
+    { name: 'Thorium', weight: 5 }
 ];
 
 function getRandomItem() {

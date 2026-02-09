@@ -1,11 +1,12 @@
 const moment = require('moment-timezone');
 
 const itemsList = [
-    { name: 'Copper', weight: 60 },
-    { name: 'Lead', weight: 25 },
-    { name: 'Titanium', weight: 10 },
+    { name: 'Beryllium', weight: 60 },
+    { name: 'Graphite', weight: 25 },
+    { name: 'Tungsten', weight: 10 },
     { name: 'Thorium', weight: 4 },
-    { name: 'Plastanium', weight: 1 }
+    { name: 'Oxide', weight: 1 },
+    { name: 'Carbide', weight: 0.5 }
 ];
 
 function getRandomItem() {

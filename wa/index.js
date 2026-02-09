@@ -38,13 +38,7 @@ const waBot = {
 };
 
 // Items definition
-const items = {
-    Copper: 50,
-    Lead: 100,
-    Titanium: 250,
-    Thorium: 500,
-    Plastanium: 1000
-};
+const { items_erekir: items } = require('../tools/items');
 
 // Helper function to load commands
 const loadCommands = (dir) => {

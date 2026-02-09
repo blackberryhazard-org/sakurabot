@@ -1,6 +1,5 @@
 // Item definition for the items system in the telegram bot 
 const items_serpulo = {
-    // Item: price,
     Copper: 75,
     Lead: 100,
     Titanium: 250,
@@ -16,3 +15,5 @@ const items_erekir = {
     Oxide: 2000,
     Carbide: 5000
 };
+
+module.exports = { items_serpulo, items_erekir };

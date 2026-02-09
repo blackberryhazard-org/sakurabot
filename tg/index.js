@@ -8,6 +8,7 @@ const { Database } = require('simpl.db');
 const cron = require('node-cron');
 const archiver = require('archiver');
 const { Pakasir } = require('pakasir-sdk');
+const { items_serpulo: items } = require('../tools/items');
 
 const dbPath = path.resolve(__dirname, '../database/tg');
 fs.mkdirSync(dbPath, { recursive: true });
@@ -133,6 +134,7 @@ const launchTelegramBot = () => {
   });
 
   const helpers = {
+      items,
       pakasir,
       activeTopups,
       isLeader,
