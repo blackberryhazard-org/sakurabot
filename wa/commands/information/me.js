@@ -1,9 +1,11 @@
 module.exports = {
     name: 'me',
     aliases: ['profil'],
-    code: async (sock, m, { sender, pushName, isOwner, isPremium, getSakuranite, getInventory, db }) => {
+    code: async (sock, m, { sender, pushName, isOwner, isPremium, getSakuranite, getInventory, getMiningTickets, getMiningRate, db }) => {
         const sakuranite = getSakuranite(sender);
         const inv = getInventory(sender);
+        const miningTickets = getMiningTickets(sender);
+        const miningRate = getMiningRate(sender);
         const role = isOwner(sender) ? 'Owner' : (isPremium(sender) ? 'Premium' : 'User');
 
         const link = db.get(`links.${sender}`);
@@ -20,6 +22,9 @@ module.exports = {
             `➛ *Tag*: @${sender.split('@')[0]}\n` +
             `➛ *Role*: ${role}\n` +
             `➛ *Sakuranite*: ${sakuranite}\n\n` +
+            `*Mining*:\n` +
+            `➛ *Tiket Mining*: ${miningTickets}\n` +
+            `➛ *Rate Mining*: ${miningRate}\n\n` +
             `*Integrasi Telegram*:\n` +
             `➛ *Status*: ${linkStatus}\n\n` +
             `*Inventory*:\n${invText}`;

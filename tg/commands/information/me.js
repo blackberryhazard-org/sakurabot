@@ -1,7 +1,7 @@
 module.exports = {
     name: 'me',
     description: 'Dapatkan informasi pengguna Anda.',
-    code: async (ctx, { isOwner, isPremium, getCoins, getGachaTickets, getSakuranite, escapeHTML, db }) => {
+    code: async (ctx, { isOwner, isPremium, getCoins, getGachaTickets, getSakuranite, getMiningTickets, getMiningRate, escapeHTML, db }) => {
         const user = ctx.from;
         if (!user) {
             return ctx.reply('Tidak bisa mendapatkan informasi pengguna.');
@@ -14,6 +14,8 @@ module.exports = {
         const coins = getCoins(userId);
         const sakuranite = getSakuranite(userId);
         const tickets = getGachaTickets(userId);
+        const miningTickets = getMiningTickets(userId);
+        const miningRate = getMiningRate(userId);
 
         let status = 'Pengguna';
         if (isOwner(userId)) {
@@ -50,6 +52,10 @@ module.exports = {
 <b>Koin:</b> ${coins}
 <b>Sakuranite:</b> ${sakuranite}
 <b>Tiket Gacha:</b> ${tickets}
+
+⛏️ <b>Mining</b>
+<b>Tiket Mining:</b> ${miningTickets}
+<b>Rate Mining:</b> ${miningRate}
 
 🔗 <b>Integrasi WhatsApp</b>
 <b>Status:</b> ${linkStatus}

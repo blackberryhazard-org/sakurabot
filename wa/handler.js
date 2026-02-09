@@ -62,6 +62,22 @@ module.exports = async (sock, m, db, waBot, items) => {
     const updateSakuranite = (jid, amount) => {
         db.set(`sakuranite.${jid}`, amount);
     };
+    const getMiningTickets = (jid) => {
+        return db.get(`mining_tickets.${jid}`) || 0;
+    };
+
+    const updateMiningTickets = (jid, amount) => {
+        db.set(`mining_tickets.${jid}`, amount);
+    };
+
+    const getMiningRate = (jid) => {
+        return db.get(`mining_rate.${jid}`) || 0.10;
+    };
+
+    const updateMiningRate = (jid, amount) => {
+        db.set(`mining_rate.${jid}`, amount);
+    };
+
 
     const getInventory = (jid) => {
         return db.get(`inventory.${jid}`) || {};
@@ -237,6 +253,10 @@ module.exports = async (sock, m, db, waBot, items) => {
     };
 
     const helpers = {
+        getMiningTickets,
+        updateMiningTickets,
+        getMiningRate,
+        updateMiningRate,
         ctx,
         isLeader,
         isManager,

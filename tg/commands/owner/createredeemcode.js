@@ -17,8 +17,8 @@ module.exports = {
         }
 
         const normalizedType = type.toLowerCase();
-        if (!['coins', 'gacha', 'sakuranite'].includes(normalizedType)) {
-            return ctx.reply('Jenis hadiah tidak valid. Gunakan "sakuranite", "coins", atau "gacha".');
+        if (!['coins', 'gacha', 'sakuranite', 'mining'].includes(normalizedType)) {
+            return ctx.reply('Jenis hadiah tidak valid. Gunakan "sakuranite", "coins", "gacha", atau "mining".');
         }
 
         if (normalizedType === 'coins' && !isLeader(ctx.from.id)) {
@@ -59,6 +59,8 @@ module.exports = {
                 rewardText = `${amount} Koin`;
             } else if (normalizedType === 'gacha') {
                 rewardText = `${amount} Tiket Gacha`;
+            } else if (normalizedType === 'mining') {
+                rewardText = `${amount} Tiket Mining`;
             }
 
             const broadcastMessage = `

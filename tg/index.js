@@ -35,6 +35,8 @@ if (!db.has('pending_referrals')) db.set('pending_referrals', {});
 if (!db.has('sakuranite')) db.set('sakuranite', {});
 if (!db.has('inventory')) db.set('inventory', {});
 if (!db.has('links')) db.set('links', {});
+if (!db.has('mining_tickets')) db.set('mining_tickets', {});
+if (!db.has('mining_rate')) db.set('mining_rate', {});
 
 
 // Middleware to save user IDs
@@ -120,6 +122,22 @@ const getSakuranite = (userId) => {
 const updateSakuranite = (userId, amount) => {
     db.set(`sakuranite.${userId}`, amount);
 };
+const getMiningTickets = (userId) => {
+    return db.get(`mining_tickets.${userId}`) || 0;
+};
+
+const updateMiningTickets = (userId, amount) => {
+    db.set(`mining_tickets.${userId}`, amount);
+};
+
+const getMiningRate = (userId) => {
+    return db.get(`mining_rate.${userId}`) || 0.10;
+};
+
+const updateMiningRate = (userId, amount) => {
+    db.set(`mining_rate.${userId}`, amount);
+};
+
 
 const userCooldowns = new Map();
 const activeTopups = new Map();
@@ -134,6 +152,10 @@ const launchTelegramBot = () => {
   });
 
   const helpers = {
+      getMiningTickets,
+      updateMiningTickets,
+      getMiningRate,
+      updateMiningRate,
       items,
       pakasir,
       activeTopups,
