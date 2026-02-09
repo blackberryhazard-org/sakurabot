@@ -1,5 +1,6 @@
 const crypto = require('crypto');
 const fetch = require('node-fetch');
+const { Markup } = require('telegraf');
 
 function watchPaymentFetch({
     project,
@@ -53,7 +54,7 @@ module.exports = {
     name: 'topup',
     aliases: [],
     category: 'tool',
-    code: async (ctx, { pakasir, activeTopups, getCoins, updateCoins, config }) => {
+    code: async (ctx, { activeTopups }) => {
         const userId = ctx.from.id;
         const args = ctx.message.text.split(' ').slice(1);
 
@@ -76,54 +77,68 @@ module.exports = {
             );
         }
 
-        const price = (coinAmount / 25) * 1000;
-        const randomPart = `TRX-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
-        const orderId = `${randomPart}-${price}`;
+        await ctx.reply(
+            'Silakan pilih metode pembayaran:',
+            Markup.inlineKeyboard([
+                [Markup.button.callback('Pakasir (QRIS)', `topup:pakasir:${coinAmount}`)],
+                [Markup.button.callback('Telegram Stars ⭐️', `topup:stars:${coinAmount}`)]
+            ])
+        );
+    },
+    callback: async (ctx, helpers) => {
+        const { pakasir, activeTopups, getCoins, updateCoins, config, bot } = helpers;
+        const data = ctx.callbackQuery?.data;
+        if (!data || !data.startsWith('topup:')) return;
 
-        try {
-            const payment = await pakasir.createPayment(
-                'qris',
-                randomPart,
-                price
-            );
+        const [, method, coinAmountStr] = data.split(':');
+        const coinAmount = parseInt(coinAmountStr);
+        const userId = ctx.from.id;
 
-            await ctx.reply(
-  `💳 <b>TOP UP INVOICE</b>\n\n` +
+        if (method === 'pakasir') {
+            await ctx.answerCbQuery();
 
-  `Coins: <b>${coinAmount}</b>\n` +
+            const price = (coinAmount / 25) * 1000;
+            const randomPart = `TRX-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
+            const orderId = `${randomPart}-${price}`;
 
-  `Price: <b>Rp${price.toLocaleString('id-ID')}</b>\n\n` +
+            try {
+                const payment = await pakasir.createPayment(
+                    'qris',
+                    randomPart,
+                    price
+                );
 
-  `🔗 <a href="${payment.payment_url}">Klik di sini untuk bayar</a>\n\n` +
+                await ctx.editMessageText(
+                    `💳 <b>TOP UP INVOICE (Pakasir)</b>\n\n` +
+                    `Coins: <b>${coinAmount}</b>\n` +
+                    `Price: <b>Rp${price.toLocaleString('id-ID')}</b>\n\n` +
+                    `🔗 <a href="${payment.payment_url}">Klik di sini untuk bayar</a>\n\n` +
+                    `⏱ You have 10 minutes to complete the payment.\n` +
+                    `Use /cancel to cancel.`,
+                    { parse_mode: 'HTML' }
+                );
 
-  `⏱ You have 10 minutes to complete the payment.\n` +
+                const watcher = watchPaymentFetch({
+                    project: config.pakasir.slug,
+                    amount: price,
+                    orderId: randomPart,
+                    apiKey: config.pakasir.apikey,
 
-  `Use /cancel to cancel.`,
+                    onPaid: async (trx) => {
+                        activeTopups.delete(userId);
 
-  { parse_mode: 'HTML' }
-);
+                        updateCoins(
+                            userId,
+                            getCoins(userId) + coinAmount
+                        );
 
-            const watcher = watchPaymentFetch({
-                project: config.pakasir.slug,
-                amount: price,
-                orderId: randomPart,
-                apiKey: config.pakasir.apikey,
+                        await bot.telegram.sendMessage(userId,
+                            `✅ *PAYMENT CONFIRMED*\n\n` +
+                            `${coinAmount} coins have been added to your balance.`,
+                            { parse_mode: 'Markdown' }
+                        );
 
-                onPaid: async (trx) => {
-                    activeTopups.delete(userId);
-
-                    updateCoins(
-                        userId,
-                        getCoins(userId) + coinAmount
-                    );
-
-                    await ctx.reply(
-                        `✅ *PAYMENT CONFIRMED*\n\n` +
-                        `${coinAmount} coins have been added to your balance.`,
-                        { parse_mode: 'Markdown' }
-                    );
-
-                    const broadcastMessage = `
+                        const broadcastMessage = `
 ✅ TRANSAKSI BERHASIL!
 
 ID Transaksi: \`${orderId}\`
@@ -135,46 +150,68 @@ Buyer: ${ctx.from.first_name} (\`${userId}\`)
 
 Ketentuan:
 - Item yang sudah dibeli/dibayar tidak dapat dikembalikan
-                    `;
+                        `;
 
-                    if (config.bot.tg_newsletterid) {
-                        try {
-                            await ctx.telegram.sendMessage(
-                                config.bot.tg_newsletterid,
-                                broadcastMessage,
-                                { parse_mode: 'Markdown' }
-                            );
-                        } catch (e) {
-                            console.error('Broadcast error:', e);
+                        if (config.bot.tg_newsletterid) {
+                            try {
+                                await bot.telegram.sendMessage(
+                                    config.bot.tg_newsletterid,
+                                    broadcastMessage,
+                                    { parse_mode: 'Markdown' }
+                                );
+                            } catch (e) {
+                                console.error('Broadcast error:', e);
+                            }
                         }
+                    },
+
+                    onExpired: async () => {
+                        activeTopups.delete(userId);
+                        await bot.telegram.sendMessage(userId, '⏱ Transaction expired.');
+                    },
+
+                    onError: async (err) => {
+                        console.error('Watcher error:', err);
+                        activeTopups.delete(userId);
+                        await bot.telegram.sendMessage(userId,
+                            '❌ Error while checking payment.\nContact admin.'
+                        );
                     }
-                },
+                });
 
-                onExpired: async () => {
-                    activeTopups.delete(userId);
-                    await ctx.reply('⏱ Transaction expired.');
-                },
+                activeTopups.set(userId, {
+                    orderId,
+                    amount: price,
+                    watcher
+                });
 
-                onError: async (err) => {
-                    console.error('Watcher error:', err);
-                    activeTopups.delete(userId);
-                    await ctx.reply(
-                        '❌ Error while checking payment.\nContact admin.'
-                    );
-                }
-            });
+            } catch (err) {
+                console.error('Create payment failed:', err);
+                return ctx.reply(
+                    '❌ Failed to create payment.\nPlease try again later.'
+                );
+            }
+        } else if (method === 'stars') {
+            await ctx.answerCbQuery();
+            const priceStars = (coinAmount / 25) * 3;
 
-            activeTopups.set(userId, {
-                orderId,
-                amount: price,
-                watcher
-            });
-
-        } catch (err) {
-            console.error('Create payment failed:', err);
-            return ctx.reply(
-                '❌ Failed to create payment.\\nPlease try again later.'
-            );
+            try {
+                await ctx.replyWithInvoice({
+                    title: `Top Up ${coinAmount} Coins`,
+                    description: `Beli ${coinAmount} koin menggunakan Telegram Stars`,
+                    payload: JSON.stringify({ userId, coinAmount, method: 'stars' }),
+                    provider_token: '', // Kosong untuk Stars
+                    currency: 'XTR',
+                    prices: [{ label: `${coinAmount} Coins`, amount: priceStars }],
+                    reply_markup: {
+                        inline_keyboard: [[{ text: `Bayar ${priceStars} ⭐️`, pay: true }]]
+                    }
+                });
+                await ctx.deleteMessage();
+            } catch (e) {
+                console.error('Stars invoice error:', e);
+                await ctx.reply('❌ Gagal membuat invoice Telegram Stars.');
+            }
         }
     }
 };

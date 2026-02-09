@@ -58,10 +58,7 @@ module.exports = {
         if (config.bot.tg_newsletterid) {
             const notificationText = `<i>${ctx.from.first_name} baru saja menukarkan kode ${code} dan mendapatkan ${rewardMessage}!</i>`;
             try {
-                const sentMessage = await bot.telegram.sendMessage(config.bot.tg_newsletterid, notificationText, { parse_mode: 'HTML' });
-                setTimeout(() => {
-                    bot.telegram.deleteMessage(config.bot.tg_newsletterid, sentMessage.message_id).catch(e => console.error(`Gagal menghapus pesan notifikasi redeem: ${e.message}`));
-                }, 5000); // Hapus setelah 5 detik
+                await bot.telegram.sendMessage(config.bot.tg_newsletterid, notificationText, { parse_mode: 'HTML' });
             } catch (e) {
                 console.error(`Gagal mengirim notifikasi redeem: ${e.message}`);
             }

@@ -2,7 +2,7 @@ module.exports = {
     name: 'broadcast',
     category: 'misc',
     description: 'Send a message to all users. Costs coins.',
-    code: async (ctx, { isOwner, isPremium, getCoins, updateCoins, db }) => {
+    code: async (ctx, { isOwner, isPremium, getCoins, updateCoins, db, escapeHTML }) => {
         const userId = ctx.from.id;
         const message = ctx.message.text.split(' ').slice(1).join(' ');
 
@@ -45,7 +45,7 @@ module.exports = {
             try {
                 // Avoid sending to the user who initiated the broadcast to prevent spamming themselves
                 if (targetId !== userId) {
-                    await ctx.telegram.sendMessage(targetId, message);
+                    await ctx.telegram.sendMessage(targetId, message, { parse_mode: 'HTML' });
                     successCount++;
                 }
             } catch (error) {
@@ -53,9 +53,6 @@ module.exports = {
                 failureCount++;
             }
         }
-
-        // The sender is also a "success", so we add 1
-        successCount++;
 
         let feedback = `Broadcast finished.\n✅ Sent to ${successCount} users.\n❌ Failed for ${failureCount} users.`;
         if (!isOwner(userId)) {
