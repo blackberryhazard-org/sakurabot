@@ -1,27 +1,9 @@
 const moment = require('moment-timezone');
 
-const itemsList = [
-    { name: 'Copper', weight: 60 },
-    { name: 'Lead', weight: 25 },
-    { name: 'Titanium', weight: 10 },
-    { name: 'Thorium', weight: 4 },
-    { name: 'Plastanium', weight: 1 }
-];
-
-function getRandomItem() {
-    const totalWeight = itemsList.reduce((acc, item) => acc + item.weight, 0);
-    let random = Math.random() * totalWeight;
-    for (const item of itemsList) {
-        if (random < item.weight) return item.name;
-        random -= item.weight;
-    }
-    return itemsList[0].name;
-}
-
 module.exports = {
     name: 'daily',
     category: 'user',
-    code: async (ctx, { db, isOwner, getSakuranite, updateSakuranite, getGachaTickets, updateGachaTickets }) => {
+    code: async (ctx, { db, isOwner, getSakuranite, updateSakuranite, getGachaTickets, updateGachaTickets, getMiningTickets, updateMiningTickets }) => {
         const userId = ctx.from.id;
         const lastDaily = db.get(`last_daily.${userId}`);
         const now = moment().tz('Asia/Jakarta');
@@ -30,24 +12,19 @@ module.exports = {
             return ctx.reply('You have already claimed your daily reward today. Come back tomorrow!');
         }
 
-        // Sakuranite 50 - 750
+        // Rewards
         const sakuraniteReward = Math.floor(Math.random() * (750 - 50 + 1)) + 50;
         const ticketsReward = 5;
-        const itemName = getRandomItem();
-        const itemAmount = Math.floor(Math.random() * 3) + 1;
+        const miningTicketsReward = 5;
 
         if (!isOwner(userId)) {
             updateSakuranite(userId, getSakuranite(userId) + sakuraniteReward);
         }
         updateGachaTickets(userId, getGachaTickets(userId) + ticketsReward);
-
-        // Update Inventory
-        const inventory = db.get(`inventory.${userId}`) || {};
-        inventory[itemName] = (inventory[itemName] || 0) + itemAmount;
-        db.set(`inventory.${userId}`, inventory);
+        updateMiningTickets(userId, getMiningTickets(userId) + miningTicketsReward);
 
         db.set(`last_daily.${userId}`, now.valueOf());
 
-        return ctx.reply(`🎉 Daily Reward Claimed! 🎉\n\nYou received:\n- ${isOwner(userId) ? 0 : sakuraniteReward} Sakuranite\n- ${ticketsReward} Gacha Tickets\n- ${itemAmount}x ${itemName}`, { parse_mode: 'HTML' });
+        return ctx.reply(`🎉 <b>Daily Reward Claimed!</b> 🎉\n\nYou received:\n- ${isOwner(userId) ? 0 : sakuraniteReward} Sakuranite\n- ${ticketsReward} Gacha Tickets\n- ${miningTicketsReward} Mining Tickets\n\nCome back tomorrow!`, { parse_mode: 'HTML' });
     }
 };

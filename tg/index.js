@@ -8,6 +8,7 @@ const { Database } = require('simpl.db');
 const cron = require('node-cron');
 const archiver = require('archiver');
 const { Pakasir } = require('pakasir-sdk');
+const { items_serpulo: items } = require('../tools/items');
 
 const dbPath = path.resolve(__dirname, '../database/tg');
 fs.mkdirSync(dbPath, { recursive: true });
@@ -23,6 +24,7 @@ if (!db.has('users')) db.set('users', []);
 if (!db.has('bans')) db.set('bans', []);
 if (!db.has('premium')) db.set('premium', []);
 if (!db.has('groups')) db.set('groups', []);
+if (!db.has('channels')) db.set('channels', []);
 if (!db.has('coins')) db.set('coins', {});
 if (!db.has('managers')) db.set('managers', []);
 if (!db.has('gacha_tickets')) db.set('gacha_tickets', {});
@@ -33,6 +35,8 @@ if (!db.has('pending_referrals')) db.set('pending_referrals', {});
 if (!db.has('sakuranite')) db.set('sakuranite', {});
 if (!db.has('inventory')) db.set('inventory', {});
 if (!db.has('links')) db.set('links', {});
+if (!db.has('mining_tickets')) db.set('mining_tickets', {});
+if (!db.has('mining_rate')) db.set('mining_rate', {});
 
 
 // Middleware to save user IDs
@@ -118,6 +122,22 @@ const getSakuranite = (userId) => {
 const updateSakuranite = (userId, amount) => {
     db.set(`sakuranite.${userId}`, amount);
 };
+const getMiningTickets = (userId) => {
+    return db.get(`mining_tickets.${userId}`) || 0;
+};
+
+const updateMiningTickets = (userId, amount) => {
+    db.set(`mining_tickets.${userId}`, amount);
+};
+
+const getMiningRate = (userId) => {
+    return db.get(`mining_rate.${userId}`) || 0.10;
+};
+
+const updateMiningRate = (userId, amount) => {
+    db.set(`mining_rate.${userId}`, amount);
+};
+
 
 const userCooldowns = new Map();
 const activeTopups = new Map();
@@ -132,6 +152,11 @@ const launchTelegramBot = () => {
   });
 
   const helpers = {
+      getMiningTickets,
+      updateMiningTickets,
+      getMiningRate,
+      updateMiningRate,
+      items,
       pakasir,
       activeTopups,
       isLeader,
@@ -432,6 +457,65 @@ Ketentuan:
       }
     } catch (e) {
       console.error('Error handling successful payment:', e);
+    }
+  });
+
+    // --- Auto Broadcast List Addition ---
+  bot.on('my_chat_member', async (ctx) => {
+    const { old_chat_member, new_chat_member, chat } = ctx.myChatMember;
+    const user = ctx.myChatMember.from;
+
+    // Check if the bot was promoted to administrator
+    if (new_chat_member.status === 'administrator' && old_chat_member.status !== 'administrator') {
+        const isChannel = chat.type === 'channel';
+        const isGroup = chat.type === 'group' || chat.type === 'supergroup';
+
+        if (isChannel || isGroup) {
+            const key = isChannel ? 'channels' : 'groups';
+            const list = db.get(key) || [];
+
+            if (!list.includes(chat.id)) {
+                list.push(chat.id);
+                db.set(key, list);
+
+                // Reward the user who added/promoted the bot
+                const coinReward = 5;
+                const sakuraniteReward = 1000;
+
+                const currentCoins = getCoins(user.id);
+                const currentSakuranite = getSakuranite(user.id);
+
+                updateCoins(user.id, currentCoins + coinReward);
+                updateSakuranite(user.id, currentSakuranite + sakuraniteReward);
+
+                const rewardMsg = `🎉 Terima kasih telah menambahkan SakuraBot sebagai admin di <b>${chat.title || 'grup/channel'}</b>!
+
+` +
+                    `Kamu mendapatkan hadiah:
+` +
+                    `💰 <b>${coinReward} Coins</b>
+` +
+                    `🌸 <b>${sakuraniteReward} Sakuranite</b>
+
+` +
+                    `Grup/Channel ini telah otomatis ditambahkan ke daftar broadcast.`;
+
+                // Notify in the chat
+                try {
+                    await ctx.telegram.sendMessage(chat.id, `✅ SakuraBot telah ditambahkan ke daftar broadcast.
+Terima kasih kepada <a href="tg://user?id=${user.id}">${user.first_name}</a> atas hadiahnya!`, { parse_mode: 'HTML' });
+                } catch (e) {
+                    console.error('Could not send confirmation to chat:', e);
+                }
+
+                // Notify the user privately
+                try {
+                    await ctx.telegram.sendMessage(user.id, rewardMsg, { parse_mode: 'HTML' });
+                } catch (e) {
+                    console.error('Could not send reward notification to user:', e);
+                }
+            }
+        }
     }
   });
 

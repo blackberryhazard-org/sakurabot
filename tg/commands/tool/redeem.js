@@ -1,7 +1,7 @@
 module.exports = {
     name: 'redeem',
     category: 'tool',
-    code: async (ctx, { db, isOwner, getCoins, updateCoins, getGachaTickets, updateGachaTickets, getSakuranite, updateSakuranite, config, bot }) => {
+    code: async (ctx, { db, isOwner, getCoins, updateCoins, getGachaTickets, updateGachaTickets, getSakuranite, updateSakuranite, getMiningTickets, updateMiningTickets, config, bot }) => {
         const userId = ctx.from.id;
         const args = ctx.message.text.split(' ').slice(1);
         const code = args[0];
@@ -48,6 +48,9 @@ module.exports = {
         } else if (redeemCode.type === 'gacha') {
             updateGachaTickets(userId, getGachaTickets(userId) + redeemCode.amount);
             rewardMessage = `${redeemCode.amount} tiket gacha`;
+        } else if (redeemCode.type === 'mining') {
+            updateMiningTickets(userId, getMiningTickets(userId) + redeemCode.amount);
+            rewardMessage = `${redeemCode.amount} tiket mining`;
         }
 
         redeemCode.claimedBy.push(userId);

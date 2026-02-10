@@ -1,16 +1,8 @@
-const prices = {
-    'Copper': 50,
-    'Lead': 100,
-    'Titanium': 250,
-    'Thorium': 500,
-    'Plastanium': 1000
-};
-
 module.exports = {
     name: 'shop',
     category: 'user',
     description: 'Sell your items for Sakuranite.',
-    code: async (ctx, { db, updateSakuranite, getSakuranite }) => {
+    code: async (ctx, { db, updateSakuranite, getSakuranite, items }) => {
         const args = ctx.message.text.split(' ').slice(1);
 
         if (args[0] === 'sell') {
@@ -18,8 +10,8 @@ module.exports = {
             const amountStr = args[2] || '1';
             const amount = parseInt(amountStr);
 
-            if (!item || !prices[item]) {
-                return ctx.reply(`Invalid item. Available items: ${Object.keys(prices).join(', ')}`);
+            if (!item || !items[item]) {
+                return ctx.reply(`Invalid item. Available items: ${Object.keys(items).join(', ')}`);
             }
 
             if (isNaN(amount) || amount <= 0) {
@@ -34,7 +26,7 @@ module.exports = {
                 return ctx.reply(`You don't have enough ${item}.`);
             }
 
-            const totalPay = prices[item] * amount;
+            const totalPay = items[item] * amount;
 
             // Update inventory
             inventory[item] -= amount;
@@ -47,7 +39,7 @@ module.exports = {
             ctx.reply(`Successfully sold ${amount} ${item} for ${totalPay} Sakuranite.`);
         } else {
             let text = '<b>🛒 SHOP - SELL ITEMS</b>\n\n';
-            for (const [item, price] of Object.entries(prices)) {
+            for (const [item, price] of Object.entries(items)) {
                 text += `➛ <b>${item}</b>: ${price} Sakuranite\n`;
             }
             text += '\nUsage: /shop sell {item} {amount}';
