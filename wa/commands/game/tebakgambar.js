@@ -1,38 +1,48 @@
-const axios = require("axios");
-
 module.exports = {
     name: "tebakgambar",
     code: async (sock, m, { from, waBot }) => {
         if (waBot.games.has(from)) return await sock.sendMessage(from, { text: "Sesi permainan sedang berjalan di chat ini!" }, { quoted: m });
 
         try {
-            const apiUrl = "https://raw.githubusercontent.com/BochilTeam/database/refs/heads/master/games/tebakgambar.json";
-            const { data } = await axios.get(apiUrl);
-            const result = tools.cmd.getRandomElement(data);
-
-            const game = {
-                name: "tebakgambar",
-                answer: result.jawaban.toLowerCase(),
-                reward: 500,
-                timeout: 60000,
-                startTime: Date.now()
-            };
-
+            const game = await tools.game.fetchQuestion("tebakgambar");
             waBot.games.set(from, game);
 
-            await sock.sendMessage(from, {
-                image: { url: result.img },
-                caption: `— *TEBAK GAMBAR* —\n\n` +
-                    `${result.deskripsi}\n\n` +
-                    `➛ *Bonus*: ${game.reward} Sakuranite\n` +
-                    `➛ *Batas waktu*: ${tools.msg.convertMsToDuration(game.timeout)}\n\n` +
-                    `Ketik jawaban Anda langsung. Ketik *hint* untuk petunjuk atau *surrender* untuk menyerah.`
-            }, { quoted: m });
+            if (game.image) {
+                await sock.sendMessage(from, {
+                    image: { url: game.image },
+                    caption: `— *${game.title}* —\n\n` +
+                        `${game.question}\n\n` +
+                        `➛ *Bonus*: ${game.reward} Sakuranite\n` +
+                        `➛ *Batas waktu*: ${tools.msg.convertMsToDuration(game.timeout)}\n\n` +
+                        `Ketik jawaban Anda langsung. Ketik *hint* untuk petunjuk atau *surrender* untuk menyerah.`
+                }, { quoted: m });
+            } else if (game.name === "family100") {
+                await sock.sendMessage(from, {
+                    text: `— *${game.title}* —\n\n${game.question}\n\n` +
+                        `➛ *Total Jawaban*: ${game.answers.length}\n` +
+                        `➛ *Bonus*: ${game.rewardPerAnswer} Sakuranite per jawaban\n` +
+                        `➛ *Batas waktu*: ${tools.msg.convertMsToDuration(game.timeout)}\n\n` +
+                        `Ketik jawaban Anda langsung. Ketik *surrender* untuk menyerah.`
+                }, { quoted: m });
+            } else {
+                await sock.sendMessage(from, {
+                    text: `— *${game.title}* —\n\n${game.question}\n\n` +
+                        `➛ *Bonus*: ${game.reward} Sakuranite\n` +
+                        `➛ *Batas waktu*: ${tools.msg.convertMsToDuration(game.timeout)}\n\n` +
+                        `Ketik jawaban Anda langsung. Ketik *hint* untuk petunjuk atau *surrender* untuk menyerah.`
+                }, { quoted: m });
+            }
 
             game.timeoutRef = setTimeout(async () => {
                 if (waBot.games.has(from) && waBot.games.get(from).startTime === game.startTime) {
-                    waBot.games.delete(from);
-                    await sock.sendMessage(from, { text: `Waktu habis! Jawabannya adalah *${game.answer.toUpperCase()}*.` });
+                    if (game.answers) {
+                        const remaining = game.answers.filter(ans => !game.answered.includes(ans));
+                        waBot.games.delete(from);
+                        await sock.sendMessage(from, { text: `Waktu habis! Jawaban yang belum terjawab adalah: *${remaining.join(", ").toUpperCase()}*` });
+                    } else {
+                        waBot.games.delete(from);
+                        await sock.sendMessage(from, { text: `Waktu habis! Jawabannya adalah *${game.answer.toUpperCase()}*.${game.description ? `\n\nDeskripsi: ${game.description}` : ""}` });
+                    }
                 }
             }, game.timeout);
         } catch (error) {
