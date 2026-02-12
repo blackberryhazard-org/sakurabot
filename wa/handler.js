@@ -1,8 +1,10 @@
+const config = require("../config.json");
 const { downloadContentFromMessage } = require("@whiskeysockets/baileys");
 const { Sticker, StickerTypes } = require("wa-sticker-formatter");
 const moment = require("moment-timezone");
 const fs = require("fs");
 const path = require("path");
+const middleware = require("./middleware");
 
 module.exports = async (sock, m, db, waBot, items) => {
     const from = m.key.remoteJid;
@@ -10,12 +12,8 @@ module.exports = async (sock, m, db, waBot, items) => {
     const type = Object.keys(m.message)[0];
     const pushName = m.pushName || "User";
 
-    // Track users in database
-    const users = db.get("users") || [];
-    if (!users.includes(sender)) {
-        users.push(sender);
-        db.set("users", users);
-    }
+    // Track users in database (Middleware)
+    middleware.registerUser(db, sender);
 
     // Extracting text body
     let body = "";
@@ -34,26 +32,6 @@ module.exports = async (sock, m, db, waBot, items) => {
     const isCmd = body.startsWith(prefix);
     const commandName = isCmd ? body.slice(prefix.length).trim().split(" ")[0].toLowerCase() : "";
     const args = body.trim().split(/ +/).slice(1);
-
-    const isLeader = (jid) => {
-        if (!jid) return false;
-        return config.owner.id === jid.split('@')[0];
-    };
-
-    const isManager = (jid) => {
-        if (!jid) return false;
-        const managers = db.get('managers') || [];
-        return managers.includes(jid);
-    };
-
-    const isOwner = (jid) => {
-        return isLeader(jid) || isManager(jid);
-    };
-
-    const isPremium = (jid) => {
-        const premiumUsers = db.get('premium') || [];
-        return premiumUsers.includes(jid);
-    };
 
     const getSakuranite = (jid) => {
         return db.get(`sakuranite.${jid}`) || 0;
@@ -98,21 +76,16 @@ module.exports = async (sock, m, db, waBot, items) => {
             target = contextInfo.participant;
         } else if (types.includes("mentioned") && contextInfo?.mentionedJid?.length > 0) {
             target = contextInfo.mentionedJid[0];
-        } else if (types.includes("text") && args.length > 0) {
-            const t = args[0].replace(/[^0-9]/g, '');
-            if (t.length > 0) target = t + '@s.whatsapp.net';
+        } else if (types.includes("text") && args[0]) {
+            target = args[0].replace(/[^0-9]/g, "") + "@s.whatsapp.net";
         }
         return target;
     };
 
-    const ctxType = Object.keys(m.message)[0];
-    const contextInfo = m.message[ctxType]?.contextInfo;
-
     const downloadMedia = async (message) => {
-        const mType = Object.keys(message)[0];
-        const mediaMessage = message[mType];
-        if (!mediaMessage) return null;
-        const stream = await downloadContentFromMessage(mediaMessage, mType.replace('Message', ''));
+        const type = Object.keys(message)[0];
+        const mime = message[type].mimetype;
+        const stream = await downloadContentFromMessage(message[type], type.split("Message")[0]);
         let buffer = Buffer.from([]);
         for await (const chunk of stream) {
             buffer = Buffer.concat([buffer, chunk]);
@@ -121,29 +94,21 @@ module.exports = async (sock, m, db, waBot, items) => {
     };
 
     const getGroupDb = (jid) => {
-        let groupData = db.get(`groups.${jid}`) || {};
-        return new Proxy(groupData, {
-            get(target, prop) {
-                if (prop === 'save') {
-                    return () => db.set(`groups.${jid}`, groupData);
-                }
-                return target[prop];
+        if (!jid.endsWith('@g.us')) return null;
+        return new Proxy({}, {
+            get: (target, prop) => {
+                if (prop === 'save') return () => {}; // Auto-save is on
+                return db.get(`groups.${jid}.${prop}`);
             },
-            set(target, prop, value) {
-                target[prop] = value;
+            set: (target, prop, value) => {
+                db.set(`groups.${jid}.${prop}`, value);
                 return true;
             }
         });
     };
 
     const ctx = {
-        id: from,
-        args,
-        prefix,
-        sender: { jid: sender },
-        me: { lid: sock.user.id.split(':')[0] + '@s.whatsapp.net' },
-        isGroup: () => from.endsWith('@g.us'),
-        getId: (jid) => jid.split('@')[0],
+        m,
         reply: async (content, options = {}) => {
             if (typeof content === 'string') {
                 return await sock.sendMessage(from, { text: content, ...options }, { quoted: m });
@@ -239,12 +204,12 @@ module.exports = async (sock, m, db, waBot, items) => {
             }
         }),
         text: args.join(" "),
-        quoted: contextInfo?.quotedMessage ? {
-            text: contextInfo.quotedMessage.conversation ||
-                  contextInfo.quotedMessage.extendedTextMessage?.text ||
-                  contextInfo.quotedMessage.imageMessage?.caption ||
-                  contextInfo.quotedMessage.videoMessage?.caption,
-            download: async () => await downloadMedia(contextInfo.quotedMessage)
+        quoted: m.message[type]?.contextInfo?.quotedMessage ? {
+            text: m.message[type].contextInfo.quotedMessage.conversation ||
+                  m.message[type].contextInfo.quotedMessage.extendedTextMessage?.text ||
+                  m.message[type].contextInfo.quotedMessage.imageMessage?.caption ||
+                  m.message[type].contextInfo.quotedMessage.videoMessage?.caption,
+            download: async () => await downloadMedia(m.message[type].contextInfo.quotedMessage)
         } : null,
         used: {
             prefix,
@@ -258,10 +223,10 @@ module.exports = async (sock, m, db, waBot, items) => {
         getMiningRate,
         updateMiningRate,
         ctx,
-        isLeader,
-        isManager,
-        isOwner,
-        isPremium,
+        isLeader: (jid) => middleware.isLeader(jid),
+        isManager: (jid) => middleware.isManager(db, jid),
+        isOwner: (jid) => middleware.isOwner(db, jid),
+        isPremium: (jid) => middleware.isPremium(db, jid),
         getSakuranite,
         updateSakuranite,
         getInventory,
@@ -283,70 +248,27 @@ module.exports = async (sock, m, db, waBot, items) => {
     const bodyLower = body.toLowerCase();
     const activeGame = waBot.games.get(from);
     if (activeGame && !isCmd) {
-        if (activeGame.answers) {
-            // Multi-answer game (like Family 100)
-            if (activeGame.answers.includes(bodyLower)) {
-                if (activeGame.answered.includes(bodyLower)) {
-                    return await sock.sendMessage(from, { text: `Jawaban *${bodyLower.toUpperCase()}* sudah terjawab!` }, { quoted: m });
-                }
+        const result = tools.game.handleAnswer(
+            activeGame,
+            body,
+            sender,
+            pushName || sender.split("@")[0],
+            updateSakuranite,
+            getSakuranite
+        );
 
-                activeGame.answered.push(bodyLower);
-                const reward = activeGame.rewardPerAnswer || 100;
-                updateSakuranite(sender, getSakuranite(sender) + reward);
-
-                const remaining = activeGame.answers.length - activeGame.answered.length;
-                if (remaining === 0) {
-                    const totalReward = activeGame.rewardAllAnswered || 500;
-                    updateSakuranite(sender, getSakuranite(sender) + totalReward);
-                    if (activeGame.timeoutRef) clearTimeout(activeGame.timeoutRef);
-                    waBot.games.delete(from);
-                    return await sock.sendMessage(from, {
-                        text: `Selamat @${sender.split('@')[0]}! Jawaban *${bodyLower.toUpperCase()}* benar!\n\n` +
-                              `Semua jawaban telah terjawab! Anda mendapatkan bonus tambahan ${totalReward} Sakuranite.`,
-                        mentions: [sender]
-                    }, { quoted: m });
-                } else {
-                    return await sock.sendMessage(from, {
-                        text: `Selamat @${sender.split('@')[0]}! Jawaban *${bodyLower.toUpperCase()}* benar!\n` +
-                              `Tersisa ${remaining} jawaban lagi.`,
-                        mentions: [sender]
-                    }, { quoted: m });
-                }
+        if (result) {
+            if (result.status === "game_over" || result.status === "surrender") {
+                if (activeGame.timeoutRef) clearTimeout(activeGame.timeoutRef);
+                waBot.games.delete(from);
             }
-        } else if (bodyLower === activeGame.answer) {
-            const reward = activeGame.reward || 500;
-            updateSakuranite(sender, getSakuranite(sender) + reward);
-            if (activeGame.timeoutRef) clearTimeout(activeGame.timeoutRef);
-            waBot.games.delete(from);
+
             return await sock.sendMessage(from, {
-                text: `Selamat @${sender.split('@')[0]}! Jawaban Anda benar: *${activeGame.answer.toUpperCase()}*\n\n` +
-                      (activeGame.description ? `Deskripsi: ${activeGame.description}\n\n` : "") +
-                      `Anda mendapatkan ${reward} Sakuranite!`,
-                mentions: [sender]
+                text: result.message,
+                mentions: result.mentions || []
             }, { quoted: m });
         }
-
-        if (bodyLower === 'hint') {
-            if (activeGame.answer) {
-                const clue = activeGame.answer.replace(/[aiueo]/g, "_").toUpperCase();
-                return await sock.sendMessage(from, { text: `Petunjuk: \`${clue}\`` }, { quoted: m });
-            } else {
-                return await sock.sendMessage(from, { text: `Petunjuk tidak tersedia untuk game ini.` }, { quoted: m });
-            }
-        } else if (bodyLower === 'surrender') {
-            if (activeGame.timeoutRef) clearTimeout(activeGame.timeoutRef);
-            if (activeGame.answers) {
-                const remaining = activeGame.answers.filter(ans => !activeGame.answered.includes(ans));
-                waBot.games.delete(from);
-                return await sock.sendMessage(from, { text: `Anda menyerah! Jawaban yang belum terjawab adalah: *${remaining.join(", ").toUpperCase()}*` }, { quoted: m });
-            } else {
-                const ans = activeGame.answer;
-                waBot.games.delete(from);
-                return await sock.sendMessage(from, { text: `Anda menyerah! Jawabannya adalah *${ans.toUpperCase()}*.` }, { quoted: m });
-            }
-        }
     }
-
     // Handle Sessions (e.g., for /link)
     const session = waBot.sessions.get(sender);
     if (session && !isCmd) {
@@ -385,9 +307,9 @@ module.exports = async (sock, m, db, waBot, items) => {
                 // Permission checking
                 if (cmd.permissions) {
                     const isGroup = from.endsWith('@g.us');
-                    const senderIsOwner = isOwner(sender);
-                    const senderIsLeader = isLeader(sender);
-                    const senderIsPremium = isPremium(sender);
+                    const senderIsOwner = helpers.isOwner(sender);
+                    const senderIsLeader = helpers.isLeader(sender);
+                    const senderIsPremium = helpers.isPremium(sender);
 
                     if (cmd.permissions.owner && !senderIsOwner) {
                         return await sock.sendMessage(from, { text: config.msg.owner }, { quoted: m });

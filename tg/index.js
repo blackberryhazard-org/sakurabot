@@ -38,49 +38,6 @@ if (!db.has('links')) db.set('links', {});
 if (!db.has('mining_tickets')) db.set('mining_tickets', {});
 if (!db.has('mining_rate')) db.set('mining_rate', {});
 
-
-// Middleware to save user IDs
-const addUserMiddleware = (ctx, next) => {
-    if (ctx.from && ctx.from.id) {
-        const users = db.get('users') || [];
-        if (!users.includes(ctx.from.id)) {
-            users.push(ctx.from.id);
-            db.set('users', users);
-        }
-    }
-    return next();
-};
-
-// Middleware to check for banned users
-const banMiddleware = (ctx, next) => {
-    if (!ctx.from) {
-        return next();
-    }
-
-    const userId = ctx.from.id;
-    let bans = db.get('bans');
-    const now = new Date();
-
-    // Filter out expired bans
-    const activeBans = bans.filter(ban => {
-        const until = new Date(ban.until);
-        return until > now;
-    });
-
-    // If the list of bans changed, write it back
-    if (activeBans.length < bans.length) {
-        db.set('bans', activeBans);
-    }
-
-    const userBan = activeBans.find(ban => ban.id === userId);
-
-    if (userBan) {
-        return ctx.reply(config.msg.banned);
-    }
-
-    return next();
-};
-
 // Helper function to check for leader
 const isLeader = (userId) => {
     return config.owner.id_tele === userId.toString();
@@ -146,6 +103,7 @@ const launchTelegramBot = () => {
   const { escapeHTML, formatUptime } = global;
   const token = config.bot.botfather_token;
   const bot = new Telegraf(token);
+  bot.games = new Map();
   const pakasir = new Pakasir({
     slug: config.pakasir.slug,
     apikey: config.pakasir.apikey
@@ -173,100 +131,46 @@ const launchTelegramBot = () => {
       config // Pass the full config
   };
 
-  // Cooldown Middleware
-  const cooldownMiddleware = (ctx, next) => {
-    if (!ctx.from) {
-        return next();
-    }
-
-    // Extract command name from the message text
-    const messageText = ctx.message && ctx.message.text ? ctx.message.text : '';
-    const commandMatch = messageText.match(/^\/([a-zA-Z0-9_]+)/);
-    if (!commandMatch) {
-        return next();
-    }
-    const commandName = commandMatch[1];
-
-
-    const excludedCommands = ['start', 'menu', 'ping', 'me'];
-    if (excludedCommands.includes(commandName)) {
-        return next();
-    }
-
-    const userId = ctx.from.id;
-    if (isOwner(userId)) {
-        return next();
-    }
-
-    const now = Date.now();
-    const lastCommandTime = userCooldowns.get(userId) || 0;
-
-    const cooldownDuration = isPremium(userId) ? 3000 : 10000; // 3 seconds for premium, 10 for normal
-
-    if (now - lastCommandTime < cooldownDuration) {
-        const timeLeft = (cooldownDuration - (now - lastCommandTime)) / 1000;
-        return ctx.reply(`${config.msg.cooldown} ${timeLeft.toFixed(1)}s`);
-    }
-
-    userCooldowns.set(userId, now);
-    return next();
-  };
-
-  const channelSubMiddleware = async (ctx, next) => {
-    if (!ctx.from || ctx.chat.type !== 'private') {
-        return next();
-    }
-
-    // Function to process a successful referral
-    const processReferral = async () => {
-        const pendingReferral = db.get(`pending_referrals.${ctx.from.id}`);
-        if (pendingReferral) {
-            const referrerId = pendingReferral;
-            db.set(`referred_by.${ctx.from.id}`, referrerId);
-
-            let referrerReferrals = db.get(`referrals.${referrerId}`) || [];
-            if (!Array.isArray(referrerReferrals)) referrerReferrals = [];
-            referrerReferrals.push(ctx.from.id);
-            db.set(`referrals.${referrerId}`, referrerReferrals);
-
-            db.delete(`pending_referrals.${ctx.from.id}`);
-
-            updateSakuranite(referrerId, getSakuranite(referrerId) + 1000);
-            updateGachaTickets(referrerId, getGachaTickets(referrerId) + 5);
-
-            try {
-                await bot.telegram.sendMessage(referrerId, `Congratulations! A user you referred (${ctx.from.first_name}) has successfully joined. You received 1000 Sakuranite and 5 gacha tickets.`);
-            } catch (e) {
-                console.error(`Failed to send referral notification to ${referrerId}:`, e);
-            }
-        }
-    };
-
-    if (!config.bot.tg_newsletterid || isOwner(ctx.from.id)) {
-        await processReferral();
-        return next();
-    }
-
-    try {
-        const chatMember = await ctx.telegram.getChatMember(config.bot.tg_newsletterid, ctx.from.id);
-        if (['member', 'administrator', 'creator'].includes(chatMember.status)) {
-            await processReferral();
-            return next();
-        } else {
-            const channelLink = `https://t.me/${(await ctx.telegram.getChat(config.bot.tg_newsletterid)).username}`;
-            return ctx.reply(`You must join our channel to use this bot. Please join here: ${channelLink}`);
-        }
-    } catch (error) {
-        console.error("Error in channel subscription middleware:", error);
-        return ctx.reply("Sorry, I couldn't verify your channel membership. Please try again later.");
-    }
-  };
+  // Import and use middlewares
+  const createMiddlewares = require('./middleware');
+  const middlewares = createMiddlewares({ db, config, helpers, bot, userCooldowns });
 
   // Use middlewares
-  bot.use(banMiddleware);
-  bot.use(addUserMiddleware);
-  bot.use(channelSubMiddleware);
-  bot.use(cooldownMiddleware);
+  bot.use(middlewares.banMiddleware);
+  bot.use(middlewares.addUserMiddleware);
+  bot.use(middlewares.channelSubMiddleware);
+  bot.use(middlewares.cooldownMiddleware);
+
+  bot.on("text", async (ctx, next) => {
+      if (!ctx.message || !ctx.message.text || ctx.message.text.startsWith("/")) return next();
+
+      const chatId = ctx.chat.id;
+      const activeGame = bot.games.get(chatId);
+
+      if (activeGame) {
+          const result = tools.game.handleAnswer(
+              activeGame,
+              ctx.message.text,
+              ctx.from.id,
+              ctx.from.first_name,
+              updateSakuranite,
+              getSakuranite
+          );
+
+          if (result) {
+              if (result.status === "game_over" || result.status === "surrender") {
+                  if (activeGame.timeoutRef) clearTimeout(activeGame.timeoutRef);
+                  bot.games.delete(chatId);
+              }
+
+              return await ctx.reply(result.message, {
+                  parse_mode: "Markdown",
+                  reply_to_message_id: ctx.message.message_id
+              });
+          }
+      }
+      return next();
+  });
 
   // Store commands in a map
   bot.cmd = new Map();
@@ -424,9 +328,7 @@ const launchTelegramBot = () => {
         updateCoins(userId, getCoins(userId) + coinAmount);
 
         await ctx.reply(
-          `✅ *PAYMENT CONFIRMED (Stars)*
-
-` +
+          `✅ *PAYMENT CONFIRMED (Stars)*\n\n` +
           `${coinAmount} coins have been added to your balance.`,
           { parse_mode: 'Markdown' }
         );
@@ -488,22 +390,15 @@ Ketentuan:
                 updateCoins(user.id, currentCoins + coinReward);
                 updateSakuranite(user.id, currentSakuranite + sakuraniteReward);
 
-                const rewardMsg = `🎉 Terima kasih telah menambahkan SakuraBot sebagai admin di <b>${chat.title || 'grup/channel'}</b>!
-
-` +
-                    `Kamu mendapatkan hadiah:
-` +
-                    `💰 <b>${coinReward} Coins</b>
-` +
-                    `🌸 <b>${sakuraniteReward} Sakuranite</b>
-
-` +
+                const rewardMsg = `🎉 Terima kasih telah menambahkan SakuraBot sebagai admin di <b>${chat.title || 'grup/channel'}</b>!\n\n` +
+                    `Kamu mendapatkan hadiah:\n` +
+                    `💰 <b>${coinReward} Coins</b>\n` +
+                    `🌸 <b>${sakuraniteReward} Sakuranite</b>\n\n` +
                     `Grup/Channel ini telah otomatis ditambahkan ke daftar broadcast.`;
 
                 // Notify in the chat
                 try {
-                    await ctx.telegram.sendMessage(chat.id, `✅ SakuraBot telah ditambahkan ke daftar broadcast.
-Terima kasih kepada <a href="tg://user?id=${user.id}">${user.first_name}</a> atas hadiahnya!`, { parse_mode: 'HTML' });
+                    await ctx.telegram.sendMessage(chat.id, `✅ SakuraBot telah ditambahkan ke daftar broadcast.\nTerima kasih kepada <a href="tg://user?id=${user.id}">${user.first_name}</a> atas hadiahnya!`, { parse_mode: 'HTML' });
                 } catch (e) {
                     console.error('Could not send confirmation to chat:', e);
                 }
