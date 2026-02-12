@@ -16,6 +16,22 @@ Kamu adalah **Senior Engineer + Tech Lead** yang diminta melakukan review menyel
 - Handler utama WA terlalu gemuk (parsing, command dispatch, permission, game state, util context campur jadi satu).
 - Dokumentasi setup & operasional masih minimal.
 
+## Prioritas Wajib dari Review Terbaru (harus dikerjakan lebih dulu)
+1. **`tg/middleware.js`: fail closed saat verifikasi channel-sub gagal**
+   - Saat `getChatMember` gagal, middleware **tidak boleh** lanjut `next()` untuk user private.
+   - Kondisi error API/transient/misconfiguration harus dianggap **belum terverifikasi** dan request ditolak dengan pesan yang aman.
+   - Tambahkan logging terstruktur agar error tetap terpantau tanpa menonaktifkan gate subscription.
+
+2. **`wa/handler.js`: pulihkan field kompatibilitas ctx yang masih dipakai command lama**
+   - Pastikan `ctx` tetap menyediakan field legacy berikut: `id`, `args`, `sender`, `me`, `getId`.
+   - Verifikasi command yang bergantung pada field tersebut (contoh: `wa/commands/group/tagme.js`, `wa/commands/group/mute.js`) agar tidak runtime error.
+   - Jika ingin deprecate field lama, sediakan adapter/transitional layer dan migration note, jangan hard break.
+
+3. **`wa/handler.js`: tolak target text non-numerik sebelum membentuk JID**
+   - Fallback target berbasis `args[0]` harus validasi digit terlebih dahulu.
+   - Input seperti `/addprem abc` wajib ditolak sebagai invalid target (bukan diubah menjadi `@s.whatsapp.net`).
+   - Command yang bergantung pada target harus mengembalikan pesan validasi yang jelas dan tidak menulis data target invalid ke database.
+
 ## Instruksi Eksekusi (wajib berurutan)
 
 ### Fase 1 — Baseline & Safety Net
