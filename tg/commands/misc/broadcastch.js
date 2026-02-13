@@ -1,4 +1,4 @@
-const { Markup } = require('telegraf');
+const { Markup } = require("telegraf");
 
 const COOLDOWN_REGULAR_HOURS = 48;
 const COOLDOWN_PREMIUM_HOURS = 24;
@@ -18,20 +18,20 @@ function msToTime(ms) {
 }
 
 module.exports = {
-    name: 'broadcastch',
-    category: 'misc',
-    description: 'Send a message to all registered channels.',
+    name: "broadcastch",
+    category: "misc",
+    description: "Send a message to all registered channels.",
     code: async (ctx, { isOwner, isPremium, getCoins, updateCoins, db }) => {
         const userId = ctx.from.id;
-        const message = ctx.message.text.split(' ').slice(1).join(' ');
+        const message = ctx.message.text.split(" ").slice(1).join(" ");
 
         if (!message) {
-            return ctx.reply('Please provide a message to broadcast to channels.');
+            return ctx.reply("Please provide a message to broadcast to channels.");
         }
 
-        const channels = db.get('channels') || [];
+        const channels = db.get("channels") || [];
         if (channels.length === 0) {
-            return ctx.reply('There are no channels registered for broadcast.');
+            return ctx.reply("There are no channels registered for broadcast.");
         }
 
         if (isOwner(userId)) {
@@ -39,7 +39,7 @@ module.exports = {
             return broadcastMessage(ctx, message, channels, 0, userId, getCoins);
         }
 
-        const cooldowns = db.get('broadcastch_cooldown') || {};
+        const cooldowns = db.get("broadcastch_cooldown") || {};
         const lastBroadcast = cooldowns[userId] || 0;
         const now = Date.now();
 
@@ -58,8 +58,8 @@ module.exports = {
                     {
                         reply_to_message_id: ctx.message.message_id,
                         ...Markup.inlineKeyboard([
-                            Markup.button.callback('Yes, spend 50 coins', `bypass_bch_${userId}`),
-                            Markup.button.callback('No, I will wait', 'cancel_bypass')
+                            Markup.button.callback("Yes, spend 50 coins", `bypass_bch_${userId}`),
+                            Markup.button.callback("No, I will wait", "cancel_bypass")
                         ])
                     }
                 );
@@ -72,7 +72,7 @@ module.exports = {
         const broadcastResult = await broadcastMessage(ctx, message, channels, 0, userId, getCoins);
         if (broadcastResult.success > 0) {
             cooldowns[userId] = Date.now();
-            db.set('broadcastch_cooldown', cooldowns);
+            db.set("broadcastch_cooldown", cooldowns);
         }
         return;
     },
@@ -82,15 +82,15 @@ module.exports = {
         const userId = ctx.from.id;
         const query = ctx.callbackQuery.data;
 
-        if (query === 'cancel_bypass') {
-            return ctx.editMessageText('Broadcast canceled. Please wait for your cooldown to expire.');
+        if (query === "cancel_bypass") {
+            return ctx.editMessageText("Broadcast canceled. Please wait for your cooldown to expire.");
         }
 
-        if (query.startsWith('bypass_bch_')) {
-            const targetUserId = parseInt(query.split('_')[2]);
+        if (query.startsWith("bypass_bch_")) {
+            const targetUserId = parseInt(query.split("_")[2]);
 
             if (userId !== targetUserId) {
-                return ctx.answerCbQuery('This is not for you.', { show_alert: true });
+                return ctx.answerCbQuery("This is not for you.", { show_alert: true });
             }
 
             const userCoins = getCoins(userId);
@@ -99,23 +99,23 @@ module.exports = {
             }
 
             if (!ctx.callbackQuery.message.reply_to_message) {
-                return ctx.editMessageText('Cannot find the original message. Broadcast failed.');
+                return ctx.editMessageText("Cannot find the original message. Broadcast failed.");
             }
 
-            await ctx.editMessageText('Cooldown bypassed. Starting broadcast...');
+            await ctx.editMessageText("Cooldown bypassed. Starting broadcast...");
 
             // Deduct coins
             updateCoins(userId, userCoins - COOLDOWN_BYPASS_COST);
 
             const originalMessageText = ctx.callbackQuery.message.reply_to_message.text;
-            const message = originalMessageText.split(' ').slice(1).join(' ');
-            const channels = db.get('channels') || [];
+            const message = originalMessageText.split(" ").slice(1).join(" ");
+            const channels = db.get("channels") || [];
 
             const broadcastResult = await broadcastMessage(ctx, message, channels, COOLDOWN_BYPASS_COST, userId, getCoins);
             if (broadcastResult.success > 0) {
-                 const cooldowns = db.get('broadcastch_cooldown') || {};
-                 cooldowns[userId] = Date.now();
-                 db.set('broadcastch_cooldown', cooldowns);
+                const cooldowns = db.get("broadcastch_cooldown") || {};
+                cooldowns[userId] = Date.now();
+                db.set("broadcastch_cooldown", cooldowns);
             }
         }
     }
@@ -130,7 +130,7 @@ async function broadcastMessage(ctx, message, channels, cost, userId, getCoins) 
 
     for (const channelId of channels) {
         try {
-            await ctx.telegram.sendMessage(channelId, message, { parse_mode: 'HTML' });
+            await ctx.telegram.sendMessage(channelId, message, { parse_mode: "HTML" });
             successCount++;
         } catch (error) {
             console.error(`Failed to send message to channel ${channelId}:`, error.description);

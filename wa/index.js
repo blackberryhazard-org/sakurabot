@@ -12,26 +12,26 @@ const fs = require("fs");
 const { Database } = require("simpl.db");
 const handler = require("./handler");
 
+// Import Services
+const UserAccessService = require("../src/services/user-access.service");
+const EconomyService = require("../src/services/economy.service");
+const InventoryService = require("../src/services/inventory.service");
+
 // Database setup
-const dbPath = path.resolve(__dirname, '../database/wa');
+const dbPath = path.resolve(__dirname, "../database/wa");
 if (!fs.existsSync(dbPath)) fs.mkdirSync(dbPath, { recursive: true });
 
 const db = new Database({
-    dataFile: path.join(dbPath, 'database.json'),
+    dataFile: path.join(dbPath, "database.json"),
     autoSave: true,
     tabSize: 2
 });
 
 // Initialize database keys
-if (!db.has('users')) db.set('users', []);
-if (!db.has('premium')) db.set('premium', []);
-if (!db.has('managers')) db.set('managers', []);
-if (!db.has('sakuranite')) db.set('sakuranite', {});
-if (!db.has('inventory')) db.set('inventory', {});
-if (!db.has('last_daily')) db.set('last_daily', {});
-if (!db.has('links')) db.set('links', {});
-if (!db.has('mining_tickets')) db.set('mining_tickets', {});
-if (!db.has('mining_rate')) db.set('mining_rate', {});
+const keys = ["users", "premium", "managers", "sakuranite", "inventory", "last_daily", "links", "mining_tickets", "mining_rate"];
+keys.forEach(key => {
+    if (!db.has(key)) db.set(key, (key === "sakuranite" || key === "inventory" || key === "last_daily" || key === "links" || key === "mining_tickets" || key === "mining_rate") ? {} : []);
+});
 
 const waBot = {
     cmd: new Map(),
@@ -39,8 +39,13 @@ const waBot = {
     sessions: new Map()
 };
 
+// Initialize Services
+const userAccess = new UserAccessService(db, config);
+const economy = new EconomyService(db, global.auditLog);
+const inventoryService = new InventoryService(db);
+
 // Items definition
-const { items_erekir: items } = require('../tools/items');
+const { items_erekir: items } = require("../tools/items");
 
 // Helper function to load commands
 const loadCommands = (dir) => {
@@ -49,7 +54,7 @@ const loadCommands = (dir) => {
         const fullPath = path.join(dir, file.name);
         if (file.isDirectory()) {
             loadCommands(fullPath);
-        } else if (file.name.endsWith('.js')) {
+        } else if (file.name.endsWith(".js")) {
             try {
                 const command = require(fullPath);
                 if (command.name) {
@@ -67,10 +72,10 @@ const loadCommands = (dir) => {
     }
 };
 
-loadCommands(path.resolve(__dirname, 'commands'));
+loadCommands(path.resolve(__dirname, "commands"));
 
 const startWaBot = async () => {
-    const { state, saveCreds } = await useMultiFileAuthState(path.resolve(__dirname, '../state'));
+    const { state, saveCreds } = await useMultiFileAuthState(path.resolve(__dirname, "../state"));
     const { version } = await fetchLatestBaileysVersion();
 
     const sock = makeWASocket({
@@ -117,8 +122,9 @@ const startWaBot = async () => {
             if (!m.message) return;
             if (m.key.fromMe) return;
 
-            // Call message handler
-            await handler(sock, m, db, waBot, items);
+            // Pass services to handler
+            const services = { userAccess, economy, inventory: inventoryService };
+            await handler(sock, m, db, waBot, items, services);
         } catch (err) {
             consolefy.error(err);
         }

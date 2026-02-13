@@ -147,29 +147,29 @@ async function fetchQuestion(gameName) {
 function handleAnswer(session, body, senderId, senderName, updateSakuranite, getSakuranite) {
     const bodyLower = body.trim().toLowerCase();
 
-    if (bodyLower === 'hint') {
+    if (bodyLower === "hint") {
         if (session.answers) {
-             return { status: 'hint_not_available', message: "Petunjuk tidak tersedia untuk game ini." };
+            return { status: "hint_not_available", message: "Petunjuk tidak tersedia untuk game ini." };
         }
         if (session.answer) {
             const clue = session.answer.replace(/[aiueo]/g, "_").toUpperCase();
-            return { status: 'hint', message: `Petunjuk: \`${clue}\`` };
+            return { status: "hint", message: `Petunjuk: \`${clue}\`` };
         }
     }
 
-    if (bodyLower === 'surrender') {
+    if (bodyLower === "surrender") {
         if (session.answers) {
             const remaining = session.answers.filter(ans => !session.answered.includes(ans));
-            return { status: 'surrender', message: `Anda menyerah! Jawaban yang belum terjawab adalah: *${remaining.join(", ").toUpperCase()}*`, remaining };
+            return { status: "surrender", message: `Anda menyerah! Jawaban yang belum terjawab adalah: *${remaining.join(", ").toUpperCase()}*`, remaining };
         } else {
-            return { status: 'surrender', message: `Anda menyerah! Jawabannya adalah *${session.answer.toUpperCase()}*.`, answer: session.answer };
+            return { status: "surrender", message: `Anda menyerah! Jawabannya adalah *${session.answer.toUpperCase()}*.`, answer: session.answer };
         }
     }
 
     if (session.answers) {
         if (session.answers.includes(bodyLower)) {
             if (session.answered.includes(bodyLower)) {
-                return { status: 'already_answered', message: `Jawaban *${bodyLower.toUpperCase()}* sudah terjawab!` };
+                return { status: "already_answered", message: `Jawaban *${bodyLower.toUpperCase()}* sudah terjawab!` };
             }
 
             session.answered.push(bodyLower);
@@ -181,7 +181,7 @@ function handleAnswer(session, body, senderId, senderName, updateSakuranite, get
                 const totalReward = session.rewardAllAnswered || 500;
                 updateSakuranite(senderId, (getSakuranite(senderId) || 0) + totalReward);
                 return {
-                    status: 'game_over',
+                    status: "game_over",
                     message: `Selamat @${senderName}! Jawaban *${bodyLower.toUpperCase()}* benar!\n\n` +
                              `Semua jawaban telah terjawab! Anda mendapatkan bonus tambahan ${totalReward} Sakuranite.`,
                     mentions: [senderId],
@@ -189,7 +189,7 @@ function handleAnswer(session, body, senderId, senderName, updateSakuranite, get
                 };
             } else {
                 return {
-                    status: 'correct',
+                    status: "correct",
                     message: `Selamat @${senderName}! Jawaban *${bodyLower.toUpperCase()}* benar!\n` +
                              `Tersisa ${remainingCount} jawaban lagi.`,
                     mentions: [senderId],
@@ -201,7 +201,7 @@ function handleAnswer(session, body, senderId, senderName, updateSakuranite, get
         const reward = session.reward || 500;
         updateSakuranite(senderId, (getSakuranite(senderId) || 0) + reward);
         return {
-            status: 'game_over',
+            status: "game_over",
             message: `Selamat @${senderName}! Jawaban Anda benar: *${session.answer.toUpperCase()}*\n\n` +
                      (session.description ? `Deskripsi: ${session.description}\n\n` : "") +
                      `Anda mendapatkan ${reward} Sakuranite!`,

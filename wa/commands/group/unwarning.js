@@ -19,7 +19,7 @@ module.exports = {
                 mentions: ["6281234567891@s.whatsapp.net"]
             });
 
-        if (target === ctx.me.lid) return await ctx.reply(`ⓘ ${formatter.italic(`Tidak bisa mengubah warning bot!`)}`);
+        if (target === ctx.me.lid) return await ctx.reply(`ⓘ ${formatter.italic("Tidak bisa mengubah warning bot!")}`);
         if (await ctx.group().isOwner(target)) return await ctx.reply(`ⓘ ${formatter.italic("Tidak bisa memberikan warning ke owner grup!")}`);
 
         try {

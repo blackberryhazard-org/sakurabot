@@ -1,7 +1,7 @@
 module.exports = {
-    name: 'mining',
+    name: "mining",
     code: async (sock, m, { sender, db, from, items, getMiningTickets, updateMiningTickets, getMiningRate, updateMiningRate, args, prefix }) => {
-        if (args[0] === 'upgrade') {
+        if (args[0] === "upgrade") {
             const currentRate = getMiningRate(sender);
             let nextRate, cost;
 
@@ -12,7 +12,7 @@ module.exports = {
                 nextRate = 0.50;
                 cost = 10;
             } else {
-                return await sock.sendMessage(from, { text: 'Kecepatan mining Anda sudah maksimal (0.50).' }, { quoted: m });
+                return await sock.sendMessage(from, { text: "Kecepatan mining Anda sudah maksimal (0.50)." }, { quoted: m });
             }
 
             const tickets = getMiningTickets(sender);
@@ -30,9 +30,9 @@ module.exports = {
         const itemName = Object.keys(items).find(k => k.toLowerCase() === itemNameInput?.toLowerCase());
 
         if (!itemNameInput || !itemName) {
-            let text = `— *MINING SYSTEM* —\n\n` +
+            let text = "— *MINING SYSTEM* —\n\n" +
                 `Gunakan ${prefix}mining {nama_item} atau ${prefix}mining upgrade\n\n` +
-                `*Daftar Item*:\n`;
+                "*Daftar Item*:\n";
 
             for (const [name, price] of Object.entries(items)) {
                 const cost = price >= 500 ? 2 : 1;

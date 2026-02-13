@@ -1,6 +1,6 @@
 module.exports = {
-    name: 'newtesti',
-    category: 'owner',
+    name: "newtesti",
+    category: "owner",
     code: async (ctx, { isLeader, config }) => {
         if (!isLeader(ctx.from.id)) {
             return ctx.reply(config.msg.owner);
@@ -9,18 +9,18 @@ module.exports = {
         try {
             const id_channel = config.bot.tg_newsletterid;
             if (!id_channel) {
-                return ctx.reply('Telegram newsletter channel ID (`tg_newsletterid`) is not set in config.json.');
+                return ctx.reply("Telegram newsletter channel ID (`tg_newsletterid`) is not set in config.json.");
             }
 
-            const args = ctx.message.text.split(' ').slice(1);
+            const args = ctx.message.text.split(" ").slice(1);
             const [id_transaksi, nama, harga, buyer, ...pesan_tambahan_parts] = args;
-            const pesan_tambahan = pesan_tambahan_parts.join(' ');
+            const pesan_tambahan = pesan_tambahan_parts.join(" ");
 
             if (!id_transaksi || !nama || !harga || !buyer) {
-                return ctx.reply('Usage: /newtesti {id_transaksi} {nama} {harga} {buyer} {pesan_tambahan}');
+                return ctx.reply("Usage: /newtesti {id_transaksi} {nama} {harga} {buyer} {pesan_tambahan}");
             }
 
-            const itemName = nama.replace(/\+/g, ' ');
+            const itemName = nama.replace(/\+/g, " ");
             const caption = `Done wak😹
 
 ID Transaksi: ${id_transaksi}
@@ -38,10 +38,10 @@ ${pesan_tambahan}
                 await ctx.telegram.sendMessage(id_channel, caption);
             }
 
-            ctx.reply('Testimonial sent successfully!');
+            ctx.reply("Testimonial sent successfully!");
         } catch (error) {
-            console.error('Failed to send testimonial:', error);
-            ctx.reply('Failed to send testimonial. Please check the channel ID and make sure the bot has permission to post.');
+            console.error("Failed to send testimonial:", error);
+            ctx.reply("Failed to send testimonial. Please check the channel ID and make sure the bot has permission to post.");
         }
     }
 };

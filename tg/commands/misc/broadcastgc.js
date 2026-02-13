@@ -1,18 +1,18 @@
 module.exports = {
-    name: 'broadcastgc',
-    category: 'misc',
-    description: 'Broadcast a message to all registered groups. Costs coins.',
+    name: "broadcastgc",
+    category: "misc",
+    description: "Broadcast a message to all registered groups. Costs coins.",
     code: async (ctx, { isOwner, isPremium, getCoins, updateCoins, db }) => {
         const userId = ctx.from.id;
-        const message = ctx.message.text.split(' ').slice(1).join(' ');
+        const message = ctx.message.text.split(" ").slice(1).join(" ");
 
         if (!message) {
-            return ctx.reply('Usage: /broadcastgc {message}');
+            return ctx.reply("Usage: /broadcastgc {message}");
         }
 
-        const groups = db.get('groups');
+        const groups = db.get("groups");
         if (!groups || groups.length === 0) {
-            return ctx.reply('There are no groups registered for broadcast.');
+            return ctx.reply("There are no groups registered for broadcast.");
         }
 
         // Determine cost per group
@@ -44,7 +44,7 @@ module.exports = {
 
         for (const groupId of groups) {
             try {
-                await ctx.telegram.sendMessage(groupId, message, { parse_mode: 'HTML' });
+                await ctx.telegram.sendMessage(groupId, message, { parse_mode: "HTML" });
                 successCount++;
             } catch (error) {
                 console.error(`Failed to send message to group ${groupId}:`, error);

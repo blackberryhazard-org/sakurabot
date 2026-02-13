@@ -1,13 +1,13 @@
-const moment = require('moment-timezone');
+const moment = require("moment-timezone");
 
 module.exports = {
-    name: 'daily',
+    name: "daily",
     code: async (sock, m, { sender, db, getSakuranite, updateSakuranite, from, getMiningTickets, updateMiningTickets }) => {
         const lastDaily = db.get(`last_daily.${sender}`) || 0;
-        const now = moment().tz('Asia/Jakarta').startOf('day').valueOf();
+        const now = moment().tz("Asia/Jakarta").startOf("day").valueOf();
 
         if (lastDaily === now) {
-            return await sock.sendMessage(from, { text: 'Anda sudah mengambil hadiah harian hari ini!' }, { quoted: m });
+            return await sock.sendMessage(from, { text: "Anda sudah mengambil hadiah harian hari ini!" }, { quoted: m });
         }
 
         // Rewards
@@ -19,11 +19,11 @@ module.exports = {
 
         db.set(`last_daily.${sender}`, now);
 
-        let text = `— *DAILY REWARDS* —\n\n` +
-            `Selamat! Anda mendapatkan:\n` +
+        let text = "— *DAILY REWARDS* —\n\n" +
+            "Selamat! Anda mendapatkan:\n" +
             `➛ *Sakuranite*: ${sakuraniteReward}\n` +
             `➛ *Mining Tickets*: ${miningTicketsReward}\n\n` +
-            `Silakan kembali besok!`;
+            "Silakan kembali besok!";
 
         await sock.sendMessage(from, { text }, { quoted: m });
     }

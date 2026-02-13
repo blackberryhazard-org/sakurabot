@@ -1,20 +1,20 @@
 module.exports = {
-    name: 'unban',
-    category: 'owner',
+    name: "unban",
+    category: "owner",
     code: async (ctx, { isOwner, db, config }) => {
         if (!isOwner(ctx.from.id)) {
             return ctx.reply(config.msg.owner);
         }
 
-        const args = ctx.message.text.split(' ').slice(1);
+        const args = ctx.message.text.split(" ").slice(1);
         const userIdToUnban = parseInt(args[0], 10);
 
         if (isNaN(userIdToUnban)) {
-            return ctx.reply('Usage: /unban {user_id}');
+            return ctx.reply("Usage: /unban {user_id}");
         }
 
         try {
-            let bannedUsers = db.get('bans');
+            let bannedUsers = db.get("bans");
             const userIndex = bannedUsers.findIndex(ban => ban.id === userIdToUnban);
 
             if (userIndex === -1) {
@@ -22,12 +22,12 @@ module.exports = {
             }
 
             bannedUsers.splice(userIndex, 1);
-            db.set('bans', bannedUsers);
+            db.set("bans", bannedUsers);
 
             ctx.reply(`Successfully unbanned user with ID ${userIdToUnban}.`);
         } catch (error) {
-            console.error('Failed to unban user:', error);
-            ctx.reply('An error occurred while trying to unban the user.');
+            console.error("Failed to unban user:", error);
+            ctx.reply("An error occurred while trying to unban the user.");
         }
     }
 };

@@ -31,13 +31,13 @@ module.exports = {
             let setKey;
 
             switch (key.toLowerCase()) {
-                case "goodbye":
-                case "intro":
-                case "welcome":
-                    setKey = key.toLowerCase();
-                    break;
-                default:
-                    return await ctx.reply(`ⓘ ${formatter.italic(`Teks ${formatter.inlineCode(key)} tidak valid!`)}`);
+            case "goodbye":
+            case "intro":
+            case "welcome":
+                setKey = key.toLowerCase();
+                break;
+            default:
+                return await ctx.reply(`ⓘ ${formatter.italic(`Teks ${formatter.inlineCode(key)} tidak valid!`)}`);
             }
 
             if (text.toLowerCase() === "delete") {

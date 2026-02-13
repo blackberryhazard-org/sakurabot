@@ -40,7 +40,7 @@ module.exports = {
                 groupStatusMessage: content
             });
 
-            await ctx.reply(`ⓘ Group status berhasil dikirim!`);
+            await ctx.reply("ⓘ Group status berhasil dikirim!");
         } catch (error) {
             await tools.cmd.handleError(ctx, error, false);
         }

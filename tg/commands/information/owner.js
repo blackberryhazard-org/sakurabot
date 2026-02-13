@@ -1,17 +1,17 @@
 module.exports = {
-    name: 'owner',
-    category: 'information',
+    name: "owner",
+    category: "information",
     code: async (ctx, { config }) => {
         const owner = config.owner;
         const coOwners = owner.co || [];
 
-        let message = `*Owner Information*\n\n`;
+        let message = "*Owner Information*\n\n";
         message += `*Name:* ${owner.name}\n`;
         message += `*Telegram:* ${owner.usn_tele}\n`;
         message += `*Organization:* ${owner.organization}\n`;
 
         if (coOwners.length > 0) {
-            message += `\n*Co-Owners*\n`;
+            message += "\n*Co-Owners*\n";
             coOwners.forEach(co => {
                 message += `\n- *Name:* ${co.name}\n`;
                 if (co.organization) {
@@ -20,6 +20,6 @@ module.exports = {
             });
         }
 
-        ctx.reply(message, { parse_mode: 'Markdown' });
+        ctx.reply(message, { parse_mode: "Markdown" });
     }
 };

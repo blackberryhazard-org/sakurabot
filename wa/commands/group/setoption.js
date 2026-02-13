@@ -51,23 +51,23 @@ module.exports = {
             let setKey;
 
             switch (input.toLowerCase()) {
-                case "antiaudio":
-                case "antidocument":
-                case "antigif":
-                case "antiimage":
-                case "antilink":
-                case "antispam":
-                case "antisticker":
-                case "antitagsw":
-                case "antitoxic":
-                case "antivideo":
-                case "autokick":
-                case "gamerestrict":
-                case "welcome":
-                    setKey = input.toLowerCase();
-                    break;
-                default:
-                    return await ctx.reply(`ⓘ ${formatter.italic(`Opsi ${formatter.inlineCode(input)} tidak valid!`)}`);
+            case "antiaudio":
+            case "antidocument":
+            case "antigif":
+            case "antiimage":
+            case "antilink":
+            case "antispam":
+            case "antisticker":
+            case "antitagsw":
+            case "antitoxic":
+            case "antivideo":
+            case "autokick":
+            case "gamerestrict":
+            case "welcome":
+                setKey = input.toLowerCase();
+                break;
+            default:
+                return await ctx.reply(`ⓘ ${formatter.italic(`Opsi ${formatter.inlineCode(input)} tidak valid!`)}`);
             }
 
             const currentStatus = groupDb?.option?.[setKey] || false;

@@ -1,36 +1,36 @@
 module.exports = {
-    name: 'redeem',
-    category: 'tool',
+    name: "redeem",
+    category: "tool",
     code: async (ctx, { db, isOwner, getCoins, updateCoins, getGachaTickets, updateGachaTickets, getSakuranite, updateSakuranite, getMiningTickets, updateMiningTickets, config, bot }) => {
         const userId = ctx.from.id;
-        const args = ctx.message.text.split(' ').slice(1);
+        const args = ctx.message.text.split(" ").slice(1);
         const code = args[0];
 
         if (!code) {
-            return ctx.reply('Penggunaan: /redeem {kode}');
+            return ctx.reply("Penggunaan: /redeem {kode}");
         }
 
         const redeemCode = db.get(`redeem_codes.${code}`);
 
         if (!redeemCode) {
-            return ctx.reply('Kode redeem tidak valid atau sudah kedaluwarsa.');
+            return ctx.reply("Kode redeem tidak valid atau sudah kedaluwarsa.");
         }
 
         if (redeemCode.expiresAt && Date.now() > redeemCode.expiresAt) {
             db.delete(`redeem_codes.${code}`);
-            return ctx.reply('Kode redeem ini sudah kedaluwarsa.');
+            return ctx.reply("Kode redeem ini sudah kedaluwarsa.");
         }
 
         if (redeemCode.claimedBy.includes(userId)) {
-            return ctx.reply('Anda sudah pernah menukarkan kode ini.');
+            return ctx.reply("Anda sudah pernah menukarkan kode ini.");
         }
 
         if (redeemCode.quota > 0 && redeemCode.claimedBy.length >= redeemCode.quota) {
-            return ctx.reply('Maaf, kuota untuk kode redeem ini sudah habis.');
+            return ctx.reply("Maaf, kuota untuk kode redeem ini sudah habis.");
         }
 
-        let rewardMessage = '';
-        if (redeemCode.type === 'coins') {
+        let rewardMessage = "";
+        if (redeemCode.type === "coins") {
             const sakuraniteAmount = redeemCode.amount * 100;
             if (!isOwner(userId)) {
                 updateSakuranite(userId, getSakuranite(userId) + sakuraniteAmount);
@@ -38,17 +38,17 @@ module.exports = {
             } else {
                 rewardMessage = `${sakuraniteAmount} Sakuranite (Hanya untuk User)`;
             }
-        } else if (redeemCode.type === 'sakuranite') {
+        } else if (redeemCode.type === "sakuranite") {
             if (!isOwner(userId)) {
                 updateSakuranite(userId, getSakuranite(userId) + redeemCode.amount);
                 rewardMessage = `${redeemCode.amount} Sakuranite`;
             } else {
                 rewardMessage = `${redeemCode.amount} Sakuranite (Hanya untuk User)`;
             }
-        } else if (redeemCode.type === 'gacha') {
+        } else if (redeemCode.type === "gacha") {
             updateGachaTickets(userId, getGachaTickets(userId) + redeemCode.amount);
             rewardMessage = `${redeemCode.amount} tiket gacha`;
-        } else if (redeemCode.type === 'mining') {
+        } else if (redeemCode.type === "mining") {
             updateMiningTickets(userId, getMiningTickets(userId) + redeemCode.amount);
             rewardMessage = `${redeemCode.amount} tiket mining`;
         }
@@ -61,7 +61,7 @@ module.exports = {
         if (config.bot.tg_newsletterid) {
             const notificationText = `<i>${ctx.from.first_name} baru saja menukarkan kode ${code} dan mendapatkan ${rewardMessage}!</i>`;
             try {
-                await bot.telegram.sendMessage(config.bot.tg_newsletterid, notificationText, { parse_mode: 'HTML' });
+                await bot.telegram.sendMessage(config.bot.tg_newsletterid, notificationText, { parse_mode: "HTML" });
             } catch (e) {
                 console.error(`Gagal mengirim notifikasi redeem: ${e.message}`);
             }
