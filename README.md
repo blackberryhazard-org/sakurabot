@@ -26,14 +26,7 @@ SakuraBot adalah bot multi-platform (WhatsApp & Telegram) yang canggih dengan fi
    ```bash
    cp config.example.json config.json
    ```
-4. Edit `config.json` atau set environment variables (lihat di bawah).
-
-### Environment Variables
-Anda dapat mengatur konfigurasi melalui file `.env`:
-- `SAKURABOT_BOT_TOKEN`: Token Telegram Bot.
-- `SAKURABOT_PHONE_NUMBER`: Nomor WhatsApp (format: 628xxx).
-- `SAKURABOT_OWNER_TELE`: ID Telegram Owner.
-- `SAKURABOT_OWNER_WA`: Nomor WhatsApp Owner.
+4. Edit `config.json` dan isi semua field yang diperlukan.
 
 ## Penggunaan
 Jalankan bot dengan perintah:

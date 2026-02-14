@@ -1,4 +1,3 @@
-require("dotenv").config();
 const pkg = require("./package.json");
 const fs = require("node:fs");
 const http = require("node:http");
@@ -13,16 +12,7 @@ class Config {
         }
         const data = JSON.parse(fs.readFileSync(filePath, "utf-8"));
         Object.assign(this, data);
-        this._overrideFromEnv();
         this.validate();
-    }
-
-    _overrideFromEnv() {
-        if (process.env.SAKURABOT_BOT_TOKEN) this.bot.botfather_token = process.env.SAKURABOT_BOT_TOKEN;
-        if (process.env.SAKURABOT_PHONE_NUMBER) this.bot.phoneNumber = process.env.SAKURABOT_PHONE_NUMBER;
-        if (process.env.SAKURABOT_PAKASIR_APIKEY) this.pakasir.apikey = process.env.SAKURABOT_PAKASIR_APIKEY;
-        if (process.env.SAKURABOT_OWNER_TELE) this.owner.id_tele = process.env.SAKURABOT_OWNER_TELE;
-        if (process.env.SAKURABOT_OWNER_WA) this.owner.num_wa = process.env.SAKURABOT_OWNER_WA;
     }
 
     validate() {
@@ -43,7 +33,7 @@ class Config {
         if (missing.length > 0) {
             console.error("\x1b[31m[ERROR] Konfigurasi tidak valid atau belum diset:\x1b[0m");
             missing.forEach(m => console.error(` - ${m}`));
-            console.error("\x1b[33mSilakan periksa config.json atau set environment variables yang sesuai.\x1b[0m");
+            console.error("\x1b[33mSilakan periksa config.json dan pastikan semua field wajib telah diisi.\x1b[0m");
             process.exit(1);
         }
     }
