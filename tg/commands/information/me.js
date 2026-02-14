@@ -1,11 +1,9 @@
 module.exports = {
     name: "me",
     description: "Dapatkan informasi pengguna Anda.",
-    code: async (ctx, { isOwner, isPremium, getCoins, getGachaTickets, getSakuranite, getMiningTickets, getMiningRate, escapeHTML, db }) => {
+    code: async (ctx, { isOwner, isPremium, getCoins, getGachaTickets, getSakuranite, getMiningTickets, getMiningRate, escapeHTML, db, linking }) => {
         const user = ctx.from;
-        if (!user) {
-            return ctx.reply("Tidak bisa mendapatkan informasi pengguna.");
-        }
+        if (!user) return ctx.reply("Tidak bisa mendapatkan informasi pengguna.");
 
         const userId = user.id;
         const botUsername = ctx.botInfo.username;
@@ -18,13 +16,9 @@ module.exports = {
         const miningRate = getMiningRate(userId);
 
         let status = "Pengguna";
-        if (isOwner(userId)) {
-            status = "Pemilik";
-        } else if (isPremium(userId)) {
-            status = "Premium";
-        }
+        if (isOwner(userId)) status = "Pemilik";
+        else if (isPremium(userId)) status = "Premium";
 
-        // Info Rujukan
         const referredBy = db.get(`referred_by.${userId}`);
         const referrals = db.get(`referrals.${userId}`) || [];
         let referredByText = "N/A";
@@ -32,15 +26,12 @@ module.exports = {
             try {
                 const referrer = await ctx.telegram.getChat(referredBy);
                 referredByText = escapeHTML(referrer.first_name);
-            } catch (e) {
-                referredByText = `ID: <code>${referredBy}</code>`;
-            }
+            } catch (e) { referredByText = `ID: <code>${referredBy}</code>`; }
         }
 
         const referralLink = `https://t.me/${botUsername}?start=ref_${userId}`;
-
-        const link = db.get(`links.${userId}`);
-        const linkStatus = link ? `✅ Terhubung (${link.split("@")[0]})` : "❌ Tidak Terhubung";
+        const waJid = linking.getWaJid(userId);
+        const linkStatus = waJid ? `✅ Terhubung (${waJid.split("@")[0]})` : "❌ Tidak Terhubung";
 
         const message = `
 👤 <b>Info Pengguna</b>
@@ -65,7 +56,6 @@ module.exports = {
 <b>Total Undangan:</b> ${Array.isArray(referrals) ? referrals.length : 0}
 <b>Tautan Rujukan Anda:</b> <code>${referralLink}</code>
         `;
-
         ctx.reply(message, { parse_mode: "HTML" });
     }
 };

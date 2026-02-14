@@ -2,14 +2,14 @@ module.exports = {
     name: "link",
     category: "user",
     description: "Integrate your WhatsApp account with Telegram.",
-    code: async (sock, m, { args, from, sender, waBot, db }) => {
+    code: async (sock, m, { args, from, sender, waBot, linking }) => {
         const tgId = args[0];
         if (!tgId || isNaN(tgId)) {
             return await sock.sendMessage(from, { text: "Gunakan: /link {id_telegram}\n\nAnda bisa mendapatkan ID Telegram melalui command /me di bot Telegram." }, { quoted: m });
         }
 
-        if (db.get(`links.${sender}`)) {
-            return await sock.sendMessage(from, { text: `Akun Anda sudah terhubung dengan ID Telegram ${db.get(`links.${sender}`)}.\nGunakan /unlink jika ingin menghapus.` }, { quoted: m });
+        if (linking.getTgId(sender)) {
+            return await sock.sendMessage(from, { text: `Akun Anda sudah terhubung dengan ID Telegram ${linking.getTgId(sender)}.\nGunakan /unlink jika ingin menghapus.` }, { quoted: m });
         }
 
         if (!global.tgBot) {
