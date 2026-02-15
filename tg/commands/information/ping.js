@@ -1,13 +1,13 @@
 module.exports = {
-    name: 'ping',
-    category: 'information',
-    aliases: ['p'],
+    name: "ping",
+    category: "information",
+    aliases: ["p"],
     code: async (ctx) => {
         const startTime = new Date();
-        const sentMessage = await ctx.reply('Pinging...');
+        const sentMessage = await ctx.reply("Pinging...");
         const endTime = new Date();
         const latency = endTime - startTime;
-        const waBotStatus = global.botStatus.wa ? 'Online' : 'Offline';
+        const waBotStatus = global.botStatus.wa ? "Online" : "Offline";
 
         ctx.telegram.editMessageText(
             ctx.chat.id,

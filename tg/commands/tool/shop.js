@@ -1,31 +1,31 @@
 module.exports = {
-    name: 'shop',
-    category: 'tool',
-    description: 'Beli item dengan Sakuranite.',
+    name: "shop",
+    category: "tool",
+    description: "Beli item dengan Sakuranite.",
     code: async (ctx, { isOwner, getSakuranite, updateSakuranite, getGachaTickets, updateGachaTickets }) => {
         const userId = ctx.from.id;
 
         if (isOwner(userId)) {
-            return ctx.reply('Owner tidak memiliki Sakuranite untuk berbelanja di shop.');
+            return ctx.reply("Owner tidak memiliki Sakuranite untuk berbelanja di shop.");
         }
 
-        const args = ctx.message.text.split(' ').slice(1);
+        const args = ctx.message.text.split(" ").slice(1);
 
         if (args.length === 0) {
-            const catalog = `🛒 *SHOP CATALOG* 🛒\n\n` +
-                `1. Gacha Ticket - 🎫 50 Sakuranite\n\n` +
-                `Gunakan \`/shop buy gacha {jumlah}\` untuk membeli.`;
+            const catalog = "🛒 *SHOP CATALOG* 🛒\n\n" +
+                "1. Gacha Ticket - 🎫 50 Sakuranite\n\n" +
+                "Gunakan `/shop buy gacha {jumlah}` untuk membeli.";
             return ctx.replyWithMarkdown(catalog);
         }
 
-        if (args[0].toLowerCase() === 'buy') {
-            if (args.length < 3 || args[1].toLowerCase() !== 'gacha') {
-                return ctx.reply('Penggunaan: /shop buy gacha {jumlah}');
+        if (args[0].toLowerCase() === "buy") {
+            if (args.length < 3 || args[1].toLowerCase() !== "gacha") {
+                return ctx.reply("Penggunaan: /shop buy gacha {jumlah}");
             }
 
             const amount = parseInt(args[2], 10);
             if (isNaN(amount) || amount <= 0) {
-                return ctx.reply('Jumlah harus berupa angka positif.');
+                return ctx.reply("Jumlah harus berupa angka positif.");
             }
 
             const pricePerTicket = 50;
@@ -42,6 +42,6 @@ module.exports = {
             return ctx.reply(`Berhasil membeli ${amount} Gacha Ticket seharga ${totalCost} Sakuranite!\nSisa Sakuranite: ${userSakuranite - totalCost}`);
         }
 
-        return ctx.reply('Penggunaan: /shop atau /shop buy gacha {jumlah}');
+        return ctx.reply("Penggunaan: /shop atau /shop buy gacha {jumlah}");
     }
 };

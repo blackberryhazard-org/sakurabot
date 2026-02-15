@@ -2,23 +2,23 @@ const { Pakasir } = require("pakasir-sdk");
 const config = require("../../../config.json");
 
 module.exports = {
-    name: 'cancelpayment',
-    category: 'tool',
+    name: "cancelpayment",
+    category: "tool",
     code: async (ctx, { isLeader }) => {
         if (!isLeader(ctx.from.id)) {
             return ctx.reply(config.msg.owner);
         }
         try {
-            const args = ctx.message.text.split(' ');
+            const args = ctx.message.text.split(" ");
             const fullOrderId = args[1];
 
-            if (!fullOrderId || !fullOrderId.includes('-')) {
+            if (!fullOrderId || !fullOrderId.includes("-")) {
                 return await ctx.reply("Format Order ID tidak valid. Harap gunakan Order ID lengkap yang Anda terima. Contoh: /cancelpayment TRX-12345A-10000");
             }
 
-            const parts = fullOrderId.split('-');
+            const parts = fullOrderId.split("-");
             const amount = parseInt(parts.pop(), 10);
-            const orderId = parts.join('-');
+            const orderId = parts.join("-");
 
             if (isNaN(amount)) {
                 return await ctx.reply("Format Order ID tidak valid: nominal tidak ditemukan.");
@@ -35,10 +35,10 @@ module.exports = {
             const pakasir = new Pakasir({ slug, apikey });
             const result = await pakasir.cancelPayment(orderId, amount);
 
-            if (result && result.status === 'canceled') {
+            if (result && result.status === "canceled") {
                 await ctx.reply(`✅ Pembayaran untuk Order ID ${fullOrderId} berhasil dibatalkan.`);
             } else {
-                await ctx.reply(`Gagal membatalkan pembayaran. Status saat ini: ${result.status || 'Tidak Diketahui'}.`);
+                await ctx.reply(`Gagal membatalkan pembayaran. Status saat ini: ${result.status || "Tidak Diketahui"}.`);
             }
 
         } catch (error) {

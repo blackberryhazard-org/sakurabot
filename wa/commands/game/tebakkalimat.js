@@ -14,7 +14,7 @@ module.exports = {
                         `${game.question}\n\n` +
                         `➛ *Bonus*: ${game.reward} Sakuranite\n` +
                         `➛ *Batas waktu*: ${tools.msg.convertMsToDuration(game.timeout)}\n\n` +
-                        `Ketik jawaban Anda langsung. Ketik *hint* untuk petunjuk atau *surrender* untuk menyerah.`
+                        "Ketik jawaban Anda langsung. Ketik *hint* untuk petunjuk atau *surrender* untuk menyerah."
                 }, { quoted: m });
             } else if (game.name === "family100") {
                 await sock.sendMessage(from, {
@@ -22,14 +22,14 @@ module.exports = {
                         `➛ *Total Jawaban*: ${game.answers.length}\n` +
                         `➛ *Bonus*: ${game.rewardPerAnswer} Sakuranite per jawaban\n` +
                         `➛ *Batas waktu*: ${tools.msg.convertMsToDuration(game.timeout)}\n\n` +
-                        `Ketik jawaban Anda langsung. Ketik *surrender* untuk menyerah.`
+                        "Ketik jawaban Anda langsung. Ketik *surrender* untuk menyerah."
                 }, { quoted: m });
             } else {
                 await sock.sendMessage(from, {
                     text: `— *${game.title}* —\n\n${game.question}\n\n` +
                         `➛ *Bonus*: ${game.reward} Sakuranite\n` +
                         `➛ *Batas waktu*: ${tools.msg.convertMsToDuration(game.timeout)}\n\n` +
-                        `Ketik jawaban Anda langsung. Ketik *hint* untuk petunjuk atau *surrender* untuk menyerah.`
+                        "Ketik jawaban Anda langsung. Ketik *hint* untuk petunjuk atau *surrender* untuk menyerah."
                 }, { quoted: m });
             }
 

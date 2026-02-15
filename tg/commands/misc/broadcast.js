@@ -1,13 +1,13 @@
 module.exports = {
-    name: 'broadcast',
-    category: 'misc',
-    description: 'Send a message to all users. Costs coins.',
+    name: "broadcast",
+    category: "misc",
+    description: "Send a message to all users. Costs coins.",
     code: async (ctx, { isOwner, isPremium, getCoins, updateCoins, db, escapeHTML }) => {
         const userId = ctx.from.id;
-        const message = ctx.message.text.split(' ').slice(1).join(' ');
+        const message = ctx.message.text.split(" ").slice(1).join(" ");
 
         if (!message) {
-            return ctx.reply('Please provide a message to broadcast.');
+            return ctx.reply("Please provide a message to broadcast.");
         }
 
         // Determine the cost
@@ -26,9 +26,9 @@ module.exports = {
             return ctx.reply(`You don't have enough coins to broadcast. You need ${cost} coins, but you only have ${userCoins}.`);
         }
 
-        const users = db.get('users');
+        const users = db.get("users");
         if (!users || users.length === 0) {
-            return ctx.reply('There are no users to broadcast to.');
+            return ctx.reply("There are no users to broadcast to.");
         }
 
         // Deduct coins if not an owner
@@ -45,7 +45,7 @@ module.exports = {
             try {
                 // Avoid sending to the user who initiated the broadcast to prevent spamming themselves
                 if (targetId !== userId) {
-                    await ctx.telegram.sendMessage(targetId, message, { parse_mode: 'HTML' });
+                    await ctx.telegram.sendMessage(targetId, message, { parse_mode: "HTML" });
                     successCount++;
                 }
             } catch (error) {

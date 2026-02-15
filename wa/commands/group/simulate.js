@@ -27,16 +27,16 @@ module.exports = {
             };
 
             switch (input.toLowerCase()) {
-                case "j":
-                case "join":
-                    await handleWelcome(ctx, m, Events.UserJoin, true);
-                    break;
-                case "l":
-                case "leave":
-                    await handleWelcome(ctx, m, Events.UserLeave, true);
-                    break;
-                default:
-                    await ctx.reply(`ⓘ ${formatter.italic(`Simulasi ${formatter.inlineCode(input)} tidak valid!`)}`);
+            case "j":
+            case "join":
+                await handleWelcome(ctx, m, Events.UserJoin, true);
+                break;
+            case "l":
+            case "leave":
+                await handleWelcome(ctx, m, Events.UserLeave, true);
+                break;
+            default:
+                await ctx.reply(`ⓘ ${formatter.italic(`Simulasi ${formatter.inlineCode(input)} tidak valid!`)}`);
             }
         } catch (error) {
             await tools.cmd.handleError(ctx, error);

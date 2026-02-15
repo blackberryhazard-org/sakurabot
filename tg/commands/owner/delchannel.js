@@ -1,23 +1,23 @@
 module.exports = {
-    name: 'delchannel',
-    category: 'owner',
-    description: 'Removes a channel from the broadcast list.',
+    name: "delchannel",
+    category: "owner",
+    description: "Removes a channel from the broadcast list.",
     code: async (ctx, { isLeader, db }) => {
         const userId = ctx.from.id;
         if (!isLeader(userId)) {
             return ctx.reply("You don't have permission to use this command.");
         }
 
-        const args = ctx.message.text.split(' ');
+        const args = ctx.message.text.split(" ");
         const channelIdToRemove = args[1];
 
         if (!channelIdToRemove) {
-            return ctx.reply('Please provide a channel ID (e.g., @channelusername or -1001234567890).');
+            return ctx.reply("Please provide a channel ID (e.g., @channelusername or -1001234567890).");
         }
 
-        let channels = db.get('channels') || [];
+        let channels = db.get("channels") || [];
         if (channels.length === 0) {
-            return ctx.reply('The broadcast channel list is already empty.');
+            return ctx.reply("The broadcast channel list is already empty.");
         }
 
         // To handle both usernames and IDs, we need to resolve the ID from the input.
@@ -32,8 +32,8 @@ module.exports = {
             if (!isNaN(parsedId)) {
                 targetChannelId = parsedId;
             } else {
-                 console.error("Error in /delchannel resolving chat:", error);
-                 return ctx.reply(`Could not find a channel with the identifier "${channelIdToRemove}". Please provide a valid username or ID.`);
+                console.error("Error in /delchannel resolving chat:", error);
+                return ctx.reply(`Could not find a channel with the identifier "${channelIdToRemove}". Please provide a valid username or ID.`);
             }
         }
 
@@ -44,7 +44,7 @@ module.exports = {
             return ctx.reply(`Channel with ID ${targetChannelId} was not found in the broadcast list.`);
         }
 
-        db.set('channels', channels);
+        db.set("channels", channels);
         return ctx.reply(`✅ Successfully removed channel with ID ${targetChannelId} from the broadcast list.`);
     }
 };

@@ -10,13 +10,13 @@ const formatUptime = (startTime) => {
 };
 
 const escapeHTML = (text) => {
-    if (!text) return '';
+    if (!text) return "";
     return text.toString()
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 };
 
 const APIs = {

@@ -1,0 +1,67 @@
+{
+  "bot": {
+    "name": "SAKURABOT",
+    "phoneNumber": "YOUR_PHONE_NUMBER",
+    "thumbnail": "https://repository-images.githubusercontent.com/753096396/3f4b7686-0f1d-43f2-8293-2ae1b4487220",
+    "wa_newsletterJid": "WHATSAPP_NEWSLETTER_JID",
+    "tg_newsletterid": "TELEGRAM_NEWSLETTER_ID",
+    "prefix": "/",
+    "botfather_token": "YOUR_BOTFATHER_TOKEN"
+  },
+  "pakasir": {
+    "slug": "PAKASIR_SLUG",
+    "apikey": "YOUR_PAKASIR_APIKEY"
+  },
+  "msg": {
+    "admin": "Perintah hanya dapat diakses oleh admin grup!",
+    "banned": "Anda telah dibanned!",
+    "botAdmin": "Bot bukan admin grup ini!",
+    "botGroupMembership": "Anda tidak bergabung dengan grup bot!",
+    "coin": "Koin Anda tidak cukup!",
+    "cooldown": "Perintah ini sedang dalam cooldown, tunggu...",
+    "gamerestrict": "Grup ini membatasi perintah game!",
+    "group": "Perintah hanya dapat diakses dalam grup!",
+    "groupSewa": "Bot tidak aktif karena grup ini belum melakukan sewa!",
+    "owner": "Perintah hanya dapat diakses owner!",
+    "premium": "Anda bukan pengguna premium!",
+    "private": "Perintah hanya dapat diakses dalam obrolan pribadi!",
+    "privatePremiumOnly": "Menggunakan bot dalam obrolan pribadi hanya untuk pengguna premium.",
+    "restrict": "Perintah ini telah dibatasi!",
+    "unavailableAtNight": "Bot tidak tersedia dari jam 12 malam sampai 6 pagi! Silakan kembali nanti.",
+    "note": "“Lorem ipsum dolor sit amet, tenebris in umbra, vitae ad mortem.”",
+    "footer": "Developed by ItsReimau with ♡",
+    "wait": "Tunggu sebentar...",
+    "notFound": "Tidak ada yang ditemukan! Coba lagi nanti.",
+    "urlInvalid": "URL tidak valid!"
+  },
+  "owner": {
+    "usn_tele": "@indra87g30spki",
+    "name": "Indra",
+    "organization": "PT. Pemakan Koruptor",
+    "id": "6283172646529",
+    "id_tele": "YOUR_TELEGRAM_ID",
+    "report": true,
+    "num_wa": "YOUR_WHATSAPP_NUMBER"
+  },
+  "sticker": {
+    "packname": "",
+    "author": "sakurabot <github.com/indra87g/sakurabot>"
+  },
+  "system": {
+    "alwaysOnline": true,
+    "antiCall": true,
+    "autoRead": true,
+    "autoBackup": true,
+    "autoTypingOnCmd": true,
+    "cooldown": 10000,
+    "maxListeners": 50,
+    "port": 5000,
+    "restrict": false,
+    "selfReply": true,
+    "timeZone": "Asia/Jakarta",
+    "unavailableAtNight": false,
+    "usePairingCode": true,
+    "customPairingCode": "S4KUR4BT",
+    "useServer": true
+  }
+}

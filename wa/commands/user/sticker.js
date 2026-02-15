@@ -1,6 +1,6 @@
 module.exports = {
-    name: 'sticker',
-    aliases: ['s'],
+    name: "sticker",
+    aliases: ["s"],
     code: async (sock, m, { from, downloadContentFromMessage, Sticker, StickerTypes, config, prefix }) => {
         const q = m.message.extendedTextMessage?.contextInfo?.quotedMessage ? m.message.extendedTextMessage.contextInfo.quotedMessage : m.message;
         const qType = Object.keys(q)[0];
@@ -11,7 +11,7 @@ module.exports = {
             await sock.sendMessage(from, { text: config.msg.wait }, { quoted: m });
 
             const messageType = qType.replace("Message", "");
-            const stream = await downloadContentFromMessage(mediaMessage, messageType === 'extendedText' ? 'image' : messageType);
+            const stream = await downloadContentFromMessage(mediaMessage, messageType === "extendedText" ? "image" : messageType);
             let buffer = Buffer.from([]);
             for await (const chunk of stream) {
                 buffer = Buffer.concat([buffer, chunk]);

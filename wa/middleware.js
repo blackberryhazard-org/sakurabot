@@ -1,4 +1,4 @@
-const config = require('../config.json');
+const config = require("../config.json");
 
 /**
  * Registers user if not already in database.
@@ -20,7 +20,7 @@ const registerUser = (db, jid) => {
  */
 const isLeader = (jid) => {
     if (!jid) return false;
-    return config.owner.id === jid.split('@')[0];
+    return config.owner.id === jid.split("@")[0];
 };
 
 /**
@@ -31,7 +31,7 @@ const isLeader = (jid) => {
  */
 const isManager = (db, jid) => {
     if (!jid) return false;
-    const managers = db.get('managers') || [];
+    const managers = db.get("managers") || [];
     return managers.includes(jid);
 };
 
@@ -52,7 +52,7 @@ const isOwner = (db, jid) => {
  * @returns {boolean}
  */
 const isPremium = (db, jid) => {
-    const premiumUsers = db.get('premium') || [];
+    const premiumUsers = db.get("premium") || [];
     return premiumUsers.includes(jid);
 };
 

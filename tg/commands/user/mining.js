@@ -1,14 +1,14 @@
-const moment = require('moment-timezone');
+const moment = require("moment-timezone");
 
 module.exports = {
-    name: 'mining',
-    category: 'user',
-    description: 'Mine items or upgrade your mining rate.',
+    name: "mining",
+    category: "user",
+    description: "Mine items or upgrade your mining rate.",
     code: async (ctx, { db, items, getMiningTickets, updateMiningTickets, getMiningRate, updateMiningRate }) => {
         const userId = ctx.from.id;
-        const args = ctx.message.text.split(' ').slice(1);
+        const args = ctx.message.text.split(" ").slice(1);
 
-        if (args[0] === 'upgrade') {
+        if (args[0] === "upgrade") {
             const currentRate = getMiningRate(userId);
             let nextRate, cost;
 
@@ -19,7 +19,7 @@ module.exports = {
                 nextRate = 0.50;
                 cost = 10;
             } else {
-                return ctx.reply('Your mining rate is already at the maximum (0.50).');
+                return ctx.reply("Your mining rate is already at the maximum (0.50).");
             }
 
             const tickets = getMiningTickets(userId);
@@ -30,21 +30,21 @@ module.exports = {
             updateMiningTickets(userId, tickets - cost);
             updateMiningRate(userId, nextRate);
 
-            return ctx.reply(`✅ Success! Your mining rate has been upgraded to <b>${nextRate}</b>.`, { parse_mode: 'HTML' });
+            return ctx.reply(`✅ Success! Your mining rate has been upgraded to <b>${nextRate}</b>.`, { parse_mode: "HTML" });
         }
 
         const itemName = args[0];
         if (!itemName || !items[itemName]) {
-            let text = '<b>⛏️ MINING SYSTEM</b>\n\n';
-            text += 'Usage: /mining {item} or /mining upgrade\n\n';
-            text += '<b>Available Items:</b>\n';
+            let text = "<b>⛏️ MINING SYSTEM</b>\n\n";
+            text += "Usage: /mining {item} or /mining upgrade\n\n";
+            text += "<b>Available Items:</b>\n";
             for (const [name, price] of Object.entries(items)) {
                 const cost = price >= 500 ? 2 : 1;
                 text += `➛ <b>${name}</b>: ${cost} Tiket\n`;
             }
             text += `\nYour Rate: <b>${getMiningRate(userId)}</b>\n`;
             text += `Your Tickets: <b>${getMiningTickets(userId)}</b>`;
-            return ctx.reply(text, { parse_mode: 'HTML' });
+            return ctx.reply(text, { parse_mode: "HTML" });
         }
 
         const price = items[itemName];
@@ -59,7 +59,7 @@ module.exports = {
         const rate = getMiningRate(userId);
         const amount = Math.floor(rate * 60);
 
-        ctx.reply(`⛏️ Mining <b>${itemName}</b>... please wait 60 seconds.`, { parse_mode: 'HTML' });
+        ctx.reply(`⛏️ Mining <b>${itemName}</b>... please wait 60 seconds.`, { parse_mode: "HTML" });
 
         setTimeout(async () => {
             const inventory = db.get(`inventory.${userId}`) || {};
@@ -67,9 +67,9 @@ module.exports = {
             db.set(`inventory.${userId}`, inventory);
 
             try {
-                await ctx.reply(`✅ Mining finished! You gained <b>${amount}x ${itemName}</b>.`, { parse_mode: 'HTML', reply_to_message_id: ctx.message.message_id });
+                await ctx.reply(`✅ Mining finished! You gained <b>${amount}x ${itemName}</b>.`, { parse_mode: "HTML", reply_to_message_id: ctx.message.message_id });
             } catch (e) {
-                await ctx.reply(`✅ Mining finished! You gained <b>${amount}x ${itemName}</b>.`, { parse_mode: 'HTML' });
+                await ctx.reply(`✅ Mining finished! You gained <b>${amount}x ${itemName}</b>.`, { parse_mode: "HTML" });
             }
         }, 60000);
     }

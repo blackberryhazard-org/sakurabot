@@ -1,9 +1,9 @@
-const { Markup } = require('telegraf');
+const { Markup } = require("telegraf");
 
 module.exports = {
-    name: 'help',
-    category: 'information',
-    aliases: ['menu'],
+    name: "help",
+    category: "information",
+    aliases: ["menu"],
     code: async (ctx, { bot }) => {
         // Unique command objects to avoid counting aliases multiple times
         const uniqueCommands = [...new Set(Array.from(bot.cmd.values()))];
@@ -13,7 +13,7 @@ module.exports = {
 
         const helpText = `Total Command: ${totalCommands}\n` +
             `Total Kategori: ${totalCategories}\n\n` +
-            `Silakan pilih kategori untuk melihat list command:`;
+            "Silakan pilih kategori untuk melihat list command:";
 
         // Generate Buttons (2 kolom)
         const buttons = [];
@@ -29,12 +29,12 @@ module.exports = {
         try {
             await ctx.replyWithPhoto(randomImageUrl, {
                 caption: helpText,
-                parse_mode: 'Markdown',
+                parse_mode: "Markdown",
                 ...Markup.inlineKeyboard(buttons)
             });
         } catch (error) {
             await ctx.reply(helpText, {
-                parse_mode: 'Markdown',
+                parse_mode: "Markdown",
                 ...Markup.inlineKeyboard(buttons)
             });
         }

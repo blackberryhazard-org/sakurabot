@@ -1,12 +1,12 @@
 module.exports = {
-    name: 'cancel',
-    aliases: ['canceltopup'],
-    category: 'tool',
+    name: "cancel",
+    aliases: ["canceltopup"],
+    category: "tool",
     code: async (ctx, { activeTopups }) => {
         const userId = ctx.from.id;
 
         if (!activeTopups.has(userId)) {
-            return ctx.reply('You do not have an active top-up session.');
+            return ctx.reply("You do not have an active top-up session.");
         }
 
         const { watcher } = activeTopups.get(userId);
@@ -14,6 +14,6 @@ module.exports = {
         watcher.stop();
         activeTopups.delete(userId);
 
-        return ctx.reply('Your top-up transaction has been canceled.');
+        return ctx.reply("Your top-up transaction has been canceled.");
     }
 };

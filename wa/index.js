@@ -9,29 +9,23 @@ const pino = require("pino");
 const { Boom } = require("@hapi/boom");
 const path = require("path");
 const fs = require("fs");
-const { Database } = require("simpl.db");
 const handler = require("./handler");
 
-// Database setup
-const dbPath = path.resolve(__dirname, '../database/wa');
-if (!fs.existsSync(dbPath)) fs.mkdirSync(dbPath, { recursive: true });
+// Import Services & Shared DB
+const { getDb } = require("../src/database");
+const UserAccessService = require("../src/services/user-access.service");
+const EconomyService = require("../src/services/economy.service");
+const InventoryService = require("../src/services/inventory.service");
+const LinkingService = require("../src/services/linking.service");
 
-const db = new Database({
-    dataFile: path.join(dbPath, 'database.json'),
-    autoSave: true,
-    tabSize: 2
-});
+const db = getDb("wa");
+const tgDb = getDb("tg");
 
 // Initialize database keys
-if (!db.has('users')) db.set('users', []);
-if (!db.has('premium')) db.set('premium', []);
-if (!db.has('managers')) db.set('managers', []);
-if (!db.has('sakuranite')) db.set('sakuranite', {});
-if (!db.has('inventory')) db.set('inventory', {});
-if (!db.has('last_daily')) db.set('last_daily', {});
-if (!db.has('links')) db.set('links', {});
-if (!db.has('mining_tickets')) db.set('mining_tickets', {});
-if (!db.has('mining_rate')) db.set('mining_rate', {});
+const keys = ["users", "premium", "managers", "sakuranite", "inventory", "last_daily", "links", "mining_tickets", "mining_rate"];
+keys.forEach(key => {
+    if (!db.has(key)) db.set(key, (key === "sakuranite" || key === "inventory" || key === "last_daily" || key === "links" || key === "mining_tickets" || key === "mining_rate") ? {} : []);
+});
 
 const waBot = {
     cmd: new Map(),
@@ -39,48 +33,43 @@ const waBot = {
     sessions: new Map()
 };
 
-// Items definition
-const { items_erekir: items } = require('../tools/items');
+// Initialize Services
+const userAccess = new UserAccessService(db, config);
+const economy = new EconomyService(db, global.auditLog);
+const tgEconomy = new EconomyService(tgDb, global.auditLog);
+const inventoryService = new InventoryService(db);
+const linking = new LinkingService(tgDb, db, tgEconomy, economy);
 
-// Helper function to load commands
+// Items definition
+const { items_erekir: items } = require("../tools/items");
+
 const loadCommands = (dir) => {
     const files = fs.readdirSync(dir, { withFileTypes: true });
     for (const file of files) {
         const fullPath = path.join(dir, file.name);
-        if (file.isDirectory()) {
-            loadCommands(fullPath);
-        } else if (file.name.endsWith('.js')) {
+        if (file.isDirectory()) loadCommands(fullPath);
+        else if (file.name.endsWith(".js")) {
             try {
                 const command = require(fullPath);
                 if (command.name) {
-                    const category = path.basename(dir);
-                    command.category = category;
+                    command.category = path.basename(dir);
                     waBot.cmd.set(command.name, command);
-                    if (command.aliases && Array.isArray(command.aliases)) {
-                        command.aliases.forEach(alias => waBot.cmd.set(alias, command));
-                    }
+                    if (command.aliases) command.aliases.forEach(alias => waBot.cmd.set(alias, command));
                 }
-            } catch (e) {
-                consolefy.error(`Error loading command from ${fullPath}:`, e);
-            }
+            } catch (e) { consolefy.error(`Error loading command from ${fullPath}:`, e); }
         }
     }
 };
-
-loadCommands(path.resolve(__dirname, 'commands'));
+loadCommands(path.resolve(__dirname, "commands"));
 
 const startWaBot = async () => {
-    const { state, saveCreds } = await useMultiFileAuthState(path.resolve(__dirname, '../state'));
+    const { state, saveCreds } = await useMultiFileAuthState(path.resolve(__dirname, "../state"));
     const { version } = await fetchLatestBaileysVersion();
-
     const sock = makeWASocket({
         version,
         logger: pino({ level: "silent" }),
         printQRInTerminal: !config.system.usePairingCode,
-        auth: {
-            creds: state.creds,
-            keys: makeCacheableSignalKeyStore(state.keys, pino({ level: "silent" })),
-        },
+        auth: { creds: state.creds, keys: makeCacheableSignalKeyStore(state.keys, pino({ level: "silent" })) },
         browser: ["Ubuntu", "Chrome", "20.0.04"]
     });
 
@@ -96,7 +85,6 @@ const startWaBot = async () => {
     }
 
     sock.ev.on("creds.update", saveCreds);
-
     sock.ev.on("connection.update", (update) => {
         const { connection, lastDisconnect } = update;
         if (connection === "close") {
@@ -114,17 +102,11 @@ const startWaBot = async () => {
     sock.ev.on("messages.upsert", async (chatUpdate) => {
         try {
             const m = chatUpdate.messages[0];
-            if (!m.message) return;
-            if (m.key.fromMe) return;
-
-            // Call message handler
-            await handler(sock, m, db, waBot, items);
-        } catch (err) {
-            consolefy.error(err);
-        }
+            if (!m.message || m.key.fromMe) return;
+            const services = { userAccess, economy, inventory: inventoryService, linking };
+            await handler(sock, m, db, waBot, items, services);
+        } catch (err) { consolefy.error(err); }
     });
-
     return sock;
 };
-
 module.exports = startWaBot;

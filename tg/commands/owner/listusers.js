@@ -1,11 +1,11 @@
-const { Markup } = require('telegraf');
+const { Markup } = require("telegraf");
 
 const USERS_PER_PAGE = 10;
 
 const getStatus = (userId, isOwner, isPremium) => {
-    if (isOwner(userId)) return 'Owner';
-    if (isPremium(userId)) return 'Premium';
-    return 'User';
+    if (isOwner(userId)) return "Owner";
+    if (isPremium(userId)) return "Premium";
+    return "User";
 };
 
 const formatUserList = async (ctx, userIds, page, helpers) => {
@@ -19,14 +19,14 @@ const formatUserList = async (ctx, userIds, page, helpers) => {
             const chat = await ctx.telegram.getChat(userId);
             return {
                 userId,
-                username: chat.username ? `@${escapeHTML(chat.username)}` : escapeHTML(chat.first_name || 'User')
+                username: chat.username ? `@${escapeHTML(chat.username)}` : escapeHTML(chat.first_name || "User")
             };
         } catch (e) {
-            return { userId, username: 'N/A' };
+            return { userId, username: "N/A" };
         }
     }));
 
-    let text = '';
+    let text = "";
     for (const info of userInfos) {
         const status = getStatus(info.userId, isOwner, isPremium);
         text += `${info.userId} (${info.username}) - ${status}\n`;
@@ -43,16 +43,16 @@ const getPaginationButtons = (userIds, page) => {
     const buttons = [];
     const navRow = [];
     if (page > 0) {
-        navRow.push(Markup.button.callback('◀️ Sebelumnya', `listusers_page:${page - 1}`));
+        navRow.push(Markup.button.callback("◀️ Sebelumnya", `listusers_page:${page - 1}`));
     }
     if ((page + 1) * USERS_PER_PAGE < userIds.length) {
-        navRow.push(Markup.button.callback('▶️ Selanjutnya', `listusers_page:${page + 1}`));
+        navRow.push(Markup.button.callback("▶️ Selanjutnya", `listusers_page:${page + 1}`));
     }
     if (navRow.length > 0) buttons.push(navRow);
 
     buttons.push([
-        Markup.button.callback('⚠️ Purge', 'purge_users'),
-        Markup.button.callback('📊 Analytics', 'show_analytics')
+        Markup.button.callback("⚠️ Purge", "purge_users"),
+        Markup.button.callback("📊 Analytics", "show_analytics")
     ]);
     return buttons;
 };
@@ -69,18 +69,18 @@ const getAnalyticsData = (userIds, isOwner, isPremium) => {
 
 const getAnalyticsChartUrl = (data) => {
     const chartConfig = {
-        type: 'pie',
+        type: "pie",
         data: {
-            labels: ['User', 'Premium', 'Owner'],
+            labels: ["User", "Premium", "Owner"],
             datasets: [{
                 data: [data.regular, data.premium, data.owners],
-                backgroundColor: ['#36a2eb', '#ffce56', '#ff6384']
+                backgroundColor: ["#36a2eb", "#ffce56", "#ff6384"]
             }]
         },
         options: {
             title: {
                 display: true,
-                text: 'User Distribution'
+                text: "User Distribution"
             }
         }
     };
@@ -92,8 +92,8 @@ const getAnalyticsText = (data) => {
 };
 
 module.exports = {
-    name: 'listusers',
-    category: 'owner',
+    name: "listusers",
+    category: "owner",
     getAnalyticsData,
     getAnalyticsChartUrl,
     getAnalyticsText,
@@ -101,7 +101,7 @@ module.exports = {
         const { isOwner, isPremium, db } = helpers;
         if (!isOwner(ctx.from.id)) return;
 
-        let userIds = db.get('users') || [];
+        let userIds = db.get("users") || [];
         if (!Array.isArray(userIds)) {
             userIds = Object.keys(userIds);
         }
@@ -110,7 +110,7 @@ module.exports = {
         const buttons = getPaginationButtons(userIds, 0);
 
         await ctx.reply(text, {
-            parse_mode: 'HTML',
+            parse_mode: "HTML",
             ...Markup.inlineKeyboard(buttons)
         });
     },
@@ -119,10 +119,10 @@ module.exports = {
         if (!ctx.callbackQuery || !ctx.callbackQuery.data) return;
         const data = ctx.callbackQuery.data;
 
-        if (data.startsWith('listusers_page:')) {
-            if (!isOwner(ctx.from.id)) return ctx.answerCbQuery('Akses ditolak.');
-            const page = parseInt(data.split(':')[1], 10);
-            let userIds = db.get('users') || [];
+        if (data.startsWith("listusers_page:")) {
+            if (!isOwner(ctx.from.id)) return ctx.answerCbQuery("Akses ditolak.");
+            const page = parseInt(data.split(":")[1], 10);
+            let userIds = db.get("users") || [];
             if (!Array.isArray(userIds)) {
                 userIds = Object.keys(userIds);
             }
@@ -132,27 +132,27 @@ module.exports = {
 
             try {
                 await ctx.editMessageText(text, {
-                    parse_mode: 'HTML',
+                    parse_mode: "HTML",
                     ...Markup.inlineKeyboard(buttons)
                 });
             } catch (e) {
                 // Message might be the same or already edited
             }
             await ctx.answerCbQuery();
-        } else if (data === 'purge_users') {
-            if (!isOwner(ctx.from.id)) return ctx.answerCbQuery('Akses ditolak.');
+        } else if (data === "purge_users") {
+            if (!isOwner(ctx.from.id)) return ctx.answerCbQuery("Akses ditolak.");
 
-            let userIds = db.get('users') || [];
+            let userIds = db.get("users") || [];
             if (!Array.isArray(userIds)) {
                 userIds = Object.keys(userIds);
             }
 
             if (userIds.length > 500) {
-                await ctx.answerCbQuery('Database is too large for bulk purge. Operation cancelled.', { show_alert: true });
+                await ctx.answerCbQuery("Database is too large for bulk purge. Operation cancelled.", { show_alert: true });
                 return;
             }
 
-            await ctx.answerCbQuery('Purging users... Please wait.', { show_alert: true });
+            await ctx.answerCbQuery("Purging users... Please wait.", { show_alert: true });
 
             const newUsers = [];
             let purgedCount = 0;
@@ -168,7 +168,7 @@ module.exports = {
                 }
             }
 
-            db.set('users', newUsers);
+            db.set("users", newUsers);
 
             // Send notification to newsletter
             const config = helpers.config;
@@ -176,27 +176,27 @@ module.exports = {
                 try {
                     await ctx.telegram.sendVideo(
                         config.bot.tg_newsletterid,
-                        { url: 'https://files.catbox.moe/51ib0k.mp4' },
+                        { url: "https://files.catbox.moe/51ib0k.mp4" },
                         {
-                            caption: `⚠️ <b>User Purge Notification</b>\n\n` +
+                            caption: "⚠️ <b>User Purge Notification</b>\n\n" +
                                      `Owner <b>${ctx.from.first_name}</b> baru saja melakukan pembersihan database user.\n\n` +
                                      `- User dihapus: ${purgedCount}\n` +
                                      `- User tersisa: ${newUsers.length}`,
-                            parse_mode: 'HTML',
+                            parse_mode: "HTML",
                             supports_streaming: true
                         }
                     );
                 } catch (e) {
-                    console.error('Failed to send purge notification to newsletter:', e);
+                    console.error("Failed to send purge notification to newsletter:", e);
                 }
             }
 
             await ctx.reply(`Purge complete! Removed ${purgedCount} users with no accessible info (N/A).`);
-        } else if (data === 'show_analytics') {
-            if (!isOwner(ctx.from.id)) return ctx.answerCbQuery('Akses ditolak.');
-            await ctx.answerCbQuery('Generating analytics...');
+        } else if (data === "show_analytics") {
+            if (!isOwner(ctx.from.id)) return ctx.answerCbQuery("Akses ditolak.");
+            await ctx.answerCbQuery("Generating analytics...");
 
-            let userIds = db.get('users') || [];
+            let userIds = db.get("users") || [];
             if (!Array.isArray(userIds)) {
                 userIds = Object.keys(userIds);
             }
@@ -208,7 +208,7 @@ module.exports = {
             try {
                 await ctx.replyWithPhoto(chartUrl, {
                     caption: caption,
-                    parse_mode: 'HTML'
+                    parse_mode: "HTML"
                 });
             } catch (e) {
                 await ctx.reply(`Gagal mengirim analytics: ${e.message}`);
