@@ -32,7 +32,7 @@ module.exports = {
                 parse_mode: "Markdown",
                 ...Markup.inlineKeyboard(buttons)
             });
-        } catch (error) {
+        } catch (_error) {
             await ctx.reply(helpText, {
                 parse_mode: "Markdown",
                 ...Markup.inlineKeyboard(buttons)

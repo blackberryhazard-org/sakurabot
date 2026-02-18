@@ -1,4 +1,4 @@
-const moment = require("moment-timezone");
+
 
 module.exports = {
     name: "mining",
@@ -68,7 +68,7 @@ module.exports = {
 
             try {
                 await ctx.reply(`✅ Mining finished! You gained <b>${amount}x ${itemName}</b>.`, { parse_mode: "HTML", reply_to_message_id: ctx.message.message_id });
-            } catch (e) {
+            } catch (_e) {
                 await ctx.reply(`✅ Mining finished! You gained <b>${amount}x ${itemName}</b>.`, { parse_mode: "HTML" });
             }
         }, 60000);

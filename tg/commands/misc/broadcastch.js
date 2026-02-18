@@ -21,7 +21,7 @@ module.exports = {
     name: "broadcastch",
     category: "misc",
     description: "Send a message to all registered channels.",
-    code: async (ctx, { isOwner, isPremium, getCoins, updateCoins, db }) => {
+    code: async (ctx, { getCoins, db, isOwner, isPremium }) => {
         const userId = ctx.from.id;
         const message = ctx.message.text.split(" ").slice(1).join(" ");
 
@@ -77,7 +77,7 @@ module.exports = {
         return;
     },
 
-    callback: async (ctx, { isOwner, isPremium, getCoins, updateCoins, db }) => {
+    callback: async (ctx, { getCoins, db, updateCoins }) => {
         if (!ctx.callbackQuery || !ctx.callbackQuery.data) return;
         const userId = ctx.from.id;
         const query = ctx.callbackQuery.data;

@@ -1,5 +1,5 @@
 const utils = require("./utils.js");
-const axios = require("axios");
+const _axios = require("axios");
 const util = require("node:util");
 
 const MessageType = {

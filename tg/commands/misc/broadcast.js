@@ -2,7 +2,7 @@ module.exports = {
     name: "broadcast",
     category: "misc",
     description: "Send a message to all users. Costs coins.",
-    code: async (ctx, { isOwner, isPremium, getCoins, updateCoins, db, escapeHTML }) => {
+    code: async (ctx, { isOwner, isPremium, getCoins, updateCoins, db }) => {
         const userId = ctx.from.id;
         const message = ctx.message.text.split(" ").slice(1).join(" ");
 

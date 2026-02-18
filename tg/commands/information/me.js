@@ -26,7 +26,7 @@ module.exports = {
             try {
                 const referrer = await ctx.telegram.getChat(referredBy);
                 referredByText = escapeHTML(referrer.first_name);
-            } catch (e) { referredByText = `ID: <code>${referredBy}</code>`; }
+            } catch (_e) { referredByText = `ID: <code>${referredBy}</code>`; }
         }
 
         const referralLink = `https://t.me/${botUsername}?start=ref_${userId}`;

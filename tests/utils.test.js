@@ -18,4 +18,13 @@ describe("Utils", () => {
         const url = createUrl("turu", "/test", { q: "abc" });
         expect(url).toBe("https://mending-turu.web.id/test?q=abc");
     });
+
+    test("createUrl should handle invalid URL error", () => {
+        // Mock global consolefy to avoid ReferenceError during test if it's used
+        global.consolefy = { error: jest.fn() };
+        const url = createUrl("invalid-api", "/test");
+        expect(url).toBeNull();
+        expect(global.consolefy.error).toHaveBeenCalled();
+        delete global.consolefy;
+    });
 });

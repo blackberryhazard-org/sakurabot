@@ -15,7 +15,7 @@ module.exports = {
             const dbFilePath = path.resolve(__dirname, "../../../database/wa/database.json");
             const stats = fs.statSync(dbFilePath);
             dbSize = stats.size;
-        } catch (e) {}
+        } catch (_e) { /* ignore */ }
         const dbSizeFormatted = (dbSize / 1024).toFixed(2) + " KB";
 
         const categories = {};

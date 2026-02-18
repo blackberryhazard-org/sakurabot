@@ -11,7 +11,8 @@
   "scripts": {
     "start": "node .",
     "lint": "eslint .",
-    "test": "jest"
+    "test": "jest",
+    "check": "npm run lint && npm test"
   },
   "author": "Indra Sah Noeldy (indra87g)",
   "license": "MIT",

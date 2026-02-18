@@ -4,18 +4,28 @@ class UserAccessService {
         this.config = config;
     }
 
+    normalizeUserId(userId) {
+        if (!userId) return "";
+        let id = userId.toString();
+        if (id.includes("@")) {
+            // Handles WhatsApp JIDs like 628xxx:device@s.whatsapp.net
+            id = id.split("@")[0].split(":")[0];
+        }
+        return id;
+    }
+
     isLeader(userId) {
-        // userId can be JID or TG ID
         const leaderTele = this.config.owner.id_tele.toString();
         const leaderWa = this.config.owner.num_wa.toString();
 
-        const cleanId = userId.toString().split("@")[0];
+        const cleanId = this.normalizeUserId(userId);
         return cleanId === leaderTele || cleanId === leaderWa;
     }
 
     isManager(userId) {
+        const cleanId = this.normalizeUserId(userId);
         const managers = this.db.get("managers") || [];
-        return managers.includes(userId) || managers.includes(parseInt(userId));
+        return managers.some(m => this.normalizeUserId(m) === cleanId);
     }
 
     isOwner(userId) {
@@ -23,8 +33,9 @@ class UserAccessService {
     }
 
     isPremium(userId) {
+        const cleanId = this.normalizeUserId(userId);
         const premiumUsers = this.db.get("premium") || [];
-        return premiumUsers.includes(userId) || premiumUsers.includes(parseInt(userId));
+        return premiumUsers.some(p => this.normalizeUserId(p) === cleanId);
     }
 }
 

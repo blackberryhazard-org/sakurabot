@@ -34,7 +34,7 @@ module.exports = (dependencies) => {
         return next();
     };
 
-    // Cooldown Middleware
+    // Cooldown Middleware (Granular per command)
     const cooldownMiddleware = (ctx, next) => {
         if (!ctx.from) return next();
 
@@ -48,16 +48,15 @@ module.exports = (dependencies) => {
         const userId = ctx.from.id;
         if (userAccess.isOwner(userId)) return next();
 
-        const now = Date.now();
-        const lastCommandTime = userCooldowns.get(userId) || 0;
         const cooldownDuration = userAccess.isPremium(userId) ? 3000 : 10000;
 
-        if (now - lastCommandTime < cooldownDuration) {
-            const timeLeft = (cooldownDuration - (now - lastCommandTime)) / 1000;
-            return ctx.reply(`${config.msg.cooldown} ${timeLeft.toFixed(1)}s`);
+        // Use CooldownService.check(userId, commandName, duration)
+        const result = userCooldowns.check(userId, commandName, cooldownDuration);
+
+        if (result.isLimited) {
+            return ctx.reply(`${config.msg.cooldown} ${result.timeLeft.toFixed(1)}s`);
         }
 
-        userCooldowns.set(userId, now);
         return next();
     };
 
