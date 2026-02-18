@@ -18,6 +18,7 @@ Gunakan temuan awal ini sebagai hipotesis, lalu konfirmasi dengan inspeksi file 
 - `wa/handler.js` menggunakan `tools` dan `consolefy` tanpa import lokal eksplisit; ini bergantung pada global state dan rawan runtime issue jika inisialisasi berubah.
 - `tools/utils.js` memanggil `consolefy.error(...)` di blok `catch`, namun `consolefy` tidak didefinisikan secara lokal (latent ReferenceError saat error path terjadi).
 - `wa/handler.js` masih melakukan `require("../config.json")` langsung, sehingga konfigurasi tidak konsisten dengan bootstrap `index.js` yang melakukan validasi awal.
+- Ada mismatch identitas owner WA pada `UserAccessService.isLeader`: ID dibersihkan hanya dengan `split("@")[0]`, padahal JID multi-device bisa berbentuk `628xxx:device@s.whatsapp.net`; akibatnya owner WA bisa tidak dikenali di command owner/admin.
 
 ### P1 — Quality Gate
 - `npm run lint` masih gagal (empty block + warning bertebaran), sehingga quality gate belum enforceable.
@@ -49,13 +50,20 @@ Gunakan temuan awal ini sebagai hipotesis, lalu konfirmasi dengan inspeksi file 
 1. Hilangkan ketergantungan implisit yang memicu latent runtime error:
    - Pastikan `tools/utils.js` tidak mengandalkan `consolefy` global di jalur error.
    - Pastikan `wa/handler.js` tidak bergantung pada simbol yang tidak dideklarasikan lokal.
-2. Standardisasi akses konfigurasi:
+2. Perbaiki sistem role owner/premium WA vs TG (wajib):
+   - Normalisasi identifier user lintas platform (contoh util `normalizeUserId`):
+     - TG: simpan sebagai string numerik (`String(ctx.from.id)`).
+     - WA: ekstrak nomor murni dari JID (`628xxx:device@s.whatsapp.net` -> `628xxx`).
+   - Terapkan normalisasi konsisten di `isLeader`, `isManager`, `isPremium`, dan semua lokasi pengecekan permission agar owner WA selalu dikenali.
+   - Tambahkan regression test untuk kasus JID multi-device WA dan pastikan command owner tetap lolos.
+3. Standardisasi akses konfigurasi:
    - Handler menerima config/dependency via injection dari bootstrap, bukan `require config.json` langsung.
-3. Tambahkan guardrail pada context compatibility WA:
+4. Tambahkan guardrail pada context compatibility WA:
    - Pertahankan field legacy (`id`, `args`, `sender`, `me`, `getId`) dan dokumentasikan status deprecasinya.
 
 **Exit criteria Fase 2**
 - Tidak ada ReferenceError laten di jalur error yang bisa dipicu input pengguna.
+- Owner WA terdeteksi konsisten termasuk pada format JID multi-device.
 - Bootstrapping config konsisten lintas entry point.
 
 ### Fase 3 — Quality Gate Hijau
