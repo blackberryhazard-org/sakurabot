@@ -136,9 +136,10 @@ module.exports = async (sock, m, db, waBot, items, services, config, tools, cons
     if (isCmd) {
         const cmd = waBot.cmd.get(commandName);
         if (cmd) {
-            if (!["ping", "menu", "me", "start"].includes(commandName) && !userAccess.isOwner(sender)) {
+            const canonicalName = cmd.name || commandName;
+            if (!["ping", "menu", "me", "start"].includes(canonicalName) && !userAccess.isOwner(sender)) {
                 const cooldownDuration = userAccess.isPremium(sender) ? 3000 : 10000;
-                const cooldownResult = cooldown.check(sender, commandName, cooldownDuration);
+                const cooldownResult = cooldown.check(sender, canonicalName, cooldownDuration);
                 if (cooldownResult.isLimited) {
                     return ctx.reply(`${config.msg.cooldown} ${cooldownResult.timeLeft.toFixed(1)}s`);
                 }

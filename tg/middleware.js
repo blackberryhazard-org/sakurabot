@@ -34,7 +34,7 @@ module.exports = (dependencies) => {
         return next();
     };
 
-    // Cooldown Middleware (Granular per command)
+    // Cooldown Middleware (Granular per canonical command)
     const cooldownMiddleware = (ctx, next) => {
         if (!ctx.from) return next();
 
@@ -42,16 +42,19 @@ module.exports = (dependencies) => {
         const commandMatch = messageText.match(/^\/([a-zA-Z0-9_]+)/);
         if (!commandMatch) return next();
 
-        const commandName = commandMatch[1];
-        if (["start", "menu", "ping", "me"].includes(commandName)) return next();
+        const inputCommand = commandMatch[1];
+        const cmd = bot.cmd.get(inputCommand);
+        const canonicalName = cmd ? (cmd.name || inputCommand) : inputCommand;
+
+        if (["start", "menu", "ping", "me"].includes(canonicalName)) return next();
 
         const userId = ctx.from.id;
         if (userAccess.isOwner(userId)) return next();
 
         const cooldownDuration = userAccess.isPremium(userId) ? 3000 : 10000;
 
-        // Use CooldownService.check(userId, commandName, duration)
-        const result = userCooldowns.check(userId, commandName, cooldownDuration);
+        // Use CooldownService.check(userId, canonicalName, duration)
+        const result = userCooldowns.check(userId, canonicalName, cooldownDuration);
 
         if (result.isLimited) {
             return ctx.reply(`${config.msg.cooldown} ${result.timeLeft.toFixed(1)}s`);
