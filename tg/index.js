@@ -102,6 +102,7 @@ const launchTelegramBot = (config, consolefy, tools) => {
                 ctx.from.id,
                 ctx.from.first_name
             );
+            if (result) {
                 if (result.status === "game_over" || result.status === "surrender") {
                     if (activeGame.timeoutRef) clearTimeout(activeGame.timeoutRef);
                     bot.games.delete(chatId);
