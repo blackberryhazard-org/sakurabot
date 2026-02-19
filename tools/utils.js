@@ -66,7 +66,7 @@ function createUrl(apiNameOrURL, endpoint, params = {}, apiKeyParamName) {
 
         return apiUrl.toString();
     } catch (error) {
-        consolefy.error(`Error: ${util.format(error)}`);
+        if (typeof consolefy !== "undefined" && consolefy.error) consolefy.error(`Error: ${util.format(error)}`); else console.error(`Error: ${util.format(error)}`);
         return null;
     }
 }

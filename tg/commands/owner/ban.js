@@ -2,7 +2,7 @@ module.exports = {
     name: "ban",
     category: "owner",
     description: "Ban a user for a specified time.",
-    code: (ctx, { isOwner, db, config }) => {
+    code: (ctx, { isOwner, db, config, auditLog }) => {
         if (!isOwner(ctx.from.id)) {
             return ctx.reply(config.msg.owner);
         }
@@ -28,7 +28,7 @@ module.exports = {
             return ctx.reply("You cannot ban an owner.");
         }
 
-        const bans = db.get("bans");
+        const bans = db.get("bans") || [];
         const now = new Date();
         const banUntil = new Date(now.getTime() + hours * 60 * 60 * 1000);
 
@@ -37,6 +37,10 @@ module.exports = {
         updatedBans.push({ id: userId, until: banUntil.toISOString() });
 
         db.set("bans", updatedBans);
+
+        if (auditLog) {
+            auditLog.log(ctx.from.id, "BAN_USER", { target: userId, durationHours: hours, until: banUntil });
+        }
 
         ctx.reply(`User ${userId} has been banned for ${hours} hour(s). They will be unbanned on ${banUntil.toUTCString()}.`);
     }

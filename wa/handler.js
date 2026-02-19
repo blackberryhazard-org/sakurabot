@@ -1,13 +1,9 @@
-const config = require("../config.json");
 const { downloadContentFromMessage } = require("@whiskeysockets/baileys");
 const { Sticker, StickerTypes } = require("wa-sticker-formatter");
-const moment = require("moment-timezone");
-const fs = require("fs");
-const path = require("path");
 const middleware = require("./middleware");
 
-module.exports = async (sock, m, db, waBot, items, services) => {
-    const { userAccess, economy, inventory: inventoryService, linking } = services;
+module.exports = async (sock, m, db, waBot, items, services, config, tools, consolefy) => {
+    const { userAccess, economy, inventory: inventoryService, linking, cooldown } = services;
     const from = m.key.remoteJid;
     const sender = m.key.participant || m.key.remoteJid;
     const type = Object.keys(m.message)[0];
@@ -57,6 +53,7 @@ module.exports = async (sock, m, db, waBot, items, services) => {
     };
 
     const ctx = {
+        // Legacy fields (Deprecated: use helpers or specialized ctx fields instead)
         m, id: from, args, sender, me: sock.user.id, getId: (jid) => jid || from,
         reply: async (content, options = {}) => {
             if (typeof content === "string") return await sock.sendMessage(from, { text: content, ...options }, { quoted: m });
@@ -96,7 +93,7 @@ module.exports = async (sock, m, db, waBot, items, services) => {
     };
 
     const helpers = {
-        userAccess, economy, inventory: inventoryService, linking, ctx,
+        userAccess, economy, inventory: inventoryService, linking, auditLog: services.auditLog || global.auditLog, ctx,
         isLeader: (jid) => userAccess.isLeader(jid),
         isManager: (jid) => userAccess.isManager(jid),
         isOwner: (jid) => userAccess.isOwner(jid),
@@ -105,7 +102,6 @@ module.exports = async (sock, m, db, waBot, items, services) => {
         updateSakuranite: (jid, amount) => economy.updateBalance(jid, amount, "sakuranite"),
         getInventory: (jid) => inventoryService.getInventory(jid),
         updateInventory: (id, item, amount) => inventoryService.addItem(id, item, amount),
-        // Mining Helpers
         getMiningTickets: (jid) => economy.getBalance(jid, "mining_tickets"),
         updateMiningTickets: (jid, amount) => economy.updateBalance(jid, amount, "mining_tickets"),
         getMiningRate: (jid) => economy.getBalance(jid, "mining_rate") || 0.10,
@@ -140,6 +136,14 @@ module.exports = async (sock, m, db, waBot, items, services) => {
     if (isCmd) {
         const cmd = waBot.cmd.get(commandName);
         if (cmd) {
+            const canonicalName = cmd.name || commandName;
+            if (!["ping", "menu", "me", "start"].includes(canonicalName) && !userAccess.isOwner(sender)) {
+                const cooldownDuration = userAccess.isPremium(sender) ? 3000 : 10000;
+                const cooldownResult = cooldown.check(sender, canonicalName, cooldownDuration);
+                if (cooldownResult.isLimited) {
+                    return ctx.reply(`${config.msg.cooldown} ${cooldownResult.timeLeft.toFixed(1)}s`);
+                }
+            }
             try {
                 if (cmd.permissions) {
                     const isGroup = from.endsWith("@g.us");
@@ -155,7 +159,12 @@ module.exports = async (sock, m, db, waBot, items, services) => {
                     }
                 }
                 await cmd.code(sock, m, helpers);
-            } catch (err) { consolefy.error(`Error executing command ${commandName}:`, err); await ctx.reply(`Terjadi kesalahan: ${err.message}`); }
+            } catch (err) {
+                const errorMsg = `Error executing command ${commandName}:`;
+                if (consolefy && consolefy.error) consolefy.error(errorMsg, err);
+                else console.error(errorMsg, err);
+                await ctx.reply(`Terjadi kesalahan: ${err.message}`);
+            }
         }
     }
 };

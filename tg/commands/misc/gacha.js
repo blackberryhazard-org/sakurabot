@@ -5,7 +5,7 @@ module.exports = {
     name: "gacha",
     aliases: [],
     category: "misc",
-    code: async (ctx, { isOwner, getGachaTickets, updateGachaTickets, getSakuranite, updateSakuranite, db }) => {
+    code: async (ctx, { isOwner, getGachaTickets, updateGachaTickets, getSakuranite, updateSakuranite }) => {
         const userId = ctx.from.id;
         const gachaDir = path.resolve(__dirname, "../../gacha");
 

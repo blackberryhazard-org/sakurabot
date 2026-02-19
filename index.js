@@ -94,7 +94,7 @@ const isTgBotConfigValid = config.bot && config.bot.botfather_token && !config.b
 if (isWaBotConfigValid) {
     try {
         const startWaBot = require("./wa/index.js");
-        startWaBot();
+        startWaBot(global.config, global.consolefy, global.tools);
         global.botStatus.wa = true;
     } catch (error) {
         consolefy.error("Failed to start WhatsApp bot:", error);
@@ -106,7 +106,7 @@ if (isWaBotConfigValid) {
 if (isTgBotConfigValid) {
     try {
         const { launchTelegramBot } = require("./tg/index.js");
-        launchTelegramBot();
+        launchTelegramBot(global.config, global.consolefy, global.tools);
         global.botStatus.tg = true;
     } catch (error) {
         consolefy.error("Failed to start Telegram bot:", error);

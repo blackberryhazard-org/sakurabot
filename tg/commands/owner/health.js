@@ -6,7 +6,7 @@ module.exports = {
     name: "health",
     category: "owner",
     permissions: { owner: true },
-    code: async (ctx, helpers) => {
+    code: async (ctx) => {
         const { formatUptime } = global;
         const uptime = formatUptime(global.botStartTime);
 
@@ -14,7 +14,7 @@ module.exports = {
         try {
             const dbFilePath = path.resolve(__dirname, "../../database/tg/database.json");
             dbSize = fs.statSync(dbFilePath).size;
-        } catch (e) {}
+        } catch (_e) { /* ignore */ }
 
         const healthText = "*Sistem Health Check* 🏥\n\n" +
             `➛ *Uptime*: ${uptime}\n` +

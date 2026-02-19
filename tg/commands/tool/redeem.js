@@ -1,7 +1,7 @@
 module.exports = {
     name: "redeem",
     category: "tool",
-    code: async (ctx, { db, isOwner, getCoins, updateCoins, getGachaTickets, updateGachaTickets, getSakuranite, updateSakuranite, getMiningTickets, updateMiningTickets, config, bot }) => {
+    code: async (ctx, { db, isOwner, getGachaTickets, updateGachaTickets, getSakuranite, updateSakuranite, getMiningTickets, updateMiningTickets, config, bot }) => {
         const userId = ctx.from.id;
         const args = ctx.message.text.split(" ").slice(1);
         const code = args[0];

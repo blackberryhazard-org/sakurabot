@@ -1,47 +1,40 @@
 # SakuraBot 🌸
 
-SakuraBot adalah bot multi-platform (WhatsApp & Telegram) yang canggih dengan fitur ekonomi, game, dan manajemen grup.
+Multi-platform Bot (WhatsApp & Telegram) built with Node.js.
 
 ## Fitur Utama
-- **Multi-Platform**: Mendukung Telegram (Telegraf) dan WhatsApp (Baileys).
-- **Sistem Ekonomi**: Sakuranite, Coins, Gacha Tickets, dan Inventory.
-- **Game**: Berbagai macam game interaktif (Family 100, Tebak-tebakan, dll).
-- **Keamanan**: Sistem Ban, Cooldown (Rate Limiter), dan Verifikasi Langganan Channel.
-- **Observability**: Audit Log dan Diagnostic Health Check.
+- **Ekonomi & Game**: Sistem koin, sakuranite, gacha, dan mining.
+- **Multi-Platform**: Dukungan penuh untuk WhatsApp (@whiskeysockets/baileys) dan Telegram (Telegraf).
+- **Shared Core**: Logika bisnis (ekonomi, akses) terpusat dan dapat digunakan di kedua platform.
+- **Account Linking**: Hubungkan akun WhatsApp dan Telegram Anda.
+- **Reliability & Security**: Rate-limiting granular, audit logs, dan quality gates (lint + test).
 
-## Persiapan & Instalasi
+## Quick Start
 
-### Prasyarat
-- Node.js v18 atau lebih baru.
-- Token BotFather (untuk Telegram).
-- Nomor WhatsApp (untuk WhatsApp).
+### Persiapan
+1. Pastikan Anda memiliki Node.js v18+.
+2. Salin `config.example.json` menjadi `config.json`.
+3. Isi `config.json` dengan token dan kredensial Anda.
 
-### Langkah Instalasi
-1. Clone repository ini.
-2. Instal dependensi:
-   ```bash
-   npm install --legacy-peer-deps
-   ```
-3. Salin konfigurasi contoh:
-   ```bash
-   cp config.example.json config.json
-   ```
-4. Edit `config.json` dan isi semua field yang diperlukan.
-
-## Penggunaan
-Jalankan bot dengan perintah:
+### Instalasi
 ```bash
-node .
+npm install --legacy-peer-deps
 ```
 
-Untuk melakukan pengecekan kualitas kode:
+### Menjalankan Bot
 ```bash
-npm run lint
-npm test
+# Jalankan bot
+node .
+
+# Quality Check (Lint + Test)
+npm run check
 ```
 
 ## Arsitektur
-Informasi detail mengenai arsitektur proyek dapat ditemukan di [docs/architecture-summary.md](docs/architecture-summary.md).
+Informasi detail mengenai arsitektur dapat ditemukan di [docs/architecture-summary.md](docs/architecture-summary.md).
+
+## Kontribusi & Pengembangan Command
+Lihat [docs/command-contract.md](docs/command-contract.md) untuk panduan pembuatan perintah baru.
 
 ## Lisensi
 MIT

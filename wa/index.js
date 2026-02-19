@@ -12,11 +12,13 @@ const fs = require("fs");
 const handler = require("./handler");
 
 // Import Services & Shared DB
+const CooldownService = require("../src/services/cooldown.service");
 const { getDb } = require("../src/database");
 const UserAccessService = require("../src/services/user-access.service");
 const EconomyService = require("../src/services/economy.service");
 const InventoryService = require("../src/services/inventory.service");
 const LinkingService = require("../src/services/linking.service");
+const { items_erekir: items } = require("../tools/items");
 
 const db = getDb("wa");
 const tgDb = getDb("tg");
@@ -27,27 +29,19 @@ keys.forEach(key => {
     if (!db.has(key)) db.set(key, (key === "sakuranite" || key === "inventory" || key === "last_daily" || key === "links" || key === "mining_tickets" || key === "mining_rate") ? {} : []);
 });
 
+const userCooldowns = new CooldownService();
+
 const waBot = {
     cmd: new Map(),
     games: new Map(),
     sessions: new Map()
 };
 
-// Initialize Services
-const userAccess = new UserAccessService(db, config);
-const economy = new EconomyService(db, global.auditLog);
-const tgEconomy = new EconomyService(tgDb, global.auditLog);
-const inventoryService = new InventoryService(db);
-const linking = new LinkingService(tgDb, db, tgEconomy, economy);
-
-// Items definition
-const { items_erekir: items } = require("../tools/items");
-
-const loadCommands = (dir) => {
+const loadCommands = (dir, consolefy) => {
     const files = fs.readdirSync(dir, { withFileTypes: true });
     for (const file of files) {
         const fullPath = path.join(dir, file.name);
-        if (file.isDirectory()) loadCommands(fullPath);
+        if (file.isDirectory()) loadCommands(fullPath, consolefy);
         else if (file.name.endsWith(".js")) {
             try {
                 const command = require(fullPath);
@@ -56,30 +50,46 @@ const loadCommands = (dir) => {
                     waBot.cmd.set(command.name, command);
                     if (command.aliases) command.aliases.forEach(alias => waBot.cmd.set(alias, command));
                 }
-            } catch (e) { consolefy.error(`Error loading command from ${fullPath}:`, e); }
+            } catch (e) {
+                if (consolefy && consolefy.error) consolefy.error(`Error loading command from ${fullPath}:`, e);
+                else console.error(`Error loading command from ${fullPath}:`, e);
+            }
         }
     }
 };
-loadCommands(path.resolve(__dirname, "commands"));
 
-const startWaBot = async () => {
+const startWaBot = async (config, consolefy, tools) => {
+    // Re-verify if needed, but we trust the injection
+    const appConfig = config || global.config;
+    const appConsolefy = consolefy || global.consolefy;
+    const appTools = tools || global.tools;
+
+    loadCommands(path.resolve(__dirname, "commands"), appConsolefy);
+
+    const userAccess = new UserAccessService(db, appConfig);
+    const economy = new EconomyService(db, global.auditLog);
+    const tgEconomy = new EconomyService(tgDb, global.auditLog);
+    const inventoryService = new InventoryService(db);
+    const linking = new LinkingService(tgDb, db, tgEconomy, economy);
+
     const { state, saveCreds } = await useMultiFileAuthState(path.resolve(__dirname, "../state"));
     const { version } = await fetchLatestBaileysVersion();
     const sock = makeWASocket({
         version,
         logger: pino({ level: "silent" }),
-        printQRInTerminal: !config.system.usePairingCode,
+        printQRInTerminal: !appConfig.system.usePairingCode,
         auth: { creds: state.creds, keys: makeCacheableSignalKeyStore(state.keys, pino({ level: "silent" })) },
         browser: ["Ubuntu", "Chrome", "20.0.04"]
     });
 
-    if (config.system.usePairingCode && !sock.authState.creds.registered) {
-        const phoneNumber = config.bot.phoneNumber;
+    if (appConfig.system.usePairingCode && !sock.authState.creds.registered) {
+        const phoneNumber = appConfig.bot.phoneNumber;
         if (phoneNumber) {
             setTimeout(async () => {
-                let code = await sock.requestPairingCode(phoneNumber, config.system.customPairingCode);
+                let code = await sock.requestPairingCode(phoneNumber, appConfig.system.customPairingCode);
                 code = code?.match(/.{1,4}/g)?.join("-") || code;
-                consolefy.info(`Pairing Code: ${code}`);
+                if (appConsolefy && appConsolefy.info) appConsolefy.info(`Pairing Code: ${code}`);
+                else console.log(`Pairing Code: ${code}`);
             }, 3000);
         }
     }
@@ -89,10 +99,13 @@ const startWaBot = async () => {
         const { connection, lastDisconnect } = update;
         if (connection === "close") {
             const shouldReconnect = (lastDisconnect.error instanceof Boom)?.output?.statusCode !== DisconnectReason.loggedOut;
-            consolefy.error(`Connection closed due to ${lastDisconnect.error}, reconnecting: ${shouldReconnect}`);
-            if (shouldReconnect) startWaBot();
+            const errorMsg = `Connection closed due to ${lastDisconnect.error}, reconnecting: ${shouldReconnect}`;
+            if (appConsolefy && appConsolefy.error) appConsolefy.error(errorMsg);
+            else console.error(errorMsg);
+            if (shouldReconnect) startWaBot(appConfig, appConsolefy, appTools);
         } else if (connection === "open") {
-            consolefy.success("WhatsApp bot connected!");
+            if (appConsolefy && appConsolefy.success) appConsolefy.success("WhatsApp bot connected!");
+            else console.log("WhatsApp bot connected!");
             global.botStatus.wa = true;
             global.waSock = sock;
             global.waBot = waBot;
@@ -103,10 +116,14 @@ const startWaBot = async () => {
         try {
             const m = chatUpdate.messages[0];
             if (!m.message || m.key.fromMe) return;
-            const services = { userAccess, economy, inventory: inventoryService, linking };
-            await handler(sock, m, db, waBot, items, services);
-        } catch (err) { consolefy.error(err); }
+            const services = { userAccess, economy, inventory: inventoryService, linking, cooldown: userCooldowns };
+            await handler(sock, m, db, waBot, items, services, appConfig, appTools, appConsolefy);
+        } catch (err) {
+            if (appConsolefy && appConsolefy.error) appConsolefy.error(err);
+            else console.error(err);
+        }
     });
     return sock;
 };
+
 module.exports = startWaBot;

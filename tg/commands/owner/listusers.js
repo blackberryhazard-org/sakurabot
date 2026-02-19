@@ -21,7 +21,7 @@ const formatUserList = async (ctx, userIds, page, helpers) => {
                 userId,
                 username: chat.username ? `@${escapeHTML(chat.username)}` : escapeHTML(chat.first_name || "User")
             };
-        } catch (e) {
+        } catch (_e) {
             return { userId, username: "N/A" };
         }
     }));
@@ -135,7 +135,7 @@ module.exports = {
                     parse_mode: "HTML",
                     ...Markup.inlineKeyboard(buttons)
                 });
-            } catch (e) {
+            } catch (_e) {
                 // Message might be the same or already edited
             }
             await ctx.answerCbQuery();
@@ -163,7 +163,7 @@ module.exports = {
                     newUsers.push(userId);
                     // Sleep 100ms to avoid rate limiting
                     await new Promise(resolve => setTimeout(resolve, 100));
-                } catch (e) {
+                } catch (_e) {
                     purgedCount++;
                 }
             }
@@ -186,8 +186,8 @@ module.exports = {
                             supports_streaming: true
                         }
                     );
-                } catch (e) {
-                    console.error("Failed to send purge notification to newsletter:", e);
+                } catch (_e) {
+                    console.error("Failed to send purge notification to newsletter:", _e);
                 }
             }
 
@@ -210,8 +210,8 @@ module.exports = {
                     caption: caption,
                     parse_mode: "HTML"
                 });
-            } catch (e) {
-                await ctx.reply(`Gagal mengirim analytics: ${e.message}`);
+            } catch (_e) {
+                await ctx.reply(`Gagal mengirim analytics: ${_e.message}`);
             }
         }
     }
