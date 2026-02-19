@@ -1,11 +1,11 @@
 module.exports = {
     name: "tebakbendera",
-    code: async (ctx, { bot, game }) => {
+    code: async (ctx, { bot, game: gameService }) => {
         const chatId = ctx.chat.id;
         if (bot.games.has(chatId)) return await ctx.reply("Sesi permainan sedang berjalan di chat ini!");
 
         try {
-            const game = await game.fetchQuestion("tebakbendera");
+            const game = await gameService.fetchQuestion("tebakbendera");
             bot.games.set(chatId, game);
 
             if (game.image) {

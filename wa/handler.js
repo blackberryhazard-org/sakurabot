@@ -108,8 +108,6 @@ module.exports = async (sock, m, db, waBot, items, services, config, tools, cons
         updateMiningRate: (jid, amount) => mining.updateRate(jid, amount),
         db, config, waBot, items, downloadContentFromMessage, Sticker, StickerTypes, prefix, pushName, sender, from, args
     };
-    };
-
     const activeGame = waBot.games.get(from);
     if (activeGame && !isCmd) {
         const result = game.handleAnswer(activeGame, body, sender, pushName || sender.split("@")[0]);
