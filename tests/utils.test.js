@@ -1,4 +1,4 @@
-const { formatUptime, escapeHTML, createUrl } = require("../tools/utils");
+const { formatUptime, escapeHTML, createUrl } = require("../src/utils");
 
 describe("Utils", () => {
     test("formatUptime should return formatted string", () => {

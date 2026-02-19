@@ -18,7 +18,9 @@ const UserAccessService = require("../src/services/user-access.service");
 const EconomyService = require("../src/services/economy.service");
 const InventoryService = require("../src/services/inventory.service");
 const LinkingService = require("../src/services/linking.service");
-const { items_erekir: items } = require("../tools/items");
+const GameService = require("../src/services/game.service");
+const MiningService = require("../src/services/mining.service");
+const items = InventoryService.items_erekir;
 
 const db = getDb("wa");
 const tgDb = getDb("tg");
@@ -71,6 +73,8 @@ const startWaBot = async (config, consolefy, tools) => {
     const tgEconomy = new EconomyService(tgDb, global.auditLog);
     const inventoryService = new InventoryService(db);
     const linking = new LinkingService(tgDb, db, tgEconomy, economy);
+    const gameService = new GameService(economy);
+    const miningService = new MiningService(economy, inventoryService);
 
     const { state, saveCreds } = await useMultiFileAuthState(path.resolve(__dirname, "../state"));
     const { version } = await fetchLatestBaileysVersion();
@@ -116,7 +120,7 @@ const startWaBot = async (config, consolefy, tools) => {
         try {
             const m = chatUpdate.messages[0];
             if (!m.message || m.key.fromMe) return;
-            const services = { userAccess, economy, inventory: inventoryService, linking, cooldown: userCooldowns };
+            const services = { userAccess, economy, inventory: inventoryService, linking, cooldown: userCooldowns, game: gameService, mining: miningService };
             await handler(sock, m, db, waBot, items, services, appConfig, appTools, appConsolefy);
         } catch (err) {
             if (appConsolefy && appConsolefy.error) appConsolefy.error(err);
