@@ -1,0 +1,3 @@
+class MiningService {
+    // Implement this!
+}

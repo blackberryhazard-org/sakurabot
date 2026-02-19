@@ -1,3 +1,21 @@
+// Item definition for the items system in the telegram bot 
+const items_serpulo = {
+    Copper: 75,
+    Lead: 100,
+    Titanium: 250,
+    Thorium: 500,
+};
+
+// Item definition for the items system in the WhatsApp bot 
+const items_erekir = {
+    Beryllium: 100,
+    Graphite: 200,
+    Tungsten: 500,
+    Thorium: 1000,
+    Oxide: 2000,
+    Carbide: 5000
+};
+
 class InventoryService {
     constructor(db) {
         this.db = db;

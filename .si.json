@@ -3,11 +3,11 @@
   "run": "npm start",
   "intelligence": {
     ".json": {
-      "enabled": true,
+      "enabled": false,
       "run": "vscode-json-language-server --stdio"
     },
     ".js": {
-      "enabled": true,
+      "enabled": false,
       "run": "typescript-language-server --stdio"
     }
   }
