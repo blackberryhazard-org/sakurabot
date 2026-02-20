@@ -5,14 +5,16 @@ const moment = require("moment-timezone");
 const cron = require("node-cron");
 const archiver = require("archiver");
 const { Pakasir } = require("pakasir-sdk");
-const { items_serpulo: items } = require("../tools/items");
 
 // Import Services & Shared DB
 const { getDb } = require("../src/database");
 const UserAccessService = require("../src/services/user-access.service");
 const EconomyService = require("../src/services/economy.service");
 const InventoryService = require("../src/services/inventory.service");
+const items = InventoryService.items_serpulo;
 const LinkingService = require("../src/services/linking.service");
+const GameService = require("../src/services/game.service");
+const MiningService = require("../src/services/mining.service");
 const CooldownService = require("../src/services/cooldown.service");
 
 const db = getDb("tg");
@@ -39,6 +41,8 @@ const launchTelegramBot = (config, consolefy, tools) => {
     const waEconomy = new EconomyService(waDb, global.auditLog);
     const inventoryService = new InventoryService(db);
     const linking = new LinkingService(db, waDb, economy, waEconomy);
+    const gameService = new GameService(economy);
+    const miningService = new MiningService(economy, inventoryService);
 
     const token = appConfig.bot.botfather_token;
     const bot = new Telegraf(token);
@@ -52,11 +56,14 @@ const launchTelegramBot = (config, consolefy, tools) => {
         userAccess,
         economy,
         inventory: inventoryService,
-        linking, auditLog: global.auditLog,
-        getMiningTickets: (id) => economy.getBalance(id, "mining_tickets"),
-        updateMiningTickets: (id, val) => economy.updateBalance(id, val, "mining_tickets"),
-        getMiningRate: (id) => economy.getBalance(id, "mining_rate") || 0.10,
-        updateMiningRate: (id, val) => economy.updateBalance(id, val, "mining_rate"),
+        linking,
+        game: gameService,
+        mining: miningService,
+        auditLog: global.auditLog,
+        getMiningTickets: (id) => miningService.getTickets(id),
+        updateMiningTickets: (id, val) => miningService.updateTickets(id, val),
+        getMiningRate: (id) => miningService.getRate(id),
+        updateMiningRate: (id, val) => miningService.updateRate(id, val),
         isLeader: (id) => userAccess.isLeader(id),
         isOwner: (id) => userAccess.isOwner(id),
         isPremium: (id) => userAccess.isPremium(id),
@@ -89,13 +96,11 @@ const launchTelegramBot = (config, consolefy, tools) => {
         const chatId = ctx.chat.id;
         const activeGame = bot.games.get(chatId);
         if (activeGame) {
-            const result = appTools.game.handleAnswer(
+            const result = gameService.handleAnswer(
                 activeGame,
                 ctx.message.text,
                 ctx.from.id,
-                ctx.from.first_name,
-                helpers.updateSakuranite,
-                helpers.getSakuranite
+                ctx.from.first_name
             );
             if (result) {
                 if (result.status === "game_over" || result.status === "surrender") {

@@ -1,10 +1,10 @@
 module.exports = {
     name: "siapakahaku",
-    code: async (sock, m, { from, waBot }) => {
+    code: async (sock, m, { from, waBot, game: gameService }) => {
         if (waBot.games.has(from)) return await sock.sendMessage(from, { text: "Sesi permainan sedang berjalan di chat ini!" }, { quoted: m });
 
         try {
-            const game = await tools.game.fetchQuestion("siapakahaku");
+            const game = await gameService.fetchQuestion("siapakahaku");
             waBot.games.set(from, game);
 
             if (game.image) {

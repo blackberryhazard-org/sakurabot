@@ -47,7 +47,7 @@ const Formatter = {
 };
 
 global.botStartTime = Date.now();
-const tools = require("./tools/exports.js");
+const tools = require("./src/exports.js");
 
 try {
     const configPath = path.resolve(__dirname, "config.json");

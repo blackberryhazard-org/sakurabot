@@ -1,6 +1,5 @@
 const tools = {
     utils: require("./utils.js"),
-    game: require("./core/game.js"),
     cmd: require("./cmd.js"),
     list: require("./list.js"),
     mime: (ext) => {

@@ -3,7 +3,7 @@ const { Sticker, StickerTypes } = require("wa-sticker-formatter");
 const middleware = require("./middleware");
 
 module.exports = async (sock, m, db, waBot, items, services, config, tools, consolefy) => {
-    const { userAccess, economy, inventory: inventoryService, linking, cooldown } = services;
+    const { userAccess, economy, inventory: inventoryService, linking, cooldown, game, mining } = services;
     const from = m.key.remoteJid;
     const sender = m.key.participant || m.key.remoteJid;
     const type = Object.keys(m.message)[0];
@@ -93,7 +93,7 @@ module.exports = async (sock, m, db, waBot, items, services, config, tools, cons
     };
 
     const helpers = {
-        userAccess, economy, inventory: inventoryService, linking, auditLog: services.auditLog || global.auditLog, ctx,
+        userAccess, economy, inventory: inventoryService, linking, game, mining, auditLog: services.auditLog || global.auditLog, ctx,
         isLeader: (jid) => userAccess.isLeader(jid),
         isManager: (jid) => userAccess.isManager(jid),
         isOwner: (jid) => userAccess.isOwner(jid),
@@ -102,16 +102,15 @@ module.exports = async (sock, m, db, waBot, items, services, config, tools, cons
         updateSakuranite: (jid, amount) => economy.updateBalance(jid, amount, "sakuranite"),
         getInventory: (jid) => inventoryService.getInventory(jid),
         updateInventory: (id, item, amount) => inventoryService.addItem(id, item, amount),
-        getMiningTickets: (jid) => economy.getBalance(jid, "mining_tickets"),
-        updateMiningTickets: (jid, amount) => economy.updateBalance(jid, amount, "mining_tickets"),
-        getMiningRate: (jid) => economy.getBalance(jid, "mining_rate") || 0.10,
-        updateMiningRate: (jid, amount) => economy.updateBalance(jid, amount, "mining_rate"),
+        getMiningTickets: (jid) => mining.getTickets(jid),
+        updateMiningTickets: (jid, amount) => mining.updateTickets(jid, amount),
+        getMiningRate: (jid) => mining.getRate(jid),
+        updateMiningRate: (jid, amount) => mining.updateRate(jid, amount),
         db, config, waBot, items, downloadContentFromMessage, Sticker, StickerTypes, prefix, pushName, sender, from, args
     };
-
     const activeGame = waBot.games.get(from);
     if (activeGame && !isCmd) {
-        const result = tools.game.handleAnswer(activeGame, body, sender, pushName || sender.split("@")[0], helpers.updateSakuranite, helpers.getSakuranite);
+        const result = game.handleAnswer(activeGame, body, sender, pushName || sender.split("@")[0]);
         if (result) {
             if (result.status === "game_over" || result.status === "surrender") { if (activeGame.timeoutRef) clearTimeout(activeGame.timeoutRef); waBot.games.delete(from); }
             return await sock.sendMessage(from, { text: result.message, mentions: result.mentions || [] }, { quoted: m });
