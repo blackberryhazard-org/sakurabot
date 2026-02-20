@@ -67,17 +67,24 @@ module.exports = (dependencies) => {
         if (!ctx.from || ctx.chat.type !== "private") return next();
 
         const processReferral = async () => {
-            const pendingReferral = db.get(`pending_referrals.${ctx.from.id}`);
+            const pendingRefs = db.get("pending_referrals") || {};
+            const pendingReferral = pendingRefs[ctx.from.id];
             if (pendingReferral) {
                 const referrerId = pendingReferral;
-                db.set(`referred_by.${ctx.from.id}`, referrerId);
 
-                let referrerReferrals = db.get(`referrals.${referrerId}`) || [];
+                const referredBy = db.get("referred_by") || {};
+                referredBy[ctx.from.id] = referrerId;
+                db.set("referred_by", referredBy);
+
+                const referrals = db.get("referrals") || {};
+                let referrerReferrals = referrals[referrerId] || [];
                 if (!Array.isArray(referrerReferrals)) referrerReferrals = [];
                 referrerReferrals.push(ctx.from.id);
-                db.set(`referrals.${referrerId}`, referrerReferrals);
+                referrals[referrerId] = referrerReferrals;
+                db.set("referrals", referrals);
 
-                db.delete(`pending_referrals.${ctx.from.id}`);
+                delete pendingRefs[ctx.from.id];
+                db.set("pending_referrals", pendingRefs);
 
                 economy.addBalance(referrerId, 1000, "sakuranite");
                 economy.addBalance(referrerId, 5, "gacha_tickets");

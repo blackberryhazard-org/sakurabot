@@ -47,11 +47,21 @@ module.exports = async (sock, m, db, waBot, items, services, config, tools, cons
     const getGroupDb = (jid) => {
         if (!jid.endsWith("@g.us")) return null;
         return new Proxy({}, {
-            get: (target, prop) => { if (prop === "save") return () => {}; return db.get(`groups.${jid}.${prop}`); },
-            set: (target, prop, value) => { db.set(`groups.${jid}.${prop}`, value); return true; }
+            get: (target, prop) => {
+                if (prop === "save") return () => {};
+                const groups = db.get("groups") || {};
+                const group = groups[jid] || {};
+                return group[prop];
+            },
+            set: (target, prop, value) => {
+                const groups = db.get("groups") || {};
+                if (!groups[jid]) groups[jid] = {};
+                groups[jid][prop] = value;
+                db.set("groups", groups);
+                return true;
+            }
         });
     };
-
     const ctx = {
         // Legacy fields (Deprecated: use helpers or specialized ctx fields instead)
         m, id: from, args, sender, me: sock.user.id, getId: (jid) => jid || from,
