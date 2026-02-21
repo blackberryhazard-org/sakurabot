@@ -1,6 +1,7 @@
 const { downloadContentFromMessage } = require("@whiskeysockets/baileys");
 const { Sticker, StickerTypes } = require("wa-sticker-formatter");
 const middleware = require("./middleware");
+const ruleProcessor = require("./rule-processor");
 
 module.exports = async (sock, m, db, waBot, items, services, config, tools, consolefy) => {
     const { userAccess, economy, inventory: inventoryService, linking, cooldown, game, mining } = services;
@@ -17,6 +18,8 @@ module.exports = async (sock, m, db, waBot, items, services, config, tools, cons
     else if (type === "imageMessage") body = m.message.imageMessage.caption;
     else if (type === "videoMessage") body = m.message.videoMessage.caption;
     body = body || "";
+    const isRuleHandled = await ruleProcessor(sock, m, body, from, sender, { ...services, db }, config, { userAccess, economy, inventory: inventoryService, linking, cooldown, game, mining });
+    if (isRuleHandled) return;
 
     const prefix = config.bot.prefix || "/";
     const isCmd = body.startsWith(prefix);

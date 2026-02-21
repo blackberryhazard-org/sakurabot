@@ -118,10 +118,13 @@ module.exports = (dependencies) => {
         }
     };
 
+    const ruleMiddleware = require("./rule-middleware")(dependencies);
+
     return {
         addUserMiddleware,
         banMiddleware,
         cooldownMiddleware,
-        channelSubMiddleware
+        channelSubMiddleware,
+        ruleMiddleware
     };
 };
