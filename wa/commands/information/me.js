@@ -1,14 +1,14 @@
 module.exports = {
     name: "me",
     aliases: ["profil"],
-    code: async (sock, m, { sender, pushName, isOwner, isPremium, getSakuranite, getInventory, getMiningTickets, getMiningRate, db }) => {
+    code: async (sock, m, { sender, pushName, isOwner, isPremium, getSakuranite, getInventory, getMiningTickets, getMiningRate, linking }) => {
         const sakuranite = getSakuranite(sender);
         const inv = getInventory(sender);
         const miningTickets = getMiningTickets(sender);
         const miningRate = getMiningRate(sender);
         const role = isOwner(sender) ? "Owner" : (isPremium(sender) ? "Premium" : "User");
 
-        const link = db.get(`links.${sender}`);
+        const link = linking.getTgId(sender);
         const linkStatus = link ? `✅ Terhubung (${link})` : "❌ Tidak Terhubung";
 
         let invText = "";

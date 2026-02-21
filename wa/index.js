@@ -76,7 +76,8 @@ const startWaBot = async (config, consolefy, tools) => {
     const gameService = new GameService(economy);
     const miningService = new MiningService(economy, inventoryService);
 
-    const { state, saveCreds } = await useMultiFileAuthState(path.resolve(__dirname, "../state"));
+    const statePath = path.resolve(__dirname, "../state");
+    const { state, saveCreds } = await useMultiFileAuthState(statePath);
     const { version } = await fetchLatestBaileysVersion();
     const sock = makeWASocket({
         version,
@@ -102,10 +103,23 @@ const startWaBot = async (config, consolefy, tools) => {
     sock.ev.on("connection.update", (update) => {
         const { connection, lastDisconnect } = update;
         if (connection === "close") {
-            const shouldReconnect = (lastDisconnect.error instanceof Boom)?.output?.statusCode !== DisconnectReason.loggedOut;
+            const error = (lastDisconnect.error instanceof Boom) ? lastDisconnect.error : lastDisconnect.error;
+            const statusCode = error?.output?.statusCode;
+            const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
+
+            const isBadMac = error?.message?.includes("Bad MAC") || error?.stack?.includes("Bad MAC");
+
+            if (isBadMac) {
+                if (appConsolefy && appConsolefy.error) appConsolefy.error("Bad MAC detected! Clearing session state...");
+                fs.rmSync(statePath, { recursive: true, force: true });
+                startWaBot(appConfig, appConsolefy, appTools);
+                return;
+            }
+
             const errorMsg = `Connection closed due to ${lastDisconnect.error}, reconnecting: ${shouldReconnect}`;
             if (appConsolefy && appConsolefy.error) appConsolefy.error(errorMsg);
             else console.error(errorMsg);
+
             if (shouldReconnect) startWaBot(appConfig, appConsolefy, appTools);
         } else if (connection === "open") {
             if (appConsolefy && appConsolefy.success) appConsolefy.success("WhatsApp bot connected!");

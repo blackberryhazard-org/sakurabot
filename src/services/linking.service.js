@@ -7,11 +7,13 @@ class LinkingService {
     }
 
     getWaJid(tgId) {
-        return this.tgDb.get(`links.${tgId}`);
+        const data = this.tgDb.get("links") || {};
+        return data[tgId];
     }
 
     getTgId(waJid) {
-        return this.waDb.get(`links.${waJid}`);
+        const data = this.waDb.get("links") || {};
+        return data[waJid];
     }
 
     link(tgId, waJid) {
@@ -33,14 +35,24 @@ class LinkingService {
             const waJid = this.getWaJid(id);
             if (!waJid) return false;
 
-            this.tgDb.delete(`links.${id}`);
-            this.waDb.delete(`links.${waJid}`);
+            const tgLinks = this.tgDb.get("links") || {};
+            delete tgLinks[id];
+            this.tgDb.set("links", tgLinks);
+
+            const waLinks = this.waDb.get("links") || {};
+            delete waLinks[waJid];
+            this.waDb.set("links", waLinks);
         } else {
             const tgId = this.getTgId(id);
             if (!tgId) return false;
 
-            this.waDb.delete(`links.${id}`);
-            this.tgDb.delete(`links.${tgId}`);
+            const waLinks = this.waDb.get("links") || {};
+            delete waLinks[id];
+            this.waDb.set("links", waLinks);
+
+            const tgLinks = this.tgDb.get("links") || {};
+            delete tgLinks[tgId];
+            this.tgDb.set("links", tgLinks);
         }
         return true;
     }

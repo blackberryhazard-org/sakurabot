@@ -5,7 +5,7 @@ module.exports = {
     category: "user",
     code: async (ctx, { db, isOwner, getSakuranite, updateSakuranite, getGachaTickets, updateGachaTickets, getMiningTickets, updateMiningTickets }) => {
         const userId = ctx.from.id;
-        const lastDaily = db.get(`last_daily.${userId}`);
+        const lastDailies = db.get("last_daily") || {}; const lastDaily = lastDailies[userId];
         const now = moment().tz("Asia/Jakarta");
 
         if (lastDaily && now.isSame(moment(lastDaily).tz("Asia/Jakarta"), "day")) {
@@ -23,7 +23,7 @@ module.exports = {
         updateGachaTickets(userId, getGachaTickets(userId) + ticketsReward);
         updateMiningTickets(userId, getMiningTickets(userId) + miningTicketsReward);
 
-        db.set(`last_daily.${userId}`, now.valueOf());
+        const lastDailiesUpdate = db.get("last_daily") || {}; lastDailiesUpdate[userId] = now.valueOf(); db.set("last_daily", lastDailiesUpdate);
 
         return ctx.reply(`🎉 <b>Daily Reward Claimed!</b> 🎉\n\nYou received:\n- ${isOwner(userId) ? 0 : sakuraniteReward} Sakuranite\n- ${ticketsReward} Gacha Tickets\n- ${miningTicketsReward} Mining Tickets\n\nCome back tomorrow!`, { parse_mode: "HTML" });
     }

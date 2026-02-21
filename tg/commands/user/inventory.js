@@ -5,7 +5,7 @@ module.exports = {
     description: "Check your inventory.",
     code: async (ctx, { db, escapeHTML }) => {
         const userId = ctx.from.id;
-        const inventory = db.get(`inventory.${userId}`) || {};
+        const inventory =  (db.get("inventory") || {})[userId] || {};
 
         if (Object.keys(inventory).length === 0) {
             return ctx.reply("Your inventory is empty.", { parse_mode: "HTML" });

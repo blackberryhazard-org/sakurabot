@@ -47,7 +47,7 @@ module.exports = {
             createdAt
         };
 
-        db.set(`redeem_codes.${code}`, newCode);
+        const redeemCodesUpdate = db.get("redeem_codes") || {}; redeemCodesUpdate[code] = newCode; db.set("redeem_codes", redeemCodesUpdate);
 
         await ctx.reply(`Kode redeem berhasil dibuat:\n<code>${code}</code>`, { parse_mode: "HTML" });
 

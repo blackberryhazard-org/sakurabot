@@ -165,10 +165,13 @@ const launchTelegramBot = (config, consolefy, tools) => {
             const referrerId = args[1].split("_")[1];
             if (referrerId && /^\d+$/.test(referrerId) && parseInt(referrerId) !== ctx.from.id) {
                 const users = db.get("users") || [];
-                if (!users.includes(ctx.from.id)) db.set(`pending_referrals.${ctx.from.id}`, parseInt(referrerId));
+                if (!users.includes(ctx.from.id)) {
+                    const pendingRefs = db.get("pending_referrals") || {};
+                    pendingRefs[ctx.from.id] = parseInt(referrerId);
+                    db.set("pending_referrals", pendingRefs);
+                }
             }
         }
-        const userName = ctx.from.first_name;
         const date = moment().tz("Asia/Jakarta").format("dddd, DD MMMM YYYY");
         const time = moment().tz("Asia/Jakarta").format("HH:mm:ss");
         const uptime = formatUptime(global.botStartTime);

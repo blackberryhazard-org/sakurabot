@@ -10,14 +10,14 @@ module.exports = {
             return ctx.reply("Penggunaan: /redeem {kode}");
         }
 
-        const redeemCode = db.get(`redeem_codes.${code}`);
+        const redeemCodes = db.get("redeem_codes") || {}; const redeemCode = redeemCodes[code];
 
         if (!redeemCode) {
             return ctx.reply("Kode redeem tidak valid atau sudah kedaluwarsa.");
         }
 
         if (redeemCode.expiresAt && Date.now() > redeemCode.expiresAt) {
-            db.delete(`redeem_codes.${code}`);
+            const codesUpdate = db.get("redeem_codes") || {}; delete codesUpdate[code]; db.set("redeem_codes", codesUpdate);
             return ctx.reply("Kode redeem ini sudah kedaluwarsa.");
         }
 
@@ -54,7 +54,7 @@ module.exports = {
         }
 
         redeemCode.claimedBy.push(userId);
-        db.set(`redeem_codes.${code}`, redeemCode);
+        const redeemCodesUpdate = db.get("redeem_codes") || {}; redeemCodesUpdate[code] = redeemCode; db.set("redeem_codes", redeemCodesUpdate);
 
         await ctx.reply(`Selamat! Anda berhasil menukarkan kode dan mendapatkan ${rewardMessage}.`);
 

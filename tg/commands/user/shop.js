@@ -19,7 +19,7 @@ module.exports = {
             }
 
             const userId = ctx.from.id;
-            const inventory = db.get(`inventory.${userId}`) || {};
+            const inventories = db.get("inventory") || {}; const inventory = inventories[userId] || {};
             const userAmount = inventory[item] || 0;
 
             if (userAmount < amount) {
@@ -31,7 +31,7 @@ module.exports = {
             // Update inventory
             inventory[item] -= amount;
             if (inventory[item] <= 0) delete inventory[item];
-            db.set(`inventory.${userId}`, inventory);
+            const inventoriesUpdate = db.get("inventory") || {}; inventoriesUpdate[userId] = inventory; db.set("inventory", inventoriesUpdate);
 
             // Update Sakuranite
             updateSakuranite(userId, getSakuranite(userId) + totalPay);

@@ -20,14 +20,14 @@ class InventoryService {
     }
 
     getInventory(userId) {
-        return this.db.get(`inventory.${userId}`) || {};
+        const data = this.db.get("inventory") || {}; return data[userId] || {};
     }
 
     addItem(userId, item, amount) {
         const inv = this.getInventory(userId);
         inv[item] = (inv[item] || 0) + amount;
         if (inv[item] <= 0) delete inv[item];
-        this.db.set(`inventory.${userId}`, inv);
+        const data = this.db.get("inventory") || {}; data[userId] = inv; this.db.set("inventory", data);
         return inv;
     }
 

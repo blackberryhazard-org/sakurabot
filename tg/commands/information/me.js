@@ -19,8 +19,8 @@ module.exports = {
         if (isOwner(userId)) status = "Pemilik";
         else if (isPremium(userId)) status = "Premium";
 
-        const referredBy = db.get(`referred_by.${userId}`);
-        const referrals = db.get(`referrals.${userId}`) || [];
+        const referredBy =  (db.get("referred_by") || {})[userId];
+        const referrals =  (db.get("referrals") || {})[userId] || [];
         let referredByText = "N/A";
         if (referredBy) {
             try {
