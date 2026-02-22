@@ -225,27 +225,6 @@ const launchTelegramBot = (config, consolefy, tools) => {
         }
     });
 
-    bot.on("my_chat_member", async (ctx) => {
-        const { old_chat_member, new_chat_member, chat } = ctx.myChatMember;
-        const user = ctx.myChatMember.from;
-        if (new_chat_member.status === "administrator" && old_chat_member.status !== "administrator") {
-            const isChannel = chat.type === "channel";
-            const isGroup = chat.type === "group" || chat.type === "supergroup";
-            if (isChannel || isGroup) {
-                const key = isChannel ? "channels" : "groups";
-                const list = db.get(key) || [];
-                if (!list.includes(chat.id)) {
-                    list.push(chat.id);
-                    db.set(key, list);
-                    helpers.economy.addBalance(user.id, 5, "coins");
-                    helpers.economy.addBalance(user.id, 1000, "sakuranite");
-                    const rewardMsg = `🎉 Terima kasih telah menambahkan SakuraBot sebagai admin di <b>${chat.title || "grup/channel"}</b>!\n\nKamu mendapatkan hadiah:\n💰 <b>5 Coins</b>\n🌸 <b>1000 Sakuranite</b>\n\nGrup/Channel ini telah otomatis ditambahkan ke daftar broadcast.`;
-                    try { await ctx.telegram.sendMessage(chat.id, `✅ SakuraBot telah ditambahkan ke daftar broadcast.\nTerima kasih kepada <a href="tg://user?id=${user.id}">${user.first_name}</a> atas hadiahnya!`, { parse_mode: "HTML" }); } catch (_e) { /* ignore */ }
-                    try { await ctx.telegram.sendMessage(user.id, rewardMsg, { parse_mode: "HTML" }); } catch (_e) { /* ignore */ }
-                }
-            }
-        }
-    });
 
     bot.launch();
     global.tgBot = bot;
