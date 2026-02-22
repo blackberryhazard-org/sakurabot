@@ -20,7 +20,7 @@ function findLevel(xp, multiplier = 38) {
     while (xpRange(lvl, multiplier).min <= xp) {
         lvl++;
     }
-    return --lvl;
+    return lvl - 1;
 }
 
 function canLevelUp(level, xp, multiplier = 38) {

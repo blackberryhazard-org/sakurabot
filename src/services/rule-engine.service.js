@@ -126,9 +126,9 @@ class RuleEngineService {
             execute: async (ctx) => {
                 if (ctx.isAdmin || ctx.userId === ctx.botId) return null;
 
-                const gclinkRegex = /chat.whatsapp.com\/(?:invite\/)?([0-9A-Za-z]{20,24})/gi;
+                const gclinkRegex = /chat\.whatsapp\.com\/(?:invite\/)?([0-9A-Za-z]{20,24})/gi;
                 const walinkRegex = /wa\.me\/([0-9])/gi;
-                const genericLinkRegex = /(https?:\/\/(?:www\.|(?!www))[^\s\.]+\.[^\s]{2,}|www\.[^\s]+\.[^\s]{2,})/gi;
+                const genericLinkRegex = /(https?:\/\/(?:www\.|(?!www))[^\s.]+\.[^\s]{2,}|www\.[^\s]+\.[^\s]{2,})/gi;
 
                 const text = ctx.text || "";
                 const isGroupLink = gclinkRegex.test(text);
@@ -188,7 +188,7 @@ class RuleEngineService {
 
                     return {
                         action: "reply",
-                        text: `*🎉 C O N G R A T S 🎉*\n*\${currentLevel}* ➔ *\${newLevel}*\n\n*Note:* _Semakin sering berinteraksi dengan bot Semakin Tinggi level kamu_`,
+                        text: "*🎉 C O N G R A T S 🎉*\n*${currentLevel}* ➔ *${newLevel}*\n\n*Note:* _Semakin sering berinteraksi dengan bot Semakin Tinggi level kamu_",
                         updateLevel: newLevel
                     };
                 }
