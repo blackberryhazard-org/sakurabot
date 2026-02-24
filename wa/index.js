@@ -64,11 +64,17 @@ const loadCommands = (dir, consolefy) => {
 };
 
 let reconnectCount = 0;
+global.waReconnectTimeout = null;
 
 const startWaBot = async (config, consolefy, tools) => {
     const appConfig = config || global.config;
     const appConsolefy = consolefy || global.consolefy;
     const appTools = tools || global.tools;
+
+    if (global.waReconnectTimeout) {
+        clearTimeout(global.waReconnectTimeout);
+        reconnectTimeout = null;
+    }
 
     loadCommands(path.resolve(__dirname, "commands"), appConsolefy);
 
@@ -96,10 +102,14 @@ const startWaBot = async (config, consolefy, tools) => {
         const phoneNumber = appConfig.bot.phoneNumber;
         if (phoneNumber) {
             setTimeout(async () => {
-                let code = await sock.requestPairingCode(phoneNumber, appConfig.system.customPairingCode);
-                code = code?.match(/.{1,4}/g)?.join("-") || code;
-                if (appConsolefy && appConsolefy.info) appConsolefy.info(`Pairing Code: ${code}`);
-                else console.log(`Pairing Code: ${code}`);
+                try {
+                    let code = await sock.requestPairingCode(phoneNumber, appConfig.system.customPairingCode);
+                    code = code?.match(/.{1,4}/g)?.join("-") || code;
+                    if (appConsolefy && appConsolefy.info) appConsolefy.info(`Pairing Code: ${code}`);
+                    else console.log(`Pairing Code: ${code}`);
+                } catch (e) {
+                   if (appConsolefy && appConsolefy.error) appConsolefy.error("Failed to request pairing code:", e.message);
+                }
             }, 3000);
         }
     }
@@ -124,9 +134,17 @@ const startWaBot = async (config, consolefy, tools) => {
             }
 
             const isBadMac = error?.message?.includes("Bad MAC") || error?.stack?.includes("Bad MAC");
+            const isConnFailure = error?.message?.includes("Connection Failure") || error?.stack?.includes("Connection Failure");
+
             if (isBadMac) {
-                reason = "Bad MAC detected, clearing state...";
+                reason = "Bad MAC detected, stopping bot...";
+                shouldReconnect = false;
                 fs.rmSync(statePath, { recursive: true, force: true });
+            }
+
+            if (isConnFailure) {
+                reason = "Connection Failure detected, stopping bot...";
+                shouldReconnect = false;
             }
 
             if (appConsolefy && appConsolefy.error) appConsolefy.error(`Connection closed: ${reason}. Reconnecting: ${shouldReconnect}`);
@@ -136,9 +154,10 @@ const startWaBot = async (config, consolefy, tools) => {
                 reconnectCount++;
                 const delay = Math.min(reconnectCount * 5000, 30000); // Max 30s delay
                 if (appConsolefy && appConsolefy.info) appConsolefy.info(`Attempting to reconnect in ${delay / 1000}s (Attempt ${reconnectCount})`);
-                setTimeout(() => startWaBot(appConfig, appConsolefy, appTools), delay);
+                global.waReconnectTimeout = setTimeout(() => startWaBot(appConfig, appConsolefy, appTools), delay);
             } else {
                 global.botStatus.wa = false;
+                // If it's a fatal error, we might want to stop the process or at least stop trying.
             }
         } else if (connection === "open") {
             reconnectCount = 0;

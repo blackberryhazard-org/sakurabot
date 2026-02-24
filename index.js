@@ -1,3 +1,4 @@
+require("esbuild-register");
 const pkg = require("./package.json");
 const fs = require("node:fs");
 const http = require("node:http");
@@ -74,67 +75,123 @@ try {
 }
 
 process.on("uncaughtException", (err) => {
-    consolefy.error("Uncaught Exception:", err.message);
+    global.consolefy.error("Uncaught Exception:", err.message);
 });
 
 process.on("unhandledRejection", (err) => {
-    consolefy.error("Unhandled Rejection:", err.message || err);
+    global.consolefy.error("Unhandled Rejection:", err.message || err);
 });
+
+// Bot Managers
+global.botManagers = {
+    startWa: async () => {
+        const isWaBotConfigValid = global.config.bot && global.config.bot.phoneNumber && !global.config.bot.phoneNumber.startsWith("YOUR_");
+        if (isWaBotConfigValid) {
+            try {
+                const startWaBot = require("./wa/index.js");
+                await startWaBot(global.config, global.consolefy, global.tools);
+            } catch (error) {
+                global.consolefy.error("Failed to start WhatsApp bot:", error);
+                global.botStatus.wa = false;
+            }
+        } else {
+            global.consolefy.warn("WhatsApp bot configuration is missing or invalid.");
+            global.botStatus.wa = false;
+        }
+    },
+    stopWa: async () => {
+        if (global.waReconnectTimeout) {
+            clearTimeout(global.waReconnectTimeout);
+            global.waReconnectTimeout = null;
+        }
+        if (global.waSock) {
+            try {
+                global.waSock.ev.removeAllListeners();
+                global.waSock.end();
+                global.waSock = null;
+                global.botStatus.wa = false;
+                global.consolefy.info("WhatsApp bot stopped.");
+            } catch (error) {
+                global.consolefy.error("Error stopping WhatsApp bot:", error);
+            }
+        } else {
+            global.botStatus.wa = false;
+            global.consolefy.info("WhatsApp bot stopped (was not connected).");
+        }
+    },
+    startTg: async () => {
+        const isTgBotConfigValid = global.config.bot && global.config.bot.botfather_token && !global.config.bot.botfather_token.startsWith("YOUR_");
+        if (isTgBotConfigValid) {
+            try {
+                const { launchTelegramBot } = require("./tg/index.js");
+                await launchTelegramBot(global.config, global.consolefy, global.tools);
+            } catch (error) {
+                global.consolefy.error("Failed to start Telegram bot:", error);
+                global.botStatus.tg = false;
+            }
+        } else {
+            global.consolefy.warn("Telegram bot configuration is missing or invalid.");
+            global.botStatus.tg = false;
+        }
+    },
+    stopTg: async () => {
+        if (global.tgBot) {
+            try {
+                await global.tgBot.stop();
+                global.tgBot = null;
+                global.botStatus.tg = false;
+                global.consolefy.info("Telegram bot stopped.");
+            } catch (error) {
+                global.consolefy.error("Error stopping Telegram bot:", error);
+            }
+        } else {
+            global.botStatus.tg = false;
+            global.consolefy.info("Telegram bot stopped (was not connected).");
+        }
+    }
+};
 
 // Parse arguments
 const args = process.argv.slice(2);
 const waOnly = args.includes("--wa-only");
 const tgOnly = args.includes("--tg-only");
+const runWebDashboard = args.includes("--run-web-dashboard");
 
 let runWa = true;
 let runTg = true;
 
 if (waOnly) {
     runTg = false;
-    consolefy.info("Mode: WhatsApp Only");
+    global.consolefy.info("Mode: WhatsApp Only");
 } else if (tgOnly) {
     runWa = false;
-    consolefy.info("Mode: Telegram Only");
+    global.consolefy.info("Mode: Telegram Only");
 }
 
-consolefy.info("Starting...");
+global.consolefy.info("Starting...");
 
-if (config.system && config.system.useServer) {
-    const port = config.system.port;
-    http.createServer((_, res) => res.end(`${pkg.name} berjalan di port ${port}`)).listen(port, "0.0.0.0", () => consolefy.success(`${pkg.name} runs on port ${port}`));
+if (global.config.system && global.config.system.useServer) {
+    const port = global.config.system.port;
+    http.createServer((_, res) => res.end(`${pkg.name} berjalan di port ${port}`)).listen(port, "0.0.0.0", () => global.consolefy.success(`${pkg.name} runs on port ${port}`));
 }
 
-const isWaBotConfigValid = config.bot && config.bot.phoneNumber && !config.bot.phoneNumber.startsWith("YOUR_");
-const isTgBotConfigValid = config.bot && config.bot.botfather_token && !config.bot.botfather_token.startsWith("YOUR_");
+if (runWebDashboard) {
+    const dashboardPort = global.config.system.webDashboardPort || 5000;
+    const { startDashboard } = require("./dash/index.js");
+    startDashboard(dashboardPort);
+}
 
 if (runWa) {
-    if (isWaBotConfigValid) {
-        try {
-            const startWaBot = require("./wa/index.js");
-            startWaBot(global.config, global.consolefy, global.tools);
-            global.botStatus.wa = true;
-        } catch (error) {
-            consolefy.error("Failed to start WhatsApp bot:", error);
-        }
-    } else {
-        consolefy.warn("WhatsApp bot configuration is missing or invalid. Skipping...");
-    }
+    global.botManagers.startWa();
 }
 
 if (runTg) {
-    if (isTgBotConfigValid) {
-        try {
-            const { launchTelegramBot } = require("./tg/index.js");
-            launchTelegramBot(global.config, global.consolefy, global.tools);
-            global.botStatus.tg = true;
-        } catch (error) {
-            consolefy.error("Failed to start Telegram bot:", error);
-        }
-    } else {
-        consolefy.warn("Telegram bot configuration is missing or invalid. Skipping...");
-    }
+    global.botManagers.startTg();
 }
 
+const isWaBotConfigValid = global.config.bot && global.config.bot.phoneNumber && !global.config.bot.phoneNumber.startsWith("YOUR_");
+const isTgBotConfigValid = global.config.bot && global.config.bot.botfather_token && !global.config.bot.botfather_token.startsWith("YOUR_");
+
 if (!isWaBotConfigValid && !isTgBotConfigValid) {
-    consolefy.error("Both WhatsApp and Telegram bot configurations are invalid. Exiting...");
+    global.consolefy.error("Both WhatsApp and Telegram bot configurations are invalid. Check your config.json");
 }
