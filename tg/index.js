@@ -16,6 +16,8 @@ const LinkingService = require("../src/services/linking.service");
 const GameService = require("../src/services/game.service");
 const MiningService = require("../src/services/mining.service");
 const CooldownService = require("../src/services/cooldown.service");
+const RuleEngineService = require("../src/services/rule-engine.service");
+const levelling = require("../src/services/levelling");
 
 const db = getDb("tg");
 const waDb = getDb("wa");
@@ -43,6 +45,7 @@ const launchTelegramBot = (config, consolefy, tools) => {
     const linking = new LinkingService(db, waDb, economy, waEconomy);
     const gameService = new GameService(economy);
     const miningService = new MiningService(economy, inventoryService);
+    const ruleEngine = new RuleEngineService(db, global.auditLog, appConfig);
 
     const token = appConfig.bot.botfather_token;
     const bot = new Telegraf(token);
@@ -80,16 +83,21 @@ const launchTelegramBot = (config, consolefy, tools) => {
         activeTopups,
         escapeHTML,
         db,
-        config: appConfig
+        config: appConfig,
+        ruleEngine,
+        levelling
     };
 
     const createMiddlewares = require("./middleware");
-    const middlewares = createMiddlewares({ db, config: appConfig, helpers, bot, userCooldowns });
+    const middlewares = createMiddlewares({ db, config: appConfig,
+        ruleEngine,
+        levelling, helpers, bot, userCooldowns });
 
     bot.use(middlewares.banMiddleware);
     bot.use(middlewares.addUserMiddleware);
     bot.use(middlewares.channelSubMiddleware);
     bot.use(middlewares.cooldownMiddleware);
+    bot.use(middlewares.ruleMiddleware);
 
     bot.on("text", async (ctx, next) => {
         if (!ctx.message || !ctx.message.text || ctx.message.text.startsWith("/")) return next();
@@ -177,7 +185,7 @@ const launchTelegramBot = (config, consolefy, tools) => {
         const uptime = formatUptime(global.botStartTime);
         let dbSize = 0;
         try { dbSize = fs.statSync(path.resolve(__dirname, "../database/tg/database.json")).size; } catch (_e) { /* ignore */ }
-        const welcomeText = `— Halo, *${userName}*! 👋\n\n➛ *Tanggal*: ${date}\n➛ *Waktu*: ${time}\n➛ *Uptime*: ${uptime}\n➛ *Database*: ${(dbSize / 1024).toFixed(2)} KB\n➛ *Library*: Telegraf\n\nType /help to see the list of available commands.`;
+        const welcomeText = `— Halo, *${ctx.from.first_name}*! 👋\n\n➛ *Tanggal*: ${date}\n➛ *Waktu*: ${time}\n➛ *Uptime*: ${uptime}\n➛ *Database*: ${(dbSize / 1024).toFixed(2)} KB\n➛ *Library*: Telegraf\n\nType /help to see the list of available commands.`;
         try { await ctx.replyWithPhoto(`https://picsum.photos/500/300?random=${Date.now()}`, { caption: welcomeText, parse_mode: "Markdown" }); }
         catch (_error) { await ctx.reply(welcomeText, { parse_mode: "Markdown" }); }
     });
@@ -217,27 +225,6 @@ const launchTelegramBot = (config, consolefy, tools) => {
         }
     });
 
-    bot.on("my_chat_member", async (ctx) => {
-        const { old_chat_member, new_chat_member, chat } = ctx.myChatMember;
-        const user = ctx.myChatMember.from;
-        if (new_chat_member.status === "administrator" && old_chat_member.status !== "administrator") {
-            const isChannel = chat.type === "channel";
-            const isGroup = chat.type === "group" || chat.type === "supergroup";
-            if (isChannel || isGroup) {
-                const key = isChannel ? "channels" : "groups";
-                const list = db.get(key) || [];
-                if (!list.includes(chat.id)) {
-                    list.push(chat.id);
-                    db.set(key, list);
-                    helpers.economy.addBalance(user.id, 5, "coins");
-                    helpers.economy.addBalance(user.id, 1000, "sakuranite");
-                    const rewardMsg = `🎉 Terima kasih telah menambahkan SakuraBot sebagai admin di <b>${chat.title || "grup/channel"}</b>!\n\nKamu mendapatkan hadiah:\n💰 <b>5 Coins</b>\n🌸 <b>1000 Sakuranite</b>\n\nGrup/Channel ini telah otomatis ditambahkan ke daftar broadcast.`;
-                    try { await ctx.telegram.sendMessage(chat.id, `✅ SakuraBot telah ditambahkan ke daftar broadcast.\nTerima kasih kepada <a href="tg://user?id=${user.id}">${user.first_name}</a> atas hadiahnya!`, { parse_mode: "HTML" }); } catch (_e) { /* ignore */ }
-                    try { await ctx.telegram.sendMessage(user.id, rewardMsg, { parse_mode: "HTML" }); } catch (_e) { /* ignore */ }
-                }
-            }
-        }
-    });
 
     bot.launch();
     global.tgBot = bot;

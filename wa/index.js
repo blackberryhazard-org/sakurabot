@@ -20,6 +20,9 @@ const InventoryService = require("../src/services/inventory.service");
 const LinkingService = require("../src/services/linking.service");
 const GameService = require("../src/services/game.service");
 const MiningService = require("../src/services/mining.service");
+const RuleEngineService = require("../src/services/rule-engine.service");
+// eslint-disable-next-line no-unused-vars
+const levelling = require("../src/services/levelling");
 const items = InventoryService.items_erekir;
 
 const db = getDb("wa");
@@ -60,8 +63,9 @@ const loadCommands = (dir, consolefy) => {
     }
 };
 
+let reconnectCount = 0;
+
 const startWaBot = async (config, consolefy, tools) => {
-    // Re-verify if needed, but we trust the injection
     const appConfig = config || global.config;
     const appConsolefy = consolefy || global.consolefy;
     const appTools = tools || global.tools;
@@ -75,6 +79,7 @@ const startWaBot = async (config, consolefy, tools) => {
     const linking = new LinkingService(tgDb, db, tgEconomy, economy);
     const gameService = new GameService(economy);
     const miningService = new MiningService(economy, inventoryService);
+    const ruleEngine = new RuleEngineService(db, global.auditLog, appConfig);
 
     const statePath = path.resolve(__dirname, "../state");
     const { state, saveCreds } = await useMultiFileAuthState(statePath);
@@ -100,28 +105,43 @@ const startWaBot = async (config, consolefy, tools) => {
     }
 
     sock.ev.on("creds.update", saveCreds);
-    sock.ev.on("connection.update", (update) => {
+    sock.ev.on("connection.update", async (update) => {
         const { connection, lastDisconnect } = update;
         if (connection === "close") {
-            const error = (lastDisconnect.error instanceof Boom) ? lastDisconnect.error : lastDisconnect.error;
-            const statusCode = error?.output?.statusCode;
-            const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
+            global.botStatus.wa = false;
+            const error = lastDisconnect.error;
+            const statusCode = (error instanceof Boom) ? error.output.statusCode : error?.code;
 
-            const isBadMac = error?.message?.includes("Bad MAC") || error?.stack?.includes("Bad MAC");
+            let shouldReconnect = true;
+            let reason = error ? error.toString() : "Unknown reason";
 
-            if (isBadMac) {
-                if (appConsolefy && appConsolefy.error) appConsolefy.error("Bad MAC detected! Clearing session state...");
+            if (statusCode === DisconnectReason.loggedOut) {
+                shouldReconnect = false;
+                reason = "Logged out, please scan again.";
+            } else if (statusCode === DisconnectReason.badSession) {
+                reason = "Bad session, clearing state...";
                 fs.rmSync(statePath, { recursive: true, force: true });
-                startWaBot(appConfig, appConsolefy, appTools);
-                return;
             }
 
-            const errorMsg = `Connection closed due to ${lastDisconnect.error}, reconnecting: ${shouldReconnect}`;
-            if (appConsolefy && appConsolefy.error) appConsolefy.error(errorMsg);
-            else console.error(errorMsg);
+            const isBadMac = error?.message?.includes("Bad MAC") || error?.stack?.includes("Bad MAC");
+            if (isBadMac) {
+                reason = "Bad MAC detected, clearing state...";
+                fs.rmSync(statePath, { recursive: true, force: true });
+            }
 
-            if (shouldReconnect) startWaBot(appConfig, appConsolefy, appTools);
+            if (appConsolefy && appConsolefy.error) appConsolefy.error(`Connection closed: ${reason}. Reconnecting: ${shouldReconnect}`);
+            else console.error(`Connection closed: ${reason}. Reconnecting: ${shouldReconnect}`);
+
+            if (shouldReconnect) {
+                reconnectCount++;
+                const delay = Math.min(reconnectCount * 5000, 30000); // Max 30s delay
+                if (appConsolefy && appConsolefy.info) appConsolefy.info(`Attempting to reconnect in ${delay / 1000}s (Attempt ${reconnectCount})`);
+                setTimeout(() => startWaBot(appConfig, appConsolefy, appTools), delay);
+            } else {
+                global.botStatus.wa = false;
+            }
         } else if (connection === "open") {
+            reconnectCount = 0;
             if (appConsolefy && appConsolefy.success) appConsolefy.success("WhatsApp bot connected!");
             else console.log("WhatsApp bot connected!");
             global.botStatus.wa = true;
@@ -134,7 +154,7 @@ const startWaBot = async (config, consolefy, tools) => {
         try {
             const m = chatUpdate.messages[0];
             if (!m.message || m.key.fromMe) return;
-            const services = { userAccess, economy, inventory: inventoryService, linking, cooldown: userCooldowns, game: gameService, mining: miningService };
+            const services = { userAccess, economy, inventory: inventoryService, linking, cooldown: userCooldowns, game: gameService, mining: miningService, ruleEngine: ruleEngine };
             await handler(sock, m, db, waBot, items, services, appConfig, appTools, appConsolefy);
         } catch (err) {
             if (appConsolefy && appConsolefy.error) appConsolefy.error(err);

@@ -1,9 +1,10 @@
 const { downloadContentFromMessage } = require("@whiskeysockets/baileys");
 const { Sticker, StickerTypes } = require("wa-sticker-formatter");
 const middleware = require("./middleware");
+const ruleProcessor = require("./rule-processor");
 
 module.exports = async (sock, m, db, waBot, items, services, config, tools, consolefy) => {
-    const { userAccess, economy, inventory: inventoryService, linking, cooldown, game, mining } = services;
+    const { userAccess, economy, inventory: inventoryService, linking, cooldown, game, mining, ruleEngine } = services;
     const from = m.key.remoteJid;
     const sender = m.key.participant || m.key.remoteJid;
     const type = Object.keys(m.message)[0];
@@ -17,6 +18,8 @@ module.exports = async (sock, m, db, waBot, items, services, config, tools, cons
     else if (type === "imageMessage") body = m.message.imageMessage.caption;
     else if (type === "videoMessage") body = m.message.videoMessage.caption;
     body = body || "";
+    const isRuleHandled = await ruleProcessor(sock, m, body, from, sender, { ...services, db }, config, { userAccess, economy, inventory: inventoryService, linking, cooldown, game, mining });
+    if (isRuleHandled) return;
 
     const prefix = config.bot.prefix || "/";
     const isCmd = body.startsWith(prefix);
@@ -103,7 +106,7 @@ module.exports = async (sock, m, db, waBot, items, services, config, tools, cons
     };
 
     const helpers = {
-        userAccess, economy, inventory: inventoryService, linking, game, mining, auditLog: services.auditLog || global.auditLog, ctx,
+        userAccess, economy, inventory: inventoryService, linking, game, mining, auditLog: services.auditLog || global.auditLog, ctx, ruleEngine,
         isLeader: (jid) => userAccess.isLeader(jid),
         isManager: (jid) => userAccess.isManager(jid),
         isOwner: (jid) => userAccess.isOwner(jid),

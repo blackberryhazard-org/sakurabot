@@ -97,31 +97,59 @@ module.exports = (dependencies) => {
             }
         };
 
-        if (!config.bot.tg_newsletterid || userAccess.isOwner(ctx.from.id)) {
+        const newsletterId = config.bot.tg_newsletterid;
+        const isNewsletterSet = newsletterId && !newsletterId.includes("NEWSLETTER_ID");
+
+        if (!isNewsletterSet || userAccess.isOwner(ctx.from.id)) {
             await processReferral();
             return next();
         }
 
         try {
-            const chatMember = await ctx.telegram.getChatMember(config.bot.tg_newsletterid, ctx.from.id);
+            const chatMember = await ctx.telegram.getChatMember(newsletterId, ctx.from.id);
             if (["member", "administrator", "creator"].includes(chatMember.status)) {
                 await processReferral();
                 return next();
             } else {
-                const chat = await ctx.telegram.getChat(config.bot.tg_newsletterid);
+                const chat = await ctx.telegram.getChat(newsletterId);
                 const channelLink = chat.username ? `https://t.me/${chat.username}` : "Join via link provided by admin";
                 return ctx.reply(`You must join our channel to use this bot. Please join here: ${channelLink}`);
             }
         } catch (error) {
+            // Check if it's a 400 error (user not found or bot not admin)
+            if (error.response && error.response.error_code === 400) {
+                if (error.description.includes("chat not found") || error.description.includes("admin")) {
+                    consolefy.warn(`Newsletter verification error: ${error.description}. Please ensure the bot is an admin in the channel ${newsletterId}`);
+                    // If bot is not admin or chat not found, we can't verify.
+                    // To avoid locking out everyone due to misconfiguration, we'll allow access but log the error.
+                    await processReferral();
+                    return next();
+                }
+            }
+
             consolefy.error("Error in channelSubMiddleware:", error);
+            // Default to fail-safe if it's a real membership issue
+            if (error.description && error.description.includes("user not found")) {
+                try {
+                    const chat = await ctx.telegram.getChat(newsletterId);
+                    const channelLink = chat.username ? `https://t.me/${chat.username}` : "Join via link provided by admin";
+                    return ctx.reply(`You must join our channel to use this bot. Please join here: ${channelLink}`);
+                } catch (e) {
+                    // Ignore
+                }
+            }
+
             return ctx.reply("Maaf, terjadi kesalahan saat memverifikasi status langganan channel Anda. Silakan coba lagi nanti atau hubungi owner.");
         }
     };
+
+    const ruleMiddleware = require("./rule-middleware")(dependencies);
 
     return {
         addUserMiddleware,
         banMiddleware,
         cooldownMiddleware,
-        channelSubMiddleware
+        channelSubMiddleware,
+        ruleMiddleware
     };
 };
