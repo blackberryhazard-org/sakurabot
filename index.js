@@ -81,6 +81,22 @@ process.on("unhandledRejection", (err) => {
     consolefy.error("Unhandled Rejection:", err.message || err);
 });
 
+// Parse arguments
+const args = process.argv.slice(2);
+const waOnly = args.includes("--wa-only");
+const tgOnly = args.includes("--tg-only");
+
+let runWa = true;
+let runTg = true;
+
+if (waOnly) {
+    runTg = false;
+    consolefy.info("Mode: WhatsApp Only");
+} else if (tgOnly) {
+    runWa = false;
+    consolefy.info("Mode: Telegram Only");
+}
+
 consolefy.info("Starting...");
 
 if (config.system && config.system.useServer) {
@@ -91,28 +107,32 @@ if (config.system && config.system.useServer) {
 const isWaBotConfigValid = config.bot && config.bot.phoneNumber && !config.bot.phoneNumber.startsWith("YOUR_");
 const isTgBotConfigValid = config.bot && config.bot.botfather_token && !config.bot.botfather_token.startsWith("YOUR_");
 
-if (isWaBotConfigValid) {
-    try {
-        const startWaBot = require("./wa/index.js");
-        startWaBot(global.config, global.consolefy, global.tools);
-        global.botStatus.wa = true;
-    } catch (error) {
-        consolefy.error("Failed to start WhatsApp bot:", error);
+if (runWa) {
+    if (isWaBotConfigValid) {
+        try {
+            const startWaBot = require("./wa/index.js");
+            startWaBot(global.config, global.consolefy, global.tools);
+            global.botStatus.wa = true;
+        } catch (error) {
+            consolefy.error("Failed to start WhatsApp bot:", error);
+        }
+    } else {
+        consolefy.warn("WhatsApp bot configuration is missing or invalid. Skipping...");
     }
-} else {
-    consolefy.warn("WhatsApp bot configuration is missing or invalid. Skipping...");
 }
 
-if (isTgBotConfigValid) {
-    try {
-        const { launchTelegramBot } = require("./tg/index.js");
-        launchTelegramBot(global.config, global.consolefy, global.tools);
-        global.botStatus.tg = true;
-    } catch (error) {
-        consolefy.error("Failed to start Telegram bot:", error);
+if (runTg) {
+    if (isTgBotConfigValid) {
+        try {
+            const { launchTelegramBot } = require("./tg/index.js");
+            launchTelegramBot(global.config, global.consolefy, global.tools);
+            global.botStatus.tg = true;
+        } catch (error) {
+            consolefy.error("Failed to start Telegram bot:", error);
+        }
+    } else {
+        consolefy.warn("Telegram bot configuration is missing or invalid. Skipping...");
     }
-} else {
-    consolefy.warn("Telegram bot configuration is missing or invalid. Skipping...");
 }
 
 if (!isWaBotConfigValid && !isTgBotConfigValid) {
