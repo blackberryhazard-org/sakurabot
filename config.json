@@ -61,7 +61,6 @@
         "unavailableAtNight": false,
         "usePairingCode": true,
         "customPairingCode": "S4KUR4BT",
-        "useServer": true,
-        "webDashboardPort": 5000
+        "useServer": true
     }
 }

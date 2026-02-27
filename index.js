@@ -1,4 +1,3 @@
-require("esbuild-register");
 const pkg = require("./package.json");
 const fs = require("node:fs");
 const http = require("node:http");
@@ -155,7 +154,6 @@ global.botManagers = {
 const args = process.argv.slice(2);
 const waOnly = args.includes("--wa-only");
 const tgOnly = args.includes("--tg-only");
-const runWebDashboard = args.includes("--run-web-dashboard");
 
 let runWa = true;
 let runTg = true;
@@ -173,12 +171,6 @@ global.consolefy.info("Starting...");
 if (global.config.system && global.config.system.useServer) {
     const port = global.config.system.port;
     http.createServer((_, res) => res.end(`${pkg.name} berjalan di port ${port}`)).listen(port, "0.0.0.0", () => global.consolefy.success(`${pkg.name} runs on port ${port}`));
-}
-
-if (runWebDashboard) {
-    const dashboardPort = global.config.system.webDashboardPort || 5000;
-    const { startDashboard } = require("./dash/index.js");
-    startDashboard(dashboardPort);
 }
 
 if (runWa) {

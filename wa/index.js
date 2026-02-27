@@ -73,7 +73,7 @@ const startWaBot = async (config, consolefy, tools) => {
 
     if (global.waReconnectTimeout) {
         clearTimeout(global.waReconnectTimeout);
-        reconnectTimeout = null;
+        global.waReconnectTimeout = null;
     }
 
     loadCommands(path.resolve(__dirname, "commands"), appConsolefy);
