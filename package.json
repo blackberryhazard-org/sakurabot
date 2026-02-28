@@ -17,7 +17,7 @@
   "author": "Indra Sah Noeldy (indra87g)",
   "license": "MIT",
   "dependencies": {
-    "@whiskeysockets/baileys": "npm:@rexxhayanasi/elaina-baileys",
+    "@whiskeysockets/baileys": "npm:@thehackingguard/mahiru-baileys",
     "archiver": "^7.0.1",
     "axios": "^1.13.2",
     "consolefy": "^1.0.3",
