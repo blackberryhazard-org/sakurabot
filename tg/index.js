@@ -1,4 +1,5 @@
 const { Telegraf, Markup } = require("telegraf");
+const didyoumean = require("didyoumean");
 const fs = require("fs");
 const path = require("path");
 const moment = require("moment-timezone");
@@ -146,6 +147,19 @@ const launchTelegramBot = async (config, consolefy, tools) => {
     loadCommands(path.resolve(__dirname, "commands"));
     helpers.bot = bot;
 
+    bot.on("text", async (ctx, next) => {
+        if (!ctx.message || !ctx.message.text || !ctx.message.text.startsWith("/")) return next();
+        const commandMatch = ctx.message.text.split(/\s+/)[0].slice(1).split("@")[0];
+        if (!bot.cmd.has(commandMatch)) {
+            const allCommands = Array.from(bot.cmd.keys());
+            const suggestion = didyoumean(commandMatch, allCommands);
+            if (suggestion) {
+                return ctx.reply(`Command */${commandMatch}* tidak ditemukan. Mungkin maksud Anda */${suggestion}*?`, { parse_mode: "Markdown" });
+            }
+        }
+        return next();
+    });
+
     bot.action(/^show_cat:(.+)$/, async (ctx) => {
         const categoryName = ctx.match[1];
         const commands = Array.from(bot.cmd.values())
@@ -226,8 +240,16 @@ const launchTelegramBot = async (config, consolefy, tools) => {
     });
 
 
-    try { await bot.launch(); global.botStatus.tg = true; } catch (e) { if (appConsolefy && appConsolefy.error) appConsolefy.error("Failed to launch Telegram bot:", e); global.botStatus.tg = false; }
-    global.tgBot = bot;
+    try {
+        await bot.launch();
+        global.botStatus.tg = true;
+        global.tgBot = bot;
+    } catch (e) {
+        if (appConsolefy && appConsolefy.error) appConsolefy.error("Failed to launch Telegram bot:", e);
+        global.botStatus.tg = false;
+        global.tgBot = null;
+    }
+
     cron.schedule("0 0 */7 * *", async () => {
         if (!appConfig.bot.tg_newsletterid) return;
         try {

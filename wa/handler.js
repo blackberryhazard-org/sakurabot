@@ -1,5 +1,6 @@
 const { downloadContentFromMessage } = require("@whiskeysockets/baileys");
 const { Sticker, StickerTypes } = require("wa-sticker-formatter");
+const didyoumean = require("didyoumean");
 const middleware = require("./middleware");
 const ruleProcessor = require("./rule-processor");
 
@@ -147,6 +148,13 @@ module.exports = async (sock, m, db, waBot, items, services, config, tools, cons
 
     if (isCmd) {
         const cmd = waBot.cmd.get(commandName);
+        if (!cmd) {
+            const allCommands = Array.from(waBot.cmd.keys());
+            const suggestion = didyoumean(commandName, allCommands);
+            if (suggestion) {
+                return ctx.reply(`Command *${prefix}${commandName}* tidak ditemukan. Mungkin maksud Anda *${prefix}${suggestion}*?`);
+            }
+        }
         if (cmd) {
             const canonicalName = cmd.name || commandName;
             if (!["ping", "menu", "me", "start"].includes(canonicalName) && !userAccess.isOwner(sender)) {

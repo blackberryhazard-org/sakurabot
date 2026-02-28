@@ -108,7 +108,7 @@ const startWaBot = async (config, consolefy, tools) => {
                     if (appConsolefy && appConsolefy.info) appConsolefy.info(`Pairing Code: ${code}`);
                     else console.log(`Pairing Code: ${code}`);
                 } catch (e) {
-                   if (appConsolefy && appConsolefy.error) appConsolefy.error("Failed to request pairing code:", e.message);
+                    if (appConsolefy && appConsolefy.error) appConsolefy.error("Failed to request pairing code:", e.message);
                 }
             }, 3000);
         }
@@ -160,6 +160,10 @@ const startWaBot = async (config, consolefy, tools) => {
                 // If it's a fatal error, we might want to stop the process or at least stop trying.
             }
         } else if (connection === "open") {
+            if (global.waReconnectTimeout) {
+                clearTimeout(global.waReconnectTimeout);
+                global.waReconnectTimeout = null;
+            }
             reconnectCount = 0;
             if (appConsolefy && appConsolefy.success) appConsolefy.success("WhatsApp bot connected!");
             else console.log("WhatsApp bot connected!");

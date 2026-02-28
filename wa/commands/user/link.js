@@ -12,7 +12,7 @@ module.exports = {
             return await sock.sendMessage(from, { text: `Akun Anda sudah terhubung dengan ID Telegram ${linking.getTgId(sender)}.\nGunakan /unlink jika ingin menghapus.` }, { quoted: m });
         }
 
-        if (!global.tgBot) {
+        if (!global.tgBot || !global.botStatus.tg) {
             return await sock.sendMessage(from, { text: "Bot Telegram sedang tidak aktif. Silakan hubungi owner." }, { quoted: m });
         }
 
