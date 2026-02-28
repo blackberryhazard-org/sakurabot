@@ -1,3 +1,5 @@
+const Jimp = require("jimp");
+
 module.exports = {
     name: "toimg",
     aliases: ["toimage"],
@@ -7,11 +9,17 @@ module.exports = {
             return await ctx.reply("Silakan reply sticker yang ingin diubah menjadi gambar.");
         }
 
+        if (q.stickerMessage.isAnimated) {
+            return await ctx.reply("Maaf, saat ini belum mendukung konversi sticker animasi menjadi gambar/GIF.");
+        }
+
         await ctx.reply(config.msg.wait);
 
         try {
             const buffer = await ctx.quoted.download();
-            await sock.sendMessage(from, { image: buffer, caption: "Berhasil mengubah sticker menjadi gambar." }, { quoted: m });
+            const image = await Jimp.read(buffer);
+            const outputBuffer = await image.getBufferAsync(Jimp.MIME_JPEG);
+            await sock.sendMessage(from, { image: outputBuffer, caption: "Berhasil mengubah sticker menjadi gambar." }, { quoted: m });
         } catch (error) {
             console.error(error);
             await ctx.reply("Gagal mengubah sticker menjadi gambar.");

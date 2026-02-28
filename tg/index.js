@@ -134,7 +134,12 @@ const launchTelegramBot = async (config, consolefy, tools) => {
                     if (command.name) {
                         command.category = path.basename(dir);
                         bot.cmd.set(command.name, command);
-                        if (command.aliases) command.aliases.forEach(alias => bot.cmd.set(alias, command));
+                        if (command.aliases) {
+                            command.aliases.forEach(alias => {
+                                bot.cmd.set(alias, command);
+                                bot.command(alias, (ctx) => command.code(ctx, helpers));
+                            });
+                        }
                         bot.command(command.name, (ctx) => command.code(ctx, helpers));
                     }
                 } catch (e) {
@@ -150,6 +155,7 @@ const launchTelegramBot = async (config, consolefy, tools) => {
     bot.on("text", async (ctx, next) => {
         if (!ctx.message || !ctx.message.text || !ctx.message.text.startsWith("/")) return next();
         const commandMatch = ctx.message.text.split(/\s+/)[0].slice(1).split("@")[0];
+        if (commandMatch === "start") return next();
         if (!bot.cmd.has(commandMatch)) {
             const allCommands = Array.from(bot.cmd.keys());
             const suggestion = didyoumean(commandMatch, allCommands);

@@ -16,7 +16,7 @@ module.exports = {
 
         let dbSize = 0;
         try {
-            const dbFilePath = path.resolve(__dirname, "../../../database/tg/database.json");
+            const dbFilePath = path.join(process.cwd(), "database/tg/database.json");
             dbSize = fs.statSync(dbFilePath).size;
         } catch (_e) { /* ignore */ }
 
