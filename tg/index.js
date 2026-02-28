@@ -31,7 +31,7 @@ keys.forEach(key => {
 const userCooldowns = new CooldownService();
 const activeTopups = new Map();
 
-const launchTelegramBot = (config, consolefy, tools) => {
+const launchTelegramBot = async (config, consolefy, tools) => {
     const appConfig = config || global.config;
     const appConsolefy = consolefy || global.consolefy;
     const appTools = tools || global.tools;
@@ -226,7 +226,7 @@ const launchTelegramBot = (config, consolefy, tools) => {
     });
 
 
-    bot.launch();
+    try { await bot.launch(); global.botStatus.tg = true; } catch (e) { if (appConsolefy && appConsolefy.error) appConsolefy.error("Failed to launch Telegram bot:", e); global.botStatus.tg = false; }
     global.tgBot = bot;
     cron.schedule("0 0 */7 * *", async () => {
         if (!appConfig.bot.tg_newsletterid) return;
