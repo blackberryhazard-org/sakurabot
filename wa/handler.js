@@ -101,6 +101,7 @@ module.exports = async (sock, m, db, waBot, items, services, config, tools, cons
         text: args.join(" "),
         quoted: m.message[type]?.contextInfo?.quotedMessage ? {
             text: m.message[type].contextInfo.quotedMessage.conversation || m.message[type].contextInfo.quotedMessage.extendedTextMessage?.text || m.message[type].contextInfo.quotedMessage.imageMessage?.caption || m.message[type].contextInfo.quotedMessage.videoMessage?.caption,
+            messageType: Object.keys(m.message[type].contextInfo.quotedMessage)[0],
             download: async () => await downloadMedia(m.message[type].contextInfo.quotedMessage)
         } : null,
         used: { prefix, command: commandName }
@@ -108,6 +109,7 @@ module.exports = async (sock, m, db, waBot, items, services, config, tools, cons
 
     const helpers = {
         userAccess, economy, inventory: inventoryService, linking, game, mining, auditLog: services.auditLog || global.auditLog, ctx, ruleEngine,
+        tools, config,
         isLeader: (jid) => userAccess.isLeader(jid),
         isManager: (jid) => userAccess.isManager(jid),
         isOwner: (jid) => userAccess.isOwner(jid),
@@ -120,7 +122,7 @@ module.exports = async (sock, m, db, waBot, items, services, config, tools, cons
         updateMiningTickets: (jid, amount) => mining.updateTickets(jid, amount),
         getMiningRate: (jid) => mining.getRate(jid),
         updateMiningRate: (jid, amount) => mining.updateRate(jid, amount),
-        db, config, waBot, items, downloadContentFromMessage, Sticker, StickerTypes, prefix, pushName, sender, from, args
+        db, waBot, items, downloadContentFromMessage, Sticker, StickerTypes, prefix, pushName, sender, from, args
     };
     const activeGame = waBot.games.get(from);
     if (activeGame && !isCmd) {

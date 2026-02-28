@@ -1,46 +1,38 @@
+const { Sticker, StickerTypes } = require("wa-sticker-formatter");
+
 module.exports = {
     name: "sticker",
-    aliases: ["s"],
-    code: async (sock, m, { from, downloadContentFromMessage, Sticker, StickerTypes, config, prefix, ctx }) => {
-        const q = m.message.extendedTextMessage?.contextInfo?.quotedMessage ? m.message.extendedTextMessage.contextInfo.quotedMessage : m.message;
-        const qType = Object.keys(q)[0];
-        const mediaMessage = q[qType] || q;
-        const mime = mediaMessage?.mimetype || "";
+    aliases: ["s", "stiker"],
+    category: "converter",
+    code: async (sock, m, { ctx, tools, config }) => {
+        const [checkMedia, checkQuotedMedia] = [
+            tools.cmd.checkMedia(ctx.msg.messageType, ["image", "video"]),
+            tools.cmd.checkQuotedMedia(ctx.quoted?.messageType, ["image", "video"])
+        ];
 
-        if (/image|video/.test(mime)) {
-            await sock.sendMessage(from, { text: config.msg.wait }, { quoted: m });
+        if (!checkMedia && !checkQuotedMedia) {
+            return await ctx.reply(tools.msg.generateInstruction(["send", "reply"], ["image", "video"]));
+        }
 
-            const messageType = qType.replace("Message", "");
-            // Fix for extendedText when quoting image/video
-            const downloadType = messageType === "extendedText" ? (mime.split("/")[0]) : messageType;
+        await ctx.reply(config.msg.wait);
 
-            let buffer;
-            try {
-                if (m.message.extendedTextMessage?.contextInfo?.quotedMessage) {
-                    buffer = await ctx.quoted.download();
-                } else {
-                    buffer = await ctx.msg.download();
-                }
-            } catch (e) {
-                // Fallback to manual download if ctx fails
-                const stream = await downloadContentFromMessage(mediaMessage, downloadType);
-                buffer = Buffer.from([]);
-                for await (const chunk of stream) {
-                    buffer = Buffer.concat([buffer, chunk]);
-                }
-            }
+        try {
+            const buffer = await ctx.msg.download() || await ctx.quoted.download();
+            const [packname, author] = ctx.text?.split("|") || [];
 
             const sticker = new Sticker(buffer, {
-                pack: config.sticker.packname || config.bot.name,
-                author: config.sticker.author || "SakuraBot",
+                pack: packname || config.sticker.packname || config.bot.name,
+                author: author || config.sticker.author || "SakuraBot",
                 type: StickerTypes.FULL,
                 categories: ["🤩", "🎉"],
                 quality: 50,
             });
 
-            await sock.sendMessage(from, { sticker: await sticker.toBuffer() }, { quoted: m });
-        } else {
-            await sock.sendMessage(from, { text: `Reply atau kirim gambar/video dengan ${prefix}sticker` }, { quoted: m });
+            await ctx.reply({
+                sticker: await sticker.toBuffer()
+            });
+        } catch (error) {
+            await tools.cmd.handleError(ctx, error);
         }
     }
 };

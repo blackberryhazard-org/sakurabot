@@ -1,28 +1,40 @@
-const Jimp = require("jimp");
+const axios = require("axios");
 
 module.exports = {
-    name: "toimg",
-    aliases: ["toimage"],
-    code: async (sock, m, { from, ctx, config }) => {
-        const q = m.message.extendedTextMessage?.contextInfo?.quotedMessage ? m.message.extendedTextMessage.contextInfo.quotedMessage : null;
-        if (!q || !q.stickerMessage) {
-            return await ctx.reply("Silakan reply sticker yang ingin diubah menjadi gambar.");
+    name: "toimage",
+    aliases: ["toimg", "topng"],
+    category: "converter",
+    code: async (sock, m, { ctx, tools }) => {
+        if (!tools.cmd.checkQuotedMedia(ctx.quoted?.messageType, ["sticker"])) {
+            return await ctx.reply(tools.msg.generateInstruction(["reply"], ["sticker"]));
         }
 
-        if (q.stickerMessage.isAnimated) {
-            return await ctx.reply("Maaf, saat ini belum mendukung konversi sticker animasi menjadi gambar/GIF.");
-        }
-
-        await ctx.reply(config.msg.wait);
+        await ctx.reply(global.config.msg.wait);
 
         try {
             const buffer = await ctx.quoted.download();
-            const image = await Jimp.read(buffer);
-            const outputBuffer = await image.getBufferAsync(Jimp.MIME_JPEG);
-            await sock.sendMessage(from, { image: outputBuffer, caption: "Berhasil mengubah sticker menjadi gambar." }, { quoted: m });
+            // Using the external converter API as suggested by user
+            const apiUrl = tools.api.createUrl("https://nekochii-converter.hf.space", "/webp2png");
+            const response = await axios.post(apiUrl, {
+                file: buffer.toString("base64")
+            }, {
+                params: { json: true }
+            });
+
+            const result = response.data.result;
+
+            if (!result) {
+                throw new Error("Gagal mengonversi stiker.");
+            }
+
+            await ctx.reply({
+                image: {
+                    url: result
+                },
+                mimetype: tools.mime.lookup("png")
+            });
         } catch (error) {
-            console.error(error);
-            await ctx.reply("Gagal mengubah sticker menjadi gambar.");
+            await tools.cmd.handleError(ctx, error, true);
         }
     }
 };
