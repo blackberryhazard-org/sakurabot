@@ -26,7 +26,7 @@ describe("RuleEngineService", () => {
     beforeEach(() => {
         db = new MockDb();
         auditLog = new MockAuditLog();
-        config = { owner: { id_tele: "123" } };
+        config = { owner: { telegramId: "123" } };
         ruleEngine = new RuleEngineService(db, auditLog, config);
     });
 

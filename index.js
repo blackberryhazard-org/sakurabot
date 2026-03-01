@@ -17,15 +17,15 @@ class Config {
 
     validate() {
         const required = [
-            { path: "bot.prefix", label: "Prefix Bot" },
-            { path: "owner.id_tele", label: "Telegram Owner ID" },
-            { path: "owner.num_wa", label: "WhatsApp Owner Number" }
+            { path: "system.prefix", label: "Prefix Bot" },
+            { path: "owner.telegramId", label: "Telegram Owner ID" },
+            { path: "owner.whatsappNumber", label: "WhatsApp Owner Number" }
         ];
 
         const missing = [];
         for (const item of required) {
             const value = item.path.split(".").reduce((obj, key) => obj?.[key], this);
-            if (!value || value.toString().startsWith("YOUR_")) {
+            if (!value || (typeof value === "string" && (value.startsWith("YOUR_") || value.startsWith("TELEGRAM_ID") || value.startsWith("WHATSAPP_NUMBER") || value.startsWith("BOTFATHER_TOKEN")))) {
                 missing.push(item.label);
             }
         }
@@ -84,7 +84,7 @@ process.on("unhandledRejection", (err) => {
 // Bot Managers
 global.botManagers = {
     startWa: async () => {
-        const isWaBotConfigValid = global.config.bot && global.config.bot.phoneNumber && !global.config.bot.phoneNumber.startsWith("YOUR_");
+        const isWaBotConfigValid = global.config.wabot && global.config.wabot.phoneNumber && !global.config.wabot.phoneNumber.startsWith("WHATSAPP_PHONE_NUMBER");
         if (isWaBotConfigValid) {
             try {
                 const startWaBot = require("./wa/index.js");
@@ -119,7 +119,7 @@ global.botManagers = {
         }
     },
     startTg: async () => {
-        const isTgBotConfigValid = global.config.bot && global.config.bot.botfather_token && !global.config.bot.botfather_token.startsWith("YOUR_");
+        const isTgBotConfigValid = global.config.tgbot && global.config.tgbot.botfatherToken && !global.config.tgbot.botfatherToken.startsWith("BOTFATHER_TOKEN");
         if (isTgBotConfigValid) {
             try {
                 const { launchTelegramBot } = require("./tg/index.js");
@@ -181,8 +181,8 @@ if (runTg) {
     global.botManagers.startTg();
 }
 
-const isWaBotConfigValid = global.config.bot && global.config.bot.phoneNumber && !global.config.bot.phoneNumber.startsWith("YOUR_");
-const isTgBotConfigValid = global.config.bot && global.config.bot.botfather_token && !global.config.bot.botfather_token.startsWith("YOUR_");
+const isWaBotConfigValid = global.config.wabot && global.config.wabot.phoneNumber && !global.config.wabot.phoneNumber.startsWith("WHATSAPP_PHONE_NUMBER");
+const isTgBotConfigValid = global.config.tgbot && global.config.tgbot.botfatherToken && !global.config.tgbot.botfatherToken.startsWith("BOTFATHER_TOKEN");
 
 if (!isWaBotConfigValid && !isTgBotConfigValid) {
     global.consolefy.error("Both WhatsApp and Telegram bot configurations are invalid. Check your config.json");

@@ -21,8 +21,8 @@ module.exports = {
             const [packname, author] = ctx.text?.split("|") || [];
 
             const sticker = new Sticker(buffer, {
-                pack: packname || config.sticker.packname || config.bot.name,
-                author: author || config.sticker.author || "SakuraBot",
+                pack: packname || config.wabot.sticker.packname || config.wabot.name,
+                author: author || config.wabot.sticker.author || "SakuraBot",
                 type: StickerTypes.FULL,
                 categories: ["🤩", "🎉"],
                 quality: 50,

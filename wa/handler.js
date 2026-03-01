@@ -22,7 +22,7 @@ module.exports = async (sock, m, db, waBot, items, services, config, tools, cons
     const isRuleHandled = await ruleProcessor(sock, m, body, from, sender, { ...services, db }, config, { userAccess, economy, inventory: inventoryService, linking, cooldown, game, mining });
     if (isRuleHandled) return;
 
-    const prefix = config.bot.prefix || "/";
+    const prefix = config.system.prefix || "/";
     const isCmd = body.startsWith(prefix);
     const commandName = isCmd ? body.slice(prefix.length).trim().split(" ")[0].toLowerCase() : "";
     const args = body.trim().split(/ +/).slice(1);

@@ -1,49 +1,40 @@
-const archiver = require("archiver");
 const fs = require("fs");
 const path = require("path");
+const archiver = require("archiver");
 
 module.exports = {
     name: "backup",
     category: "owner",
-    code: async (ctx, { isLeader, config }) => {
-        if (!isLeader(ctx.from.id)) {
+    code: async (ctx, { config }) => {
+        if (!config.owner.telegramId || ctx.from.id.toString() !== config.owner.telegramId.toString()) {
             return ctx.reply(config.msg.owner);
         }
 
-        const backupPath = path.resolve(__dirname, "../../../database");
-        const outputPath = path.resolve(__dirname, `../../../backup-${Date.now()}.zip`);
+        try {
+            await ctx.reply("Creating backup...");
+            const outputPath = path.resolve(__dirname, `../../../backup-${Date.now()}.zip`);
+            const output = fs.createWriteStream(outputPath);
+            const archive = archiver("zip", { zlib: { level: 9 } });
 
-        const output = fs.createWriteStream(outputPath);
-        const archive = archiver("zip", {
-            zlib: { level: 9 }
-        });
+            output.on("close", async () => {
+                try {
+                    await ctx.replyWithDocument({ source: outputPath, filename: path.basename(outputPath) });
+                    fs.unlinkSync(outputPath);
 
-        output.on("close", async () => {
-            try {
-                await ctx.telegram.sendDocument(ctx.from.id, {
-                    source: outputPath,
-                    filename: path.basename(outputPath)
-                });
-                fs.unlinkSync(outputPath); // Clean up the zip file
+                    // Send config.json
+                    const configPath = path.resolve(__dirname, "../../../config.json");
+                    await ctx.replyWithDocument({ source: configPath, filename: "config.json" });
+                } catch (error) {
+                    ctx.reply(`Error sending backup: ${error.message}`);
+                }
+            });
 
-                // Send config.json
-                const configPath = path.resolve(__dirname, "../../../config.json");
-                await ctx.telegram.sendDocument(ctx.from.id, {
-                    source: configPath,
-                    filename: "config.json"
-                });
-            } catch (error) {
-                console.error("Failed to send backup:", error);
-                ctx.reply("Failed to send backup file(s).");
-            }
-        });
-
-        archive.on("error", (err) => {
-            throw err;
-        });
-
-        archive.pipe(output);
-        archive.directory(backupPath, false);
-        archive.finalize();
+            archive.on("error", (err) => { throw err; });
+            archive.pipe(output);
+            archive.directory(path.resolve(__dirname, "../../../database"), false);
+            await archive.finalize();
+        } catch (err) {
+            ctx.reply(`Error creating backup: ${err.message}`);
+        }
     }
 };

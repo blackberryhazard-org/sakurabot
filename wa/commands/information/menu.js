@@ -40,7 +40,7 @@ module.exports = {
         });
 
         await sock.sendMessage(m.key.remoteJid, {
-            image: { url: config.bot.thumbnail },
+            image: { url: config.wabot.thumbnail },
             caption: menuText
         }, { quoted: m });
     }

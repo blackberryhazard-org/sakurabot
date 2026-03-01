@@ -51,7 +51,7 @@ module.exports = {
 
         await ctx.reply(`Kode redeem berhasil dibuat:\n<code>${code}</code>`, { parse_mode: "HTML" });
 
-        if (config.bot.tg_newsletterid) {
+        if (config.tgbot.newsletterId) {
             let rewardText = "";
             if (normalizedType === "sakuranite") {
                 rewardText = `${amount} Sakuranite`;
@@ -73,7 +73,7 @@ Kuota: <i>${quota > 0 ? `${quota} Pengguna` : "Tidak terbatas"}</i>
 Segera redeem dengan <code>/redeem ${code}</code> sebelum kehabisan!
             `;
             try {
-                await bot.telegram.sendMessage(config.bot.tg_newsletterid, broadcastMessage, { parse_mode: "HTML" });
+                await bot.telegram.sendMessage(config.tgbot.newsletterId, broadcastMessage, { parse_mode: "HTML" });
             } catch (e) {
                 console.error(`Gagal broadcast kode redeem: ${e.message}`);
                 await ctx.reply("Gagal mengirim siaran ke channel buletin.");

@@ -93,17 +93,17 @@ const startWaBot = async (config, consolefy, tools) => {
     const sock = makeWASocket({
         version,
         logger: pino({ level: "silent" }),
-        printQRInTerminal: !appConfig.system.usePairingCode,
+        printQRInTerminal: !appConfig.wabot.usePairingCode,
         auth: { creds: state.creds, keys: makeCacheableSignalKeyStore(state.keys, pino({ level: "silent" })) },
         browser: ["Ubuntu", "Chrome", "20.0.04"]
     });
 
-    if (appConfig.system.usePairingCode && !sock.authState.creds.registered) {
-        const phoneNumber = appConfig.bot.phoneNumber;
+    if (appConfig.wabot.usePairingCode && !sock.authState.creds.registered) {
+        const phoneNumber = appConfig.wabot.phoneNumber;
         if (phoneNumber) {
             setTimeout(async () => {
                 try {
-                    let code = await sock.requestPairingCode(phoneNumber, appConfig.system.customPairingCode);
+                    let code = await sock.requestPairingCode(phoneNumber, appConfig.wabot.customPairingCode);
                     code = code?.match(/.{1,4}/g)?.join("-") || code;
                     if (appConsolefy && appConsolefy.info) appConsolefy.info(`Pairing Code: ${code}`);
                     else console.log(`Pairing Code: ${code}`);

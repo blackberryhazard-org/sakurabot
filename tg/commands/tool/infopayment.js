@@ -24,8 +24,8 @@ module.exports = {
                 return await ctx.reply("Format Order ID tidak valid: nominal tidak ditemukan.");
             }
 
-            const slug = config.bot.pakasir_slug;
-            const apikey = config.bot.pakasir_apikey;
+            const slug = config.services.pakasir.slug;
+            const apikey = config.services.pakasir.apiKey;
             if (!slug || slug === "your-slug-here" || !apikey || apikey === "your-api-key-here") {
                 return await ctx.reply("Fitur pembayaran belum dikonfigurasi oleh owner.");
             }

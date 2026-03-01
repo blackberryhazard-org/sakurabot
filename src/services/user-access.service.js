@@ -15,8 +15,8 @@ class UserAccessService {
     }
 
     isLeader(userId) {
-        const leaderTele = this.config.owner.id_tele.toString();
-        const leaderWa = this.config.owner.num_wa.toString();
+        const leaderTele = (this.config.owner.telegramId || "").toString();
+        const leaderWa = (this.config.owner.whatsappNumber || "").toString();
 
         const cleanId = this.normalizeUserId(userId);
         return cleanId === leaderTele || cleanId === leaderWa;

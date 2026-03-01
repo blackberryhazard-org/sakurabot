@@ -1,27 +1,25 @@
-const { exec } = require("child_process");
+const util = require("util");
 
 module.exports = {
     name: "eval",
     category: "owner",
-    description: "Execute a shell command (leader only).",
-    code: async (ctx, { isLeader, config }) => {
-        if (!isLeader(ctx.from.id)) {
+    code: async (ctx, { config }) => {
+        if (!config.owner.telegramId || ctx.from.id.toString() !== config.owner.telegramId.toString()) {
             return ctx.reply(config.msg.owner);
         }
 
-        const command = ctx.message.text.split(" ").slice(1).join(" ");
-        if (!command) {
-            return ctx.reply("Please provide a command to execute.");
-        }
+        const args = ctx.message.text.split(" ").slice(1);
+        const code = args.join(" ");
 
-        exec(command, (error, stdout, stderr) => {
-            if (error) {
-                return ctx.reply(`Error: ${error.message}`);
-            }
-            if (stderr) {
-                return ctx.reply(`Stderr: ${stderr}`);
-            }
-            ctx.reply(`Output:\n${stdout}`);
-        });
+        if (!code) return ctx.reply("Please provide code to evaluate.");
+
+        try {
+            // eslint-disable-next-line no-eval
+            let evaled = eval(code);
+            if (typeof evaled !== "string") evaled = util.inspect(evaled);
+            ctx.reply(`\`\`\`\n${evaled}\n\`\`\``, { parse_mode: "Markdown" });
+        } catch (err) {
+            ctx.reply(`\`\`\`\n${err}\n\`\`\``, { parse_mode: "Markdown" });
+        }
     }
 };

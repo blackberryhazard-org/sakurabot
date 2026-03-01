@@ -1,16 +1,61 @@
 {
-    "bot": {
-        "name": "SAKURABOT",
-        "phoneNumber": "YOUR_BOT_PHONE_NUMBER",
+    "wabot": {
+        "name": "BOT_NAME",
+        "phoneNumber": "WHATSAPP_PHONE_NUMBER",
+        "usePairingCode": true,
+        "customPairingCode": "S4KUR4BT",
         "thumbnail": "https://repository-images.githubusercontent.com/753096396/3f4b7686-0f1d-43f2-8293-2ae1b4487220",
-        "wa_newsletterJid": "YOUR_WHATSAPP_NEWSLETTER_JID",
-        "tg_newsletterid": "YOUR_TELEGRAM_NEWSLETTER_ID",
-        "prefix": "/",
-        "botfather_token": "YOUR_TELEGRAM_BOT_TOKEN"
+        "newsletterJid": "WHATSAPP_NEWSLETTER_JID",
+        "sticker": {
+            "packname": "",
+            "author": "sakurabot <github.com/indra87g/sakurabot>"
+        }
     },
-    "pakasir": {
-        "slug": "YOUR_PAKASIR_SLUG",
-        "apikey": "YOUR_PAKASIR_APIKEY"
+    "tgbot": {
+        "name": "BOT_NAME",
+        "botfatherToken": "BOTFATHER_TOKEN",
+        "newsletterId": "TELEGRAM_NEWSLETTER_ID"
+    },
+    "tgusrbot": {
+        "name": "USERBOT_NAME",
+        "phoneNumber": "TELEGRAM_PHONE_NUMBER",
+        "telegramUsername": "TELEGRAM_USERNAME"
+    },
+    "services": {
+        "pakasir": {
+            "slug": "PAKASIR_SLUG",
+            "apiKey": "PAKASIR_APIKEY"
+        },
+        "zakkistore": {
+            "id": "ZAKKISTORE_ID",
+            "token": "ZAKKISTORE_TOKEN"
+        },
+        "misc": {
+            "screenshotmachine": "KEY"
+        }
+    },
+    "system": {
+        "alwaysOnline": true,
+        "antiCall": true,
+        "autoRead": true,
+        "autoBackup": true,
+        "autoTypingOnCmd": true,
+        "prefix": "/",
+        "cooldown": 10000,
+        "maxListeners": 50,
+        "port": 5000,
+        "restrict": false,
+        "selfReply": true,
+        "timeZone": "Asia/Jakarta",
+        "unavailableAtNight": false,
+        "useServer": true
+    },
+    "owner": {
+        "name": "OWNER_NAME",
+        "organization": "OWNER_ORGS",
+        "whatsappNumber": "WHATSAPP_NUMBER",
+        "telegramUsername": "TELEGRAM_USERNAME",
+        "telegramId": "TELEGRAM_ID"
     },
     "msg": {
         "admin": "Perintah hanya dapat diakses oleh admin grup!",
@@ -33,34 +78,5 @@
         "wait": "Tunggu sebentar...",
         "notFound": "Tidak ada yang ditemukan! Coba lagi nanti.",
         "urlInvalid": "URL tidak valid!"
-    },
-    "owner": {
-        "usn_tele": "YOUR_TELEGRAM_USERNAME",
-        "name": "YOUR_NAME",
-        "organization": "YOUR_ORGANIZATION",
-        "id": "YOUR_WHATSAPP_ID",
-        "id_tele": "YOUR_TELEGRAM_ID",
-        "report": true
-    },
-    "sticker": {
-        "packname": "",
-        "author": "sakurabot <github.com/indra87g/sakurabot>"
-    },
-    "system": {
-        "alwaysOnline": true,
-        "antiCall": true,
-        "autoRead": true,
-        "autoBackup": true,
-        "autoTypingOnCmd": true,
-        "cooldown": 10000,
-        "maxListeners": 50,
-        "port": 5000,
-        "restrict": false,
-        "selfReply": true,
-        "timeZone": "Asia/Jakarta",
-        "unavailableAtNight": false,
-        "usePairingCode": true,
-        "customPairingCode": "YOUR_PAIRING_CODE",
-        "useServer": true
     }
 }

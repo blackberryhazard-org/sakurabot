@@ -48,12 +48,12 @@ const launchTelegramBot = async (config, consolefy, tools) => {
     const miningService = new MiningService(economy, inventoryService);
     const ruleEngine = new RuleEngineService(db, global.auditLog, appConfig);
 
-    const token = appConfig.bot.botfather_token;
+    const token = appConfig.tgbot.botfatherToken;
     const bot = new Telegraf(token);
     bot.games = new Map();
     const pakasir = new Pakasir({
-        slug: appConfig.pakasir.slug,
-        apikey: appConfig.pakasir.apikey
+        slug: appConfig.services.pakasir.slug,
+        apikey: appConfig.services.pakasir.apiKey
     });
 
     const helpers = {
@@ -232,8 +232,8 @@ const launchTelegramBot = async (config, consolefy, tools) => {
                 helpers.updateCoins(userId, helpers.getCoins(userId) + coinAmount);
                 await ctx.reply(`✅ *PAYMENT CONFIRMED (Stars)*\n\n${coinAmount} coins have been added to your balance.`, { parse_mode: "Markdown" });
                 const broadcastMessage = `✅ TRANSAKSI BERHASIL (STARS)!\n\nItem: ${coinAmount} Koin SakuraBot\nHarga: ${ctx.message.successful_payment.total_amount} ⭐️\nWaktu: ${moment().tz("Asia/Jakarta").format("YYYY-MM-DD HH:mm:ss")}\nBuyer: ${ctx.from.first_name} (\`${userId}\`)\n\nKetentuan:\n- Item yang sudah dibeli/dibayar tidak dapat dikembalikan`;
-                if (appConfig.bot.tg_newsletterid) {
-                    try { await bot.telegram.sendMessage(appConfig.bot.tg_newsletterid, broadcastMessage, { parse_mode: "Markdown" }); } catch (e) {
+                if (appConfig.tgbot.newsletterId) {
+                    try { await bot.telegram.sendMessage(appConfig.tgbot.newsletterId, broadcastMessage, { parse_mode: "Markdown" }); } catch (e) {
                         if (appConsolefy && appConsolefy.error) appConsolefy.error("Broadcast error:", e);
                         else console.error("Broadcast error:", e);
                     }
@@ -257,7 +257,7 @@ const launchTelegramBot = async (config, consolefy, tools) => {
     }
 
     cron.schedule("0 0 */7 * *", async () => {
-        if (!appConfig.bot.tg_newsletterid) return;
+        if (!appConfig.tgbot.newsletterId) return;
         try {
             const listusers = require("./commands/owner/listusers");
             let userIds = db.get("users") || [];
@@ -265,7 +265,7 @@ const launchTelegramBot = async (config, consolefy, tools) => {
             const analyticsData = listusers.getAnalyticsData(userIds, helpers.isOwner, helpers.isPremium);
             const chartUrl = listusers.getAnalyticsChartUrl(analyticsData);
             const caption = listusers.getAnalyticsText(analyticsData);
-            await bot.telegram.sendPhoto(appConfig.bot.tg_newsletterid, chartUrl, { caption: `📅 <b>Weekly User Statistics Report</b>\n\n${caption}`, parse_mode: "HTML" });
+            await bot.telegram.sendPhoto(appConfig.tgbot.newsletterId, chartUrl, { caption: `📅 <b>Weekly User Statistics Report</b>\n\n${caption}`, parse_mode: "HTML" });
         } catch (error) {
             if (appConsolefy && appConsolefy.error) appConsolefy.error("Failed to send weekly user statistics:", error);
             else console.error("Failed to send weekly user statistics:", error);
@@ -278,9 +278,9 @@ const launchTelegramBot = async (config, consolefy, tools) => {
             const archive = archiver("zip", { zlib: { level: 9 } });
             output.on("close", async () => {
                 try {
-                    await bot.telegram.sendDocument(appConfig.owner.id_tele, { source: outputPath, filename: path.basename(outputPath) });
+                    await bot.telegram.sendDocument(appConfig.owner.telegramId, { source: outputPath, filename: path.basename(outputPath) });
                     fs.unlinkSync(outputPath);
-                    await bot.telegram.sendDocument(appConfig.owner.id_tele, { source: path.resolve(__dirname, "../config.json"), filename: "config.json" });
+                    await bot.telegram.sendDocument(appConfig.owner.telegramId, { source: path.resolve(__dirname, "../config.json"), filename: "config.json" });
                 } catch (error) {
                     if (appConsolefy && appConsolefy.error) appConsolefy.error("Failed to send scheduled backup:", error);
                     else console.error("Failed to send scheduled backup:", error);

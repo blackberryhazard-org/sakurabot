@@ -1,47 +1,27 @@
 module.exports = {
     name: "newtesti",
     category: "owner",
-    code: async (ctx, { isLeader, config }) => {
-        if (!isLeader(ctx.from.id)) {
+    code: async (ctx, { config, bot }) => {
+        if (!config.owner.telegramId || ctx.from.id.toString() !== config.owner.telegramId.toString()) {
             return ctx.reply(config.msg.owner);
         }
 
-        try {
-            const id_channel = config.bot.tg_newsletterid;
-            if (!id_channel) {
-                return ctx.reply("Telegram newsletter channel ID (`tg_newsletterid`) is not set in config.json.");
+        const args = ctx.message.text.split(" ").slice(1);
+        const text = args.join(" ");
+
+        if (!text) return ctx.reply("Please provide testimonial text.");
+
+        const id_channel = config.tgbot.newsletterId;
+        if (id_channel) {
+            try {
+                const broadcastMessage = `📢 *NEW TESTIMONIAL*\n\n${text}\n\n— *From:* ${ctx.from.first_name}`;
+                await bot.telegram.sendMessage(id_channel, broadcastMessage, { parse_mode: "Markdown" });
+                return ctx.reply("Testimonial posted to channel.");
+            } catch (e) {
+                return ctx.reply(`Failed to post testimonial: ${e.message}`);
             }
-
-            const args = ctx.message.text.split(" ").slice(1);
-            const [id_transaksi, nama, harga, buyer, ...pesan_tambahan_parts] = args;
-            const pesan_tambahan = pesan_tambahan_parts.join(" ");
-
-            if (!id_transaksi || !nama || !harga || !buyer) {
-                return ctx.reply("Usage: /newtesti {id_transaksi} {nama} {harga} {buyer} {pesan_tambahan}");
-            }
-
-            const itemName = nama.replace(/\+/g, " ");
-            const caption = `Done wak😹
-
-ID Transaksi: ${id_transaksi}
-Nama Item: ${itemName}
-Harga: ${harga}
-Buyer: ${buyer}
-
-${pesan_tambahan}
-            `;
-
-            if (ctx.message.reply_to_message && ctx.message.reply_to_message.photo) {
-                const photo = ctx.message.reply_to_message.photo.pop().file_id;
-                await ctx.telegram.sendPhoto(id_channel, photo, { caption });
-            } else {
-                await ctx.telegram.sendMessage(id_channel, caption);
-            }
-
-            ctx.reply("Testimonial sent successfully!");
-        } catch (error) {
-            console.error("Failed to send testimonial:", error);
-            ctx.reply("Failed to send testimonial. Please check the channel ID and make sure the bot has permission to post.");
+        } else {
+            return ctx.reply("Telegram newsletter channel ID (`newsletterId`) is not set in config.json.");
         }
     }
 };
