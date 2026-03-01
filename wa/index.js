@@ -100,7 +100,7 @@ const startWaBot = async (config, consolefy, tools) => {
 
     if (appConfig.wabot.usePairingCode && !sock.authState.creds.registered) {
         const phoneNumber = appConfig.wabot.phoneNumber;
-        if (phoneNumber) {
+        if (phoneNumber && !phoneNumber.startsWith("WHATSAPP_PHONE_NUMBER")) {
             setTimeout(async () => {
                 try {
                     let code = await sock.requestPairingCode(phoneNumber, appConfig.wabot.customPairingCode);
@@ -111,6 +111,10 @@ const startWaBot = async (config, consolefy, tools) => {
                     if (appConsolefy && appConsolefy.error) appConsolefy.error("Failed to request pairing code:", e.message);
                 }
             }, 3000);
+        } else {
+            if (appConsolefy && appConsolefy.warn) appConsolefy.warn("Pairing code requested but phone number is invalid or missing in config. Switching to QR mode.");
+            // Re-creating socket with QR mode is tricky here, but technically we already set printQRInTerminal based on usePairingCode.
+            // If it failed here, it's a configuration error.
         }
     }
 

@@ -84,7 +84,8 @@ process.on("unhandledRejection", (err) => {
 // Bot Managers
 global.botManagers = {
     startWa: async () => {
-        const isWaBotConfigValid = global.config.wabot && global.config.wabot.phoneNumber && !global.config.wabot.phoneNumber.startsWith("WHATSAPP_PHONE_NUMBER");
+        const wabot = global.config.wabot;
+        const isWaBotConfigValid = wabot && (wabot.usePairingCode ? (wabot.phoneNumber && !wabot.phoneNumber.startsWith("WHATSAPP_PHONE_NUMBER")) : true);
         if (isWaBotConfigValid) {
             try {
                 const startWaBot = require("./wa/index.js");
@@ -94,7 +95,7 @@ global.botManagers = {
                 global.botStatus.wa = false;
             }
         } else {
-            global.consolefy.warn("WhatsApp bot configuration is missing or invalid.");
+            global.consolefy.warn("WhatsApp bot configuration is missing or invalid (Phone number required for Pairing Code).");
             global.botStatus.wa = false;
         }
     },
@@ -181,7 +182,8 @@ if (runTg) {
     global.botManagers.startTg();
 }
 
-const isWaBotConfigValid = global.config.wabot && global.config.wabot.phoneNumber && !global.config.wabot.phoneNumber.startsWith("WHATSAPP_PHONE_NUMBER");
+const wabot = global.config.wabot;
+const isWaBotConfigValid = wabot && (wabot.usePairingCode ? (wabot.phoneNumber && !wabot.phoneNumber.startsWith("WHATSAPP_PHONE_NUMBER")) : true);
 const isTgBotConfigValid = global.config.tgbot && global.config.tgbot.botfatherToken && !global.config.tgbot.botfatherToken.startsWith("BOTFATHER_TOKEN");
 
 if (!isWaBotConfigValid && !isTgBotConfigValid) {

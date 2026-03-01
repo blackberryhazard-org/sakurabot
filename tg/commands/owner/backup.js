@@ -19,7 +19,7 @@ module.exports = {
             output.on("close", async () => {
                 try {
                     await ctx.replyWithDocument({ source: outputPath, filename: path.basename(outputPath) });
-                    fs.unlinkSync(outputPath);
+                    if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
 
                     // Send config.json
                     const configPath = path.resolve(__dirname, "../../../config.json");
@@ -29,7 +29,11 @@ module.exports = {
                 }
             });
 
-            archive.on("error", (err) => { throw err; });
+            archive.on("error", (err) => {
+                ctx.reply(`Error during archiving: ${err.message}`);
+                output.end();
+            });
+
             archive.pipe(output);
             archive.directory(path.resolve(__dirname, "../../../database"), false);
             await archive.finalize();
