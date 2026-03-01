@@ -4,6 +4,7 @@
         "phoneNumber": "WHATSAPP_PHONE_NUMBER",
         "usePairingCode": true,
         "customPairingCode": "S4KUR4BT",
+        "prefix": "/",
         "thumbnail": "https://repository-images.githubusercontent.com/753096396/3f4b7686-0f1d-43f2-8293-2ae1b4487220",
         "newsletterJid": "WHATSAPP_NEWSLETTER_JID",
         "sticker": {
@@ -20,7 +21,7 @@
         "name": "USERBOT_NAME",
         "phoneNumber": "TELEGRAM_PHONE_NUMBER",
         "telegramUsername": "TELEGRAM_USERNAME"
-    }
+    },
     "pakasir": {
         "slug": "PAKASIR_SLUG",
         "apikey": "PAKASIR_APIKEY"
@@ -31,7 +32,6 @@
         "autoRead": true,
         "autoBackup": true,
         "autoTypingOnCmd": true,
-        "prefix": "/",
         "cooldown": 10000,
         "maxListeners": 50,
         "port": 5000,
