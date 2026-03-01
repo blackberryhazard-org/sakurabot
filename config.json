@@ -22,9 +22,18 @@
         "phoneNumber": "TELEGRAM_PHONE_NUMBER",
         "telegramUsername": "TELEGRAM_USERNAME"
     },
-    "pakasir": {
-        "slug": "PAKASIR_SLUG",
-        "apikey": "PAKASIR_APIKEY"
+    "services": {
+        "pakasir": {
+            "slug": "PAKASIR_SLUG",
+            "apiKey": "PAKASIR_APIKEY"
+        },
+        "zakkistore": {
+            "id": "ZAKKISTORE_ID",
+            "token": "ZAKKISTORE_TOKEN"
+        },
+        "misc": {
+            "screenshotmachine": "KEY",
+        }
     },
     "system": {
         "alwaysOnline": true,
