@@ -4,7 +4,6 @@
         "phoneNumber": "WHATSAPP_PHONE_NUMBER",
         "usePairingCode": true,
         "customPairingCode": "S4KUR4BT",
-        "prefix": "/",
         "thumbnail": "https://repository-images.githubusercontent.com/753096396/3f4b7686-0f1d-43f2-8293-2ae1b4487220",
         "newsletterJid": "WHATSAPP_NEWSLETTER_JID",
         "sticker": {
@@ -32,7 +31,7 @@
             "token": "ZAKKISTORE_TOKEN"
         },
         "misc": {
-            "screenshotmachine": "KEY",
+            "screenshotmachine": "KEY"
         }
     },
     "system": {
@@ -41,6 +40,7 @@
         "autoRead": true,
         "autoBackup": true,
         "autoTypingOnCmd": true,
+        "prefix": "/",
         "cooldown": 10000,
         "maxListeners": 50,
         "port": 5000,
