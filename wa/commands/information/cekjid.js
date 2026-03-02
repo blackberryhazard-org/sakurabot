@@ -3,12 +3,18 @@ module.exports = {
     category: "information",
     description: "Cek JID grup atau channel berdasarkan link undangan.",
     code: async (sock, m, { args, ctx }) => {
-        const type = args[0]?.toLowerCase();
-        const link = args[1];
+        let type = args[0]?.toLowerCase();
+        let link = args[1];
 
-        if (!type || !["group", "channel"].includes(type) || !link) {
-            return ctx.reply("Penggunaan: /cekjid {group|channel} {link_undangan}");
+        // If no type provided, but a link is present, try to guess the type
+        if (!type || (!["group", "channel"].includes(type) && /whatsapp\.com\/(?:chat|channel)\//.test(type))) {
+            link = type;
+            if (link.includes("chat.whatsapp.com")) type = "group";
+            else if (link.includes("whatsapp.com/channel")) type = "channel";
+            else return ctx.reply("Penggunaan: /cekjid {group|channel} {link_undangan}");
         }
+
+        if (!link) return ctx.reply("Penggunaan: /cekjid {group|channel} {link_undangan}");
 
         if (type === "group") {
             const groupRegex = /chat\.whatsapp\.com\/([a-zA-Z0-9]+)/;
@@ -34,14 +40,24 @@ module.exports = {
 
             try {
                 const data = await sock.newsletterMetadata("invite", channelCode);
+
+                // Safety check for metadata structure
+                if (!data || typeof data !== 'object') {
+                    throw new Error("Metadata channel tidak ditemukan atau format tidak valid.");
+                }
+
                 const text = "*Informasi Channel* 📢\n\n" +
-                    `➛ *JID*: ${data.id}\n` +
-                    `➛ *Nama*: ${data.name}\n` +
-                    `➛ *Status*: ${data.state}\n` +
+                    `➛ *JID*: ${data.id || "N/A"}\n` +
+                    `➛ *Nama*: ${data.name || "N/A"}\n` +
+                    `➛ *Status*: ${data.state || "N/A"}\n` +
                     `➛ *Pengikut*: ${data.subscribers || "Tidak diketahui"}\n` +
                     `➛ *Deskripsi*: ${data.description || "-"}`;
                 return ctx.reply(text);
             } catch (err) {
+                // If it's a JSON parse error or similar unexpected token error
+                if (err.message.includes("Unexpected token") || err.message.includes("JSON")) {
+                    return ctx.reply(`❌ Terjadi kesalahan teknis saat parsing data channel. Ini mungkin masalah pada server WhatsApp atau versi library Baileys.\n\nError: ${err.message}`);
+                }
                 return ctx.reply(`❌ Gagal mengambil info channel. Pastikan link valid.\nError: ${err.message}`);
             }
         }
