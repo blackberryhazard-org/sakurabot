@@ -19,13 +19,15 @@ class Config {
         const required = [
             { path: "system.prefix", label: "Prefix Bot" },
             { path: "owner.telegramId", label: "Telegram Owner ID" },
-            { path: "owner.whatsappNumber", label: "WhatsApp Owner Number" }
+            { path: "owner.whatsappNumber", label: "WhatsApp Owner Number" },
+            { path: "services.pakasir.slug", label: "Pakasir Slug" },
+            { path: "services.pakasir.apiKey", label: "Pakasir API Key" }
         ];
 
         const missing = [];
         for (const item of required) {
             const value = item.path.split(".").reduce((obj, key) => obj?.[key], this);
-            if (!value || (typeof value === "string" && (value.startsWith("YOUR_") || value.startsWith("TELEGRAM_ID") || value.startsWith("WHATSAPP_NUMBER") || value.startsWith("BOTFATHER_TOKEN")))) {
+            if (!value || (typeof value === "string" && (value.startsWith("YOUR_") || value.startsWith("TELEGRAM_ID") || value.startsWith("WHATSAPP_NUMBER") || value.startsWith("BOTFATHER_TOKEN") || value.startsWith("PAKASIR_")))) {
                 missing.push(item.label);
             }
         }

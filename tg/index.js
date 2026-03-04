@@ -1,41 +1,39 @@
 const { Telegraf, Markup } = require("telegraf");
-const didyoumean = require("didyoumean");
 const fs = require("fs");
 const path = require("path");
 const moment = require("moment-timezone");
 const cron = require("node-cron");
 const archiver = require("archiver");
-const { Pakasir } = require("pakasir-sdk");
+const didyoumean = require("didyoumean");
+const Pakasir = require("pakasir-sdk");
 
 // Import Services & Shared DB
 const { getDb } = require("../src/database");
 const UserAccessService = require("../src/services/user-access.service");
 const EconomyService = require("../src/services/economy.service");
 const InventoryService = require("../src/services/inventory.service");
-const items = InventoryService.items_serpulo;
 const LinkingService = require("../src/services/linking.service");
 const GameService = require("../src/services/game.service");
 const MiningService = require("../src/services/mining.service");
 const CooldownService = require("../src/services/cooldown.service");
 const levelling = require("../src/services/levelling");
+const items = InventoryService.items_serpulo;
 
 const db = getDb("tg");
 const waDb = getDb("wa");
 
-// Initialize database if keys don't exist
-const keys = ["users", "bans", "premium", "groups", "channels", "coins", "managers", "gacha_tickets", "last_daily", "referred_by", "referrals", "pending_referrals", "sakuranite", "inventory", "links", "mining_tickets", "mining_rate"];
-keys.forEach(key => {
-    if (!db.has(key)) db.set(key, key === "coins" || key === "gacha_tickets" || key === "last_daily" || key === "referred_by" || key === "referrals" || key === "pending_referrals" || key === "sakuranite" || key === "inventory" || key === "links" || key === "mining_tickets" || key === "mining_rate" ? {} : []);
-});
-
 const userCooldowns = new CooldownService();
-const activeTopups = new Map();
 
 const launchTelegramBot = async (config, consolefy, tools) => {
     const appConfig = config || global.config;
     const appConsolefy = consolefy || global.consolefy;
-    const appTools = tools || global.tools;
-    const { escapeHTML, formatUptime } = appTools.utils;
+    const { formatUptime } = tools.utils;
+
+    // Initialize database keys
+    const keys = ["users", "premium", "managers", "sakuranite", "inventory", "last_daily", "links", "mining_tickets", "mining_rate"];
+    keys.forEach(key => {
+        if (!db.has(key)) db.set(key, (key === "sakuranite" || key === "inventory" || key === "last_daily" || key === "links" || key === "mining_tickets" || key === "mining_rate") ? {} : []);
+    });
 
     // Initialize Services
     const userAccess = new UserAccessService(db, appConfig);
@@ -49,10 +47,12 @@ const launchTelegramBot = async (config, consolefy, tools) => {
     const token = appConfig.tgbot.botfatherToken;
     const bot = new Telegraf(token);
     bot.games = new Map();
-    const pakasir = new Pakasir({
-        slug: appConfig.services.pakasir.slug,
-        apikey: appConfig.services.pakasir.apiKey
-    });
+
+    const pakasirConfig = appConfig.services?.pakasir;
+    const pakasir = pakasirConfig ? new Pakasir({
+        slug: pakasirConfig.slug,
+        apikey: pakasirConfig.apiKey
+    }) : null;
 
     const helpers = {
         userAccess,
@@ -69,44 +69,38 @@ const launchTelegramBot = async (config, consolefy, tools) => {
         isLeader: (id) => userAccess.isLeader(id),
         isOwner: (id) => userAccess.isOwner(id),
         isPremium: (id) => userAccess.isPremium(id),
-        getCoins: (id) => economy.getBalance(id, "coins"),
-        updateCoins: (id, val) => economy.updateBalance(id, val, "coins"),
-        getGachaTickets: (id) => economy.getBalance(id, "gacha_tickets"),
-        updateGachaTickets: (id, val) => economy.updateBalance(id, val, "gacha_tickets"),
         getSakuranite: (id) => economy.getBalance(id, "sakuranite"),
-        updateSakuranite: (id, val) => economy.updateBalance(id, val, "sakuranite"),
+        updateSakuranite: (id, amount) => economy.updateBalance(id, amount, "sakuranite"),
+        getCoins: (id) => economy.getBalance(id, "coins"),
+        updateCoins: (id, amount) => economy.updateBalance(id, amount, "coins"),
         getInventory: (id) => inventoryService.getInventory(id),
         updateInventory: (id, item, amount) => inventoryService.addItem(id, item, amount),
-        items,
         pakasir,
-        activeTopups,
-        escapeHTML,
         db,
-        config: appConfig,
+        items,
         levelling
     };
 
-    const createMiddlewares = require("./middleware");
-    const middlewares = createMiddlewares({ db, config: appConfig,
-        levelling, helpers, bot, userCooldowns });
+    const dependencies = {
+        db,
+        config: appConfig,
+        helpers,
+        bot,
+        userCooldowns
+    };
 
-    bot.use(middlewares.banMiddleware);
-    bot.use(middlewares.addUserMiddleware);
-    bot.use(middlewares.channelSubMiddleware);
-    bot.use(middlewares.cooldownMiddleware);
-    bot.use(middlewares.ruleMiddleware);
+    const middleware = require("./middleware")(dependencies);
+    bot.use(middleware.addUserMiddleware);
+    bot.use(middleware.banMiddleware);
+    bot.use(middleware.channelSubMiddleware);
+    bot.use(middleware.cooldownMiddleware);
 
     bot.on("text", async (ctx, next) => {
-        if (!ctx.message || !ctx.message.text || ctx.message.text.startsWith("/")) return next();
-        const chatId = ctx.chat.id;
+        const chatId = ctx.chat.id.toString();
         const activeGame = bot.games.get(chatId);
         if (activeGame) {
-            const result = gameService.handleAnswer(
-                activeGame,
-                ctx.message.text,
-                ctx.from.id,
-                ctx.from.first_name
-            );
+            const body = ctx.message.text;
+            const result = gameService.handleAnswer(activeGame, body, ctx.from.id.toString(), ctx.from.first_name);
             if (result) {
                 if (result.status === "game_over" || result.status === "surrender") {
                     if (activeGame.timeoutRef) clearTimeout(activeGame.timeoutRef);
@@ -275,7 +269,7 @@ const launchTelegramBot = async (config, consolefy, tools) => {
             output.on("close", async () => {
                 try {
                     await bot.telegram.sendDocument(appConfig.owner.telegramId, { source: outputPath, filename: path.basename(outputPath) });
-                    fs.unlinkSync(outputPath);
+                    if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
                     await bot.telegram.sendDocument(appConfig.owner.telegramId, { source: path.resolve(__dirname, "../config.json"), filename: "config.json" });
                 } catch (error) {
                     if (appConsolefy && appConsolefy.error) appConsolefy.error("Failed to send scheduled backup:", error);
