@@ -20,7 +20,6 @@ const InventoryService = require("../src/services/inventory.service");
 const LinkingService = require("../src/services/linking.service");
 const GameService = require("../src/services/game.service");
 const MiningService = require("../src/services/mining.service");
-const RuleEngineService = require("../src/services/rule-engine.service");
 // eslint-disable-next-line no-unused-vars
 const levelling = require("../src/services/levelling");
 const items = InventoryService.items_erekir;
@@ -85,7 +84,6 @@ const startWaBot = async (config, consolefy, tools) => {
     const linking = new LinkingService(tgDb, db, tgEconomy, economy);
     const gameService = new GameService(economy);
     const miningService = new MiningService(economy, inventoryService);
-    const ruleEngine = new RuleEngineService(db, global.auditLog, appConfig);
 
     const statePath = path.resolve(__dirname, "../state");
     const { state, saveCreds } = await useMultiFileAuthState(statePath);
@@ -113,8 +111,6 @@ const startWaBot = async (config, consolefy, tools) => {
             }, 3000);
         } else {
             if (appConsolefy && appConsolefy.warn) appConsolefy.warn("Pairing code requested but phone number is invalid or missing in config. Switching to QR mode.");
-            // Re-creating socket with QR mode is tricky here, but technically we already set printQRInTerminal based on usePairingCode.
-            // If it failed here, it's a configuration error.
         }
     }
 
@@ -161,7 +157,6 @@ const startWaBot = async (config, consolefy, tools) => {
                 global.waReconnectTimeout = setTimeout(() => startWaBot(appConfig, appConsolefy, appTools), delay);
             } else {
                 global.botStatus.wa = false;
-                // If it's a fatal error, we might want to stop the process or at least stop trying.
             }
         } else if (connection === "open") {
             if (global.waReconnectTimeout) {
@@ -181,7 +176,7 @@ const startWaBot = async (config, consolefy, tools) => {
         try {
             const m = chatUpdate.messages[0];
             if (!m.message || m.key.fromMe) return;
-            const services = { userAccess, economy, inventory: inventoryService, linking, cooldown: userCooldowns, game: gameService, mining: miningService, ruleEngine: ruleEngine };
+            const services = { userAccess, economy, inventory: inventoryService, linking, cooldown: userCooldowns, game: gameService, mining: miningService };
             await handler(sock, m, db, waBot, items, services, appConfig, appTools, appConsolefy);
         } catch (err) {
             if (appConsolefy && appConsolefy.error) appConsolefy.error(err);

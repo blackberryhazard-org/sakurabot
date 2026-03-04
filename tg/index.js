@@ -17,7 +17,6 @@ const LinkingService = require("../src/services/linking.service");
 const GameService = require("../src/services/game.service");
 const MiningService = require("../src/services/mining.service");
 const CooldownService = require("../src/services/cooldown.service");
-const RuleEngineService = require("../src/services/rule-engine.service");
 const levelling = require("../src/services/levelling");
 
 const db = getDb("tg");
@@ -46,7 +45,6 @@ const launchTelegramBot = async (config, consolefy, tools) => {
     const linking = new LinkingService(db, waDb, economy, waEconomy);
     const gameService = new GameService(economy);
     const miningService = new MiningService(economy, inventoryService);
-    const ruleEngine = new RuleEngineService(db, global.auditLog, appConfig);
 
     const token = appConfig.tgbot.botfatherToken;
     const bot = new Telegraf(token);
@@ -85,13 +83,11 @@ const launchTelegramBot = async (config, consolefy, tools) => {
         escapeHTML,
         db,
         config: appConfig,
-        ruleEngine,
         levelling
     };
 
     const createMiddlewares = require("./middleware");
     const middlewares = createMiddlewares({ db, config: appConfig,
-        ruleEngine,
         levelling, helpers, bot, userCooldowns });
 
     bot.use(middlewares.banMiddleware);
