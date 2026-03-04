@@ -9,8 +9,8 @@ describe("UserAccessService", () => {
         };
         config = {
             owner: {
-                id_tele: "123456789",
-                num_wa: "628123456789"
+                telegramId: "123456789",
+                whatsappNumber: "628123456789"
             }
         };
         service = new UserAccessService(db, config);

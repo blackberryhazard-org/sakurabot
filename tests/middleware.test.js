@@ -15,8 +15,8 @@ describe("TG Middleware", () => {
                 banned: "You are banned",
                 cooldown: "Wait for"
             },
-            bot: {
-                tg_newsletterid: "123"
+            tgbot: {
+                newsletterId: "123"
             }
         };
         helpers = {

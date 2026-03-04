@@ -119,10 +119,10 @@ module.exports = {
                 );
 
                 const watcher = watchPaymentFetch({
-                    project: config.pakasir.slug,
+                    project: config.services.pakasir.slug,
                     amount: price,
                     orderId: randomPart,
-                    apiKey: config.pakasir.apikey,
+                    apiKey: config.services.pakasir.apiKey,
 
                     onPaid: async (trx) => {
                         activeTopups.delete(userId);
@@ -152,10 +152,10 @@ Ketentuan:
 - Item yang sudah dibeli/dibayar tidak dapat dikembalikan
                         `;
 
-                        if (config.bot.tg_newsletterid) {
+                        if (config.tgbot.newsletterId) {
                             try {
                                 await bot.telegram.sendMessage(
-                                    config.bot.tg_newsletterid,
+                                    config.tgbot.newsletterId,
                                     broadcastMessage,
                                     { parse_mode: "Markdown" }
                                 );

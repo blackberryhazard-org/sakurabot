@@ -97,7 +97,7 @@ module.exports = (dependencies) => {
             }
         };
 
-        const newsletterId = config.bot.tg_newsletterid;
+        const newsletterId = config.tgbot.newsletterId;
         const isNewsletterSet = newsletterId && !newsletterId.includes("NEWSLETTER_ID");
 
         if (!isNewsletterSet || userAccess.isOwner(ctx.from.id)) {
@@ -143,13 +143,11 @@ module.exports = (dependencies) => {
         }
     };
 
-    const ruleMiddleware = require("./rule-middleware")(dependencies);
 
     return {
         addUserMiddleware,
         banMiddleware,
         cooldownMiddleware,
         channelSubMiddleware,
-        ruleMiddleware
     };
 };

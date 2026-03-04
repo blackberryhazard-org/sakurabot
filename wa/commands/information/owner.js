@@ -8,7 +8,7 @@ module.exports = {
                 "VERSION:3.0\n" +
                 `FN:${owner.name}\n` +
                 `ORG:${owner.organization || "SakuraBot"};\n` +
-                `TEL;type=CELL;type=VOICE;waid=${owner.id}:+${owner.id}\n` +
+                `TEL;type=CELL;type=VOICE;waid=${owner.whatsappNumber}:+${owner.whatsappNumber}\n` +
                 "END:VCARD";
             return {
                 vcard,

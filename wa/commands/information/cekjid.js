@@ -3,15 +3,30 @@ module.exports = {
     category: "information",
     description: "Cek JID grup atau channel berdasarkan link undangan.",
     code: async (sock, m, { args, ctx }) => {
-        const type = args[0]?.toLowerCase();
-        const link = args[1];
+        let type = args[0]?.toLowerCase();
+        let link = args[1];
 
+        // Regex patterns for validation and extraction
+        const groupRegex = /chat\.whatsapp\.com\/(?:invite\/)?([a-zA-Z0-9_-]+)/i;
+        const channelRegex = /whatsapp\.com\/channel\/([a-zA-Z0-9_-]+)/i;
+
+        // Auto-detection logic: if first argument is a link or only one argument is provided
+        if (!link && type) {
+            if (groupRegex.test(type)) {
+                link = type;
+                type = "group";
+            } else if (channelRegex.test(type)) {
+                link = type;
+                type = "channel";
+            }
+        }
+
+        // Validate mandatory arguments
         if (!type || !["group", "channel"].includes(type) || !link) {
-            return ctx.reply("Penggunaan: /cekjid {group|channel} {link_undangan}");
+            return ctx.reply("Format salah.\n\nPenggunaan:\n- /cekjid group {link_undangan}\n- /cekjid channel {link_undangan}\n- /cekjid {link_undangan}");
         }
 
         if (type === "group") {
-            const groupRegex = /chat\.whatsapp\.com\/([a-zA-Z0-9]+)/;
             const match = link.match(groupRegex);
             const inviteCode = match ? match[1] : link;
 
@@ -28,20 +43,27 @@ module.exports = {
                 return ctx.reply(`❌ Gagal mengambil info grup. Pastikan link valid atau bot tidak diblokir.\nError: ${err.message}`);
             }
         } else if (type === "channel") {
-            const channelRegex = /whatsapp\.com\/channel\/([a-zA-Z0-9]+)/;
             const match = link.match(channelRegex);
             const channelCode = match ? match[1] : link;
 
             try {
                 const data = await sock.newsletterMetadata("invite", channelCode);
+
+                if (!data || typeof data !== 'object') {
+                    throw new Error("Metadata channel tidak ditemukan atau format tidak valid.");
+                }
+
                 const text = "*Informasi Channel* 📢\n\n" +
-                    `➛ *JID*: ${data.id}\n` +
-                    `➛ *Nama*: ${data.name}\n` +
-                    `➛ *Status*: ${data.state}\n` +
+                    `➛ *JID*: ${data.id || "N/A"}\n` +
+                    `➛ *Nama*: ${data.name || "N/A"}\n` +
+                    `➛ *Status*: ${data.state || "N/A"}\n` +
                     `➛ *Pengikut*: ${data.subscribers || "Tidak diketahui"}\n` +
                     `➛ *Deskripsi*: ${data.description || "-"}`;
                 return ctx.reply(text);
             } catch (err) {
+                if (err.message.includes("Unexpected token") || err.message.includes("JSON")) {
+                    return ctx.reply(`❌ Terjadi kesalahan teknis saat parsing data channel. Ini mungkin masalah pada server WhatsApp atau versi library Baileys.\n\nError: ${err.message}`);
+                }
                 return ctx.reply(`❌ Gagal mengambil info channel. Pastikan link valid.\nError: ${err.message}`);
             }
         }

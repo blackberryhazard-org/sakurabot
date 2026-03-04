@@ -172,10 +172,10 @@ module.exports = {
 
             // Send notification to newsletter
             const config = helpers.config;
-            if (config.bot.tg_newsletterid) {
+            if (config.tgbot.newsletterId) {
                 try {
                     await ctx.telegram.sendVideo(
-                        config.bot.tg_newsletterid,
+                        config.tgbot.newsletterId,
                         { url: "https://files.catbox.moe/51ib0k.mp4" },
                         {
                             caption: "⚠️ <b>User Purge Notification</b>\n\n" +

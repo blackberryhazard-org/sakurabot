@@ -58,10 +58,10 @@ module.exports = {
 
         await ctx.reply(`Selamat! Anda berhasil menukarkan kode dan mendapatkan ${rewardMessage}.`);
 
-        if (config.bot.tg_newsletterid) {
+        if (config.tgbot.newsletterId) {
             const notificationText = `<i>${ctx.from.first_name} baru saja menukarkan kode ${code} dan mendapatkan ${rewardMessage}!</i>`;
             try {
-                await bot.telegram.sendMessage(config.bot.tg_newsletterid, notificationText, { parse_mode: "HTML" });
+                await bot.telegram.sendMessage(config.tgbot.newsletterId, notificationText, { parse_mode: "HTML" });
             } catch (e) {
                 console.error(`Gagal mengirim notifikasi redeem: ${e.message}`);
             }

@@ -20,7 +20,7 @@ const registerUser = (db, jid) => {
  */
 const isLeader = (jid) => {
     if (!jid) return false;
-    return config.owner.id === jid.split("@")[0];
+    return config.owner.whatsappNumber === jid.split("@")[0];
 };
 
 /**

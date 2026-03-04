@@ -108,7 +108,7 @@ function generateUID(id, withBotName = true) {
 
     const uniquePart = id.split("").reverse().join("").charCodeAt(0).toString(16);
     let uid = `${Math.abs(hash).toString(16).toLowerCase()}-${uniquePart}`;
-    if (withBotName) uid += `_${formatBotName(config.bot.name)}-wabot`;
+    if (withBotName) uid += `_${formatBotName(config.wabot?.name || "bot")}-wabot`;
 
     return uid;
 }
@@ -120,10 +120,10 @@ function getRandomElement(array) {
 
 function getReportOwner() {
     const owners = [];
-    if (config.owner.report) owners.push(config.owner.id);
+    if (config.owner.report) owners.push(config.owner.whatsappNumber || config.owner.telegramId);
     if (config.owner.co && Array.isArray(config.owner.co)) {
         config.owner.co.forEach(co => {
-            if (co.report === true) owners.push(co.id);
+            if (co.report === true) owners.push(co.whatsappNumber || co.telegramId);
         });
     }
     return owners.length > 0 ? owners : false;
