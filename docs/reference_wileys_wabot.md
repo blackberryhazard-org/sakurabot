@@ -1,58 +1,63 @@
-# Referensi dan Analisis Migrasi ke Wileys (npm:wileys)
+# Dokumen Referensi: Analisis Mendalam Simple-bot-main (Wileys Engine)
 
-Dokumen ini berisi hasil penelitian terhadap source code bot WhatsApp berbasis library **Wileys** dan perbandingannya dengan sistem bot yang saat ini diimplementasikan.
+Dokumen ini menyajikan hasil penelitian menyeluruh terhadap seluruh isi direktori **Simple-bot-main** (karya Fauzialifatah) yang menggunakan library **Wileys** (npm:wileys) sebagai engine utamanya.
 
-## Apa itu Wileys?
+## 1. Arsitektur Engine & Socket (Root & Settings)
 
-Berdasarkan dokumentasi Context7 dan analisis source code:
-- **Wileys** adalah wrapper atau fork dari library Baileys yang dioptimalkan untuk kecepatan dan fitur modern.
-- Mengatasi masalah pemetaan `@lid` ke `@pn` yang sering ditemui pada akun WhatsApp terbaru (khususnya fitur komunitas dan newsletter).
-- Mendukung enkripsi *end-to-end* yang kuat dan performa tinggi.
-- Dalam `package.json` referensi, ia dipasang sebagai alias: `"@whiskeysockets/baileys": "npm:wileys"`.
+Engine utama menggunakan `wileys` yang dipasang melalui alias `@whiskeysockets/baileys`.
 
-## Perbandingan Fitur
+### Fitur Engine Wileys:
+- **Resiliensi Identitas**: Mendukung pemetaan `@lid` ke `@pn` secara native, yang sangat penting untuk kompatibilitas dengan fitur Newsletter dan Community terbaru.
+- **Koneksi Stabil**: Implementasi `msRetryCounterCache` untuk mencegah loop koneksi dan penanganan error `Bad MAC` yang lebih elegan.
+- **Socket Prototype Extension (`index.js`)**: Bot ini menyuntikkan fungsi helper langsung ke objek `conn` (seperti `conn.sendImage`, `conn.sendAudio`, `conn.sendVideo`, `conn.downloadAndSaveMediaMessage`). Ini membuat pemanggilan fungsi media sangat ringkas di level command.
+- **Auto-Restart & Hot-Reload**: Menggunakan `fs.watchFile` pada `index.js` untuk me-restart proses secara otomatis dan `fs.watch` pada folder `cmd/` untuk memuat ulang plugin tanpa mematikan bot.
 
-| Fitur | Bot Saat Ini (Baileys) | Bot Referensi (Wileys) |
-|-------|------------------------|------------------------|
-| **Koneksi** | Standard Baileys socket. | Dioptimalkan dengan default setting untuk stabilitas (msRetryCounterCache). |
-| **Media** | Manual handling via utility. | Memiliki method built-in pada socket (`conn.sendAudio` dengan waveform, `conn.sendImage`). |
-| **Pesan** | Destructuring manual di handler. | Menggunakan sistem serialisasi pesan (`smsg`) yang sangat komprehensif (mirip library robot). |
-| **Plugin** | Modular via dynamic loader. | Dynamic loader dengan fitur hot-reload (`fs.watchFile`) untuk pengembangan real-time. |
-| **ESM Support** | CommonJS. | Full ESM (`type: module`). |
+## 2. Core Logic & Serialization (`source/`)
 
-## Temuan Penting Selama Penelitian
+Bagian ini adalah "otak" arsitektur yang membuat bot ini sangat fleksibel.
 
-1.  **Waveform Audio**: Library atau implementasi bot referensi memiliki generator waveform otomatis untuk pesan audio (`ptt: true`), memberikan tampilan profesional seperti pesan suara asli WhatsApp.
-2.  **Robust Media Downloader**: Terdapat method `downloadAndSaveMediaMessage` yang menangani stream buffer dan deteksi extension secara otomatis menggunakan `file-type`.
-3.  **Hot Reloading**: Bot referensi memantau perubahan file `index.js` dan me-restart proses secara otomatis tanpa bantuan `nodemon` (menggunakan `spawn` internal).
-4.  **LID Handling**: Wileys menangani format ID baru WhatsApp secara transparan, yang sangat penting untuk kompatibilitas jangka panjang seiring WhatsApp beralih dari JID berbasis nomor telepon ke ID unik.
+### Sistem `smsg` (`source/message.js`):
+- Melakukan serialisasi mendalam pada objek pesan Baileys yang kompleks.
+- Menambahkan properti flat seperti `m.chat`, `m.sender`, `m.isGroup`, `m.mtype`, dan `m.body`.
+- Menangani berbagai tipe respon interaktif seperti `interactiveResponseMessage`, `buttonsResponseMessage`, dan `listResponseMessage` secara transparan.
+- Menambahkan method internal ke pesan seperti `m.reply()`, `m.download()`, dan `m.quoted.delete()`.
 
-## Analisis Migrasi: Seberapa Menjanjikan?
+### Self-Modifying Code (`source/events/system.js`):
+- Implementasi sistem yang memungkinkan bot untuk membaca, menambah, dan menghapus kode "case" di dalam file `source/message.js` melalui chat. Ini memungkinkan evolusi fitur bot tanpa akses terminal/SSH.
 
-Migrasi ke Wileys sangat **menjanjikan** karena beberapa alasan:
-1.  **Kompatibilitas**: Wileys dirancang sebagai drop-in replacement untuk Baileys (menggunakan namespace yang sama).
-2.  **Maintenance**: Menangani masalah ID baru WhatsApp yang sering menyebabkan bot Baileys gagal mengidentifikasi pengirim atau target grup.
-3.  **Produktivitas**: Helper media yang lebih kaya akan mengurangi boilerplate code di setiap command.
+### Fake Context & AdReply (`source/quoted.js` & `source/events/_sticker.js`):
+- Memiliki kemampuan untuk membuat "Fake Quoted" (misal: mengutip pesan dari 'Official WhatsApp' atau 'Meta AI').
+- Menggunakan `externalAdReply` secara masif pada setiap pengiriman media untuk meningkatkan aspek visual (thumbnail besar, source URL, dll).
 
-## Rencana Migrasi (Jika Dilakukan)
+## 3. Sistem Plugin & Command (`cmd/`)
 
-Jika kita memutuskan untuk migrasi, langkah-langkahnya adalah:
+Struktur folder `cmd/` dirancang untuk skalabilitas ekstrem.
 
-1.  **Tahap Persiapan**:
-    - Backup seluruh database dan state saat ini.
-    - Ganti dependensi: `npm install @whiskeysockets/baileys@npm:wileys`.
+### Global Hooks (`cmd/events/`):
+- **`_antitoxic.js`**: Menggunakan pola `handler.before` untuk memindai pesan secara global sebelum diproses oleh command. Jika terdeteksi kata kasar, pesan langsung dihapus oleh bot (jika bot adalah admin).
 
-2.  **Tahap Adaptasi Socket**:
-    - Perbarui `wa/index.js` untuk menggunakan konfigurasi socket dari bot referensi (terutama fitur `emitOwnEvents` dan cache retry).
+### Owner Administrative Tools (`cmd/owner/`):
+- **`fixvar.js`**: Alat refactoring massal berbasis Regex untuk mengubah nama variabel di file plugin (misal: dari `sock` ke `conn`). Sangat berguna saat mengadopsi kode dari base lain.
+- **`addplugin.js` / `editplugin.js`**: Fitur untuk menulis kode JavaScript baru langsung melalui WhatsApp.
+- **`logs.js`**: Mengambil output `stdout` dan `stderr` VPS secara real-time menggunakan perintah `tail -n`.
+- **`ping.js` (Dashboard Grafis)**: Menggunakan library `canvas` untuk merender dashboard performa VPS (CPU, RAM, Disk, Latency) menjadi sebuah gambar profesional, bukan sekadar teks.
 
-3.  **Tahap Refaktor Handler**:
-    - Mengintegrasikan sistem serialisasi pesan (`smsg`) agar akses property pesan lebih konsisten (misal: `m.sender`, `m.isGroup`, `m.quoted`).
-    - Porting fungsi `sendAudio` dengan waveform ke dalam helper shared kita di `src/`.
+## 4. Temuan Penting & Teknik "Underground"
 
-4.  **Tahap Pembersihan**:
-    - Menghilangkan utility manual yang sudah dicover oleh method internal Wileys.
-    - Uji coba fungsionalitas grup dan newsletter (cek `@lid` support).
+1.  **Waveform Audio**: Menggunakan `ffmpeg` untuk memproses audio dan menghasilkan visual waveform yang dikirimkan dalam metadata PTT WhatsApp.
+2.  **LID Interaction**: Fungsi `loadConnect` di `myfunc.js` yang memaksa bot mengikuti kanal newsletter tertentu saat berhasil tersambung.
+3.  **Advanced Serialization**: Teknik `m.quoted.fakeObj` di `message.js` yang memungkinkan manipulasi metadata pesan kutipan untuk keperluan proteksi atau estetika.
+4.  **Exif Sticker Manipulation**: Penggunaan library `node-webpmux` untuk menyuntikkan metadata (packname/author) secara dinamis ke dalam file WebP.
+
+## 5. Analisis Strategis & Rencana Migrasi
+
+Migrasi ke arsitektur berbasis Wileys sangat **MENJANJIKAN** karena memberikan stabilitas jangka panjang terhadap update protokol WhatsApp.
+
+### Roadmap Migrasi:
+1.  **Fase 1 (Core)**: Ganti engine ke Wileys dan adaptasi socket extension di `wa/index.js`.
+2.  **Fase 2 (Abstraksi)**: Porting sistem `smsg` ke handler utama untuk menyederhanakan penulisan command.
+3.  **Fase 3 (Visual)**: Implementasi Dashboard VPS berbasis Canvas dan Audio Waveform.
+4.  **Fase 4 (Deployment)**: Mengadopsi sistem Plugin Loader dengan Hot-Reload untuk siklus pengembangan yang lebih cepat.
 
 ## Kesimpulan
-
-Bot referensi menunjukkan bahwa Wileys memberikan lapisan abstraksi yang lebih matang di atas Baileys. Meskipun struktur bot kita saat ini sudah sangat modular dan menggunakan Dependency Injection (DI) yang rapi, mengadopsi Wileys sebagai engine utamanya akan meningkatkan stabilitas bot terhadap update internal WhatsApp.
+Analisis terhadap **Simple-bot-main** menunjukkan bahwa bot ini mengutamakan fleksibilitas dan kecepatan pengembangan di atas segalanya. Meskipun arsitektur SakuraBot saat ini lebih terstruktur (Service-Oriented), mengadopsi fitur-fitur "native-hacker" dari referensi ini akan membuat SakuraBot jauh lebih tangguh dan modern di mata pengguna.
