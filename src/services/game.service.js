@@ -104,7 +104,7 @@ class GameService {
 
         const { data } = await axios.get(gameConfig.url);
         // Using global tools for now as it's injected, but better to move this utility to src/utils
-        const result = global.tools.cmd.getRandomElement(data);
+        const result = require("sawit-utils").getRandomElement(data);
 
         let questionData = {
             name: gameName,

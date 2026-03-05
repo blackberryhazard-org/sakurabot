@@ -1,45 +1,6 @@
-const moment = require("moment-timezone");
-
-function convertMsToDuration(ms) {
-    if (!ms || ms <= 0) return "0 detik";
-
-    const duration = moment.duration(ms);
-    const hasLargerUnits = duration.asSeconds() >= 1;
-
-    const parts = [];
-
-    if (duration.years() > 0) parts.push(`${duration.years()} tahun`);
-    if (duration.months() > 0) parts.push(`${duration.months()} bulan`);
-    if (duration.weeks() > 0) parts.push(`${duration.weeks()} minggu`);
-    if (duration.days() > 0) parts.push(`${duration.days()} hari`);
-    if (duration.hours() > 0) parts.push(`${duration.hours()} jam`);
-    if (duration.minutes() > 0) parts.push(`${duration.minutes()} menit`);
-    if (duration.seconds() > 0) parts.push(`${duration.seconds()} detik`);
-
-    if (!hasLargerUnits && duration.milliseconds() > 0) parts.push(`${duration.milliseconds()} milidetik`);
-
-    return parts.join(" ") || "0 detik";
-}
-
-function formatSize(byteCount, withPerSecond = false) {
-    if (!byteCount) return `0 yBytes${withPerSecond ? "/s" : ""}`;
-
-    let index = 8;
-    let size = byteCount;
-    const bytes = ["yBytes", "zBytes", "aBytes", "fBytes", "pBytes", "nBytes", "µBytes", "mBytes", "Bytes", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"];
-
-    while (size < 1 && index > 0) {
-        size *= 1024;
-        index--;
-    }
-
-    while (size >= 1024 && index < bytes.length - 1) {
-        size /= 1024;
-        index++;
-    }
-
-    return `${size.toFixed(2)} ${bytes[index]}${withPerSecond ? "/s" : ""}`;
-}
+const sawitUtils = require("sawit-utils");
+const convertMsToDuration = sawitUtils.convertMsToDuration;
+const formatSize = sawitUtils.formatSize;
 
 function generateCmdExample(used, args) {
     if (!used || !args) return `${formatter.inlineCode("used")} atau ${formatter.inlineCode("args")} harus diberikan!`;
@@ -101,17 +62,11 @@ function generateNotes(notes) {
         notes.map(note => `- ${note}`).join("\n");
 }
 
-function ucwords(text) {
-    if (!text) return null;
-    return text.toLowerCase().replace(/\b\w/g, txt => txt.toUpperCase());
-}
-
 module.exports = {
     convertMsToDuration,
     formatSize,
     generateCmdExample,
     generateInstruction,
     generatesFlagInfo,
-    generateNotes,
-    ucwords
+    generateNotes
 };

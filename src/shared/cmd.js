@@ -1,5 +1,7 @@
-const utils = require("./utils.js");
-const _axios = require("axios");
+const sawitUtils = require("sawit-utils");
+const delay = sawitUtils.delay;
+const generateUID = sawitUtils.generateUID;
+const isUrl = sawitUtils.isUrl;
 const util = require("node:util");
 
 const MessageType = {
@@ -16,12 +18,6 @@ const Baileys = {
     PSA_WID: "0@s.whatsapp.net",
     S_WHATSAPP_NET: "@s.whatsapp.net",
     didYouMean: () => null
-};
-
-const formatBotName = botName => {
-    if (!botName) return null;
-    botName = botName.toLowerCase();
-    return botName.replace(/[aiueo0-9\W_]/g, "");
 };
 
 function checkMedia(type, required) {
@@ -53,36 +49,7 @@ function checkMedia(type, required) {
 }
 
 function checkQuotedMedia(type, required) {
-    if (!type || !required) return false;
-
-    const mediaMap = {
-        audio: MessageType.audioMessage,
-        document: [MessageType.documentMessage, MessageType.documentWithCaptionMessage],
-        gif: MessageType.videoMessage,
-        image: MessageType.imageMessage,
-        sticker: MessageType.stickerMessage,
-        text: [MessageType.conversation, MessageType.extendedTextMessage],
-        video: MessageType.videoMessage
-    };
-
-    const mediaList = Array.isArray(required) ? required : [required];
-    for (const media of mediaList) {
-        const mappedType = mediaMap[media];
-        if (!mappedType) continue;
-
-        if (Array.isArray(mappedType)) {
-            if (mappedType.includes(type)) return media;
-        } else {
-            if (type === mappedType) return media;
-        }
-    }
-
-    return false;
-}
-
-function delay(ms) {
-    if (!ms) return null;
-    return new Promise(res => setTimeout(res, ms));
+    return checkMedia(type, required);
 }
 
 function fakeQuotedText(text) {
@@ -95,22 +62,6 @@ function fakeQuotedText(text) {
             conversation: text
         }
     };
-}
-
-function generateUID(id, withBotName = true) {
-    if (!id) return null;
-
-    let hash = 0;
-    for (let i = 0; i < id.length; i++) {
-        const charCode = id.charCodeAt(i);
-        hash = (hash * 31 + charCode) % 1000000007;
-    }
-
-    const uniquePart = id.split("").reverse().join("").charCodeAt(0).toString(16);
-    let uid = `${Math.abs(hash).toString(16).toLowerCase()}-${uniquePart}`;
-    if (withBotName) uid += `_${formatBotName(config.wabot?.name || "bot")}-wabot`;
-
-    return uid;
 }
 
 function getRandomElement(array) {
@@ -136,7 +87,7 @@ async function handleError(ctx, error, useAxios = false, reportToOwner = true) {
     const errorText = util.format(error);
     const reportOwner = getReportOwner();
 
-    consolefy.error(`Error: ${errorText}`);
+    if (typeof consolefy !== "undefined" && consolefy.error) consolefy.error(`Error: ${errorText}`); else console.error(`Error: ${errorText}`);
     if (reportToOwner && reportOwner && reportOwner.length > 0) {
         for (const ownerId of reportOwner) {
             if (typeof ctx.replyWithJid === "function") {
@@ -186,11 +137,6 @@ function isCmd(text, ctxBot) {
         didyoumean: mean,
         input
     } : false;
-}
-
-function isUrl(url) {
-    if (!url) return false;
-    return /(https?:\/\/[^\s]+)/g.test(url);
 }
 
 module.exports = {
