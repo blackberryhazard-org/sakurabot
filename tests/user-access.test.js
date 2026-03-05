@@ -5,7 +5,7 @@ describe("UserAccessService", () => {
 
     beforeEach(() => {
         db = {
-            get: jest.fn()
+            get: vi.fn()
         };
         config = {
             owner: {

@@ -6,9 +6,9 @@ describe("TG Middleware", () => {
 
     beforeEach(() => {
         db = {
-            get: jest.fn(),
-            set: jest.fn(),
-            delete: jest.fn()
+            get: vi.fn(),
+            set: vi.fn(),
+            delete: vi.fn()
         };
         config = {
             msg: {
@@ -21,16 +21,16 @@ describe("TG Middleware", () => {
         };
         helpers = {
             userAccess: {
-                isOwner: jest.fn(),
-                isPremium: jest.fn()
+                isOwner: vi.fn(),
+                isPremium: vi.fn()
             },
             economy: {
-                addBalance: jest.fn()
+                addBalance: vi.fn()
             }
         };
         bot = {
             telegram: {
-                sendMessage: jest.fn()
+                sendMessage: vi.fn()
             },
             cmd: new Map([
                 ["kick", { name: "kick" }],
@@ -38,7 +38,7 @@ describe("TG Middleware", () => {
             ])
         };
         userCooldowns = {
-            check: jest.fn()
+            check: vi.fn()
         };
         dependencies = { db, config, helpers, bot, userCooldowns };
 
@@ -46,13 +46,13 @@ describe("TG Middleware", () => {
             from: { id: 123, first_name: "Test" },
             chat: { type: "private" },
             message: { text: "/kick" },
-            reply: jest.fn(),
+            reply: vi.fn(),
             telegram: {
-                getChatMember: jest.fn(),
-                getChat: jest.fn()
+                getChatMember: vi.fn(),
+                getChat: vi.fn()
             }
         };
-        next = jest.fn();
+        next = vi.fn();
     });
 
     test("addUserMiddleware should save user ID", () => {

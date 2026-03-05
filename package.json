@@ -11,7 +11,7 @@
   "scripts": {
     "start": "node .",
     "lint": "eslint .",
-    "test": "jest",
+    "test": "vitest run",
     "check": "npm run lint && npm test"
   },
   "author": "Indra Sah Noeldy (indra87g)",
@@ -36,12 +36,9 @@
     "wa-sticker-formatter": "^4.4.4"
   },
   "devDependencies": {
-    "@babel/core": "^7.29.0",
-    "@babel/preset-env": "^7.29.0",
     "@eslint/js": "^10.0.1",
-    "babel-jest": "^30.2.0",
     "eslint": "^10.0.0",
     "globals": "^17.3.0",
-    "jest": "^30.2.0"
+    "vitest": "^4.0.18"
   }
 }
