@@ -8,7 +8,7 @@ const didyoumean = require("didyoumean");
 const Pakasir = require("pakasir-sdk");
 
 // Import Services & Shared DB
-const { getDb } = require("../src/database");
+const { getDb } = require("../src/shared/database");
 const UserAccessService = require("../src/services/user-access.service");
 const EconomyService = require("../src/services/economy.service");
 const InventoryService = require("../src/services/inventory.service");

@@ -13,7 +13,7 @@ const handler = require("./handler");
 
 // Import Services & Shared DB
 const CooldownService = require("../src/services/cooldown.service");
-const { getDb } = require("../src/database");
+const { getDb } = require("../src/shared/database");
 const UserAccessService = require("../src/services/user-access.service");
 const EconomyService = require("../src/services/economy.service");
 const InventoryService = require("../src/services/inventory.service");
