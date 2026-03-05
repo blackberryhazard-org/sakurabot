@@ -1,8 +1,8 @@
 const tools = {
-    utils: require("./utils.js"),
-    api: require("./utils.js"), // Alias to support tools.api.createUrl
-    cmd: require("./cmd.js"),
-    list: require("./list.js"),
+    utils: require("./shared/utils.js"),
+    api: require("./shared/utils.js"), // Alias to support tools.api.createUrl
+    cmd: require("./shared/cmd.js"),
+    list: require("./shared/list.js"),
     mime: {
         lookup: (ext) => {
             const mimes = {
@@ -18,7 +18,7 @@ const tools = {
             return mimes[ext.toLowerCase()] || "application/octet-stream";
         }
     },
-    msg: require("./msg.js")
+    msg: require("./shared/msg.js")
 };
 
 module.exports = tools;
