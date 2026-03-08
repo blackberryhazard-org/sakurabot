@@ -14,7 +14,7 @@ module.exports = {
         if (!code) return ctx.reply("Please provide code to evaluate.");
 
         try {
-            // eslint-disable-next-line no-eval
+
             let evaled = eval(code);
             if (typeof evaled !== "string") evaled = util.inspect(evaled);
             ctx.reply(`\`\`\`\n${evaled}\n\`\`\``, { parse_mode: "Markdown" });

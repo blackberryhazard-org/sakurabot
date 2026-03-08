@@ -30,7 +30,7 @@
     "pakasir-sdk": "^1.0.5",
     "pino": "^10.3.0",
     "qrcode-terminal": "^0.12.0",
-    "sawit-utils": "^0.1.0",
+    "sawit-utils": "^0.1.1",
     "simpl.db": "^2.13.0",
     "telegraf": "^4.16.3",
     "wa-sticker-formatter": "^4.4.4"
