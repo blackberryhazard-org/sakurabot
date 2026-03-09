@@ -5,7 +5,7 @@ const moment = require("moment-timezone");
 const cron = require("node-cron");
 const archiver = require("archiver");
 const didyoumean = require("didyoumean");
-const Pakasir = require("pakasir-sdk");
+const { Pakasir } = require("pakasir-sdk");
 
 // Import Services & Shared DB
 const { getDb } = require("../src/shared/database");
