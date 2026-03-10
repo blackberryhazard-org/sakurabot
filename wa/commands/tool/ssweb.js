@@ -43,13 +43,13 @@ module.exports = {
             const response = await axios.get(apiUrl, { responseType: "arraybuffer" });
             const ping = Date.now() - start;
 
-            let caption = `📸 *HASIL SCREENSHOT*\n`;
+            let caption = "📸 *HASIL SCREENSHOT*\n";
             caption += `URL: ${url}\n`;
             caption += `Ukuran: ${dimension}\n\n`;
             caption += `Selesai dalam ${ping}ms`;
 
             if (usedUserKey) {
-                caption += `\n\nTerima kasih telah menyediakan key mu sendiri. Ini sangat membantu bagi owner untuk menghemat token penggunaan.`;
+                caption += "\n\nTerima kasih telah menyediakan key mu sendiri. Ini sangat membantu bagi owner untuk menghemat token penggunaan.";
             }
 
             await sock.sendMessage(m.key.remoteJid, { image: Buffer.from(response.data), caption }, { quoted: m });

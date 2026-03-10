@@ -49,7 +49,7 @@ module.exports = {
             try {
                 const data = await sock.newsletterMetadata("invite", channelCode);
 
-                if (!data || typeof data !== 'object') {
+                if (!data || typeof data !== "object") {
                     throw new Error("Metadata channel tidak ditemukan atau format tidak valid.");
                 }
 

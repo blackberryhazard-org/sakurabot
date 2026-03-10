@@ -2,6 +2,7 @@ const util = require("node:util");
 const sawitUtils = require("sawit-utils");
 const formatUptime = sawitUtils.formatUptime;
 const escapeHTML = sawitUtils.escapeHTML;
+const igdl = sawitUtils.igdl;
 
 const APIs = {
     turu: { baseURL: "https://mending-turu.web.id" },
@@ -46,6 +47,7 @@ function listUrl() {
 module.exports = {
     formatUptime,
     escapeHTML,
+    igdl,
     createUrl,
     listUrl
 };

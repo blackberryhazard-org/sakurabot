@@ -5,7 +5,7 @@ const moment = require("moment-timezone");
 const cron = require("node-cron");
 const archiver = require("archiver");
 const didyoumean = require("didyoumean");
-const Pakasir = require("pakasir-sdk");
+const { Pakasir } = require("pakasir-sdk");
 
 // Import Services & Shared DB
 const { getDb } = require("../src/shared/database");
@@ -127,10 +127,10 @@ const launchTelegramBot = async (config, consolefy, tools) => {
                         if (command.aliases) {
                             command.aliases.forEach(alias => {
                                 bot.cmd.set(alias, command);
-                                bot.command(alias, (ctx) => command.code(ctx, helpers));
+                                bot.command(alias, (ctx) => command.code(ctx, { ...helpers, config: appConfig, tools }));
                             });
                         }
-                        bot.command(command.name, (ctx) => command.code(ctx, helpers));
+                        bot.command(command.name, (ctx) => command.code(ctx, { ...helpers, config: appConfig, tools }));
                     }
                 } catch (e) {
                     if (appConsolefy && appConsolefy.error) appConsolefy.error(`Error loading command from ${fullPath}:`, e);
@@ -174,7 +174,7 @@ const launchTelegramBot = async (config, consolefy, tools) => {
     bot.action("back_to_help", async (ctx) => {
         try { await ctx.deleteMessage(); } catch (_e) { /* ignore */ }
         const helpCmd = bot.cmd.get("help");
-        if (helpCmd) return helpCmd.code(ctx, helpers);
+        if (helpCmd) return helpCmd.code(ctx, { ...helpers, config: appConfig, tools });
     });
 
     bot.command("start", async (ctx) => {
