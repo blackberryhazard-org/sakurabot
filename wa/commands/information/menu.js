@@ -5,7 +5,7 @@ const path = require("path");
 module.exports = {
     name: "menu",
     aliases: ["help", "?"],
-    code: async (sock, m, { pushName, prefix, waBot }) => {
+    code: async (sock, m, { pushName, prefix, waBot, config, body }) => {
         const date = moment().tz("Asia/Jakarta").format("dddd, DD MMMM YYYY");
         const time = moment().tz("Asia/Jakarta").format("HH:mm:ss");
         const uptime = global.formatUptime(global.botStartTime);
@@ -24,24 +24,46 @@ module.exports = {
             if (!categories[cmd.category].includes(cmd.name)) categories[cmd.category].push(cmd.name);
         });
 
+        const sortedCategories = Object.keys(categories).sort();
+        const args = body.split(" ");
+        const selectedCategory = args.length > 1 ? args.slice(1).join(" ").toLowerCase() : null;
+
+        if (selectedCategory && categories[selectedCategory]) {
+            let categoryMenu = `— *Category: ${selectedCategory.toUpperCase()}* 👋\n\n`;
+            categories[selectedCategory].sort().forEach(cmd => {
+                categoryMenu += `➛ ${prefix}${cmd}\n`;
+            });
+            return await sock.sendMessage(m.key.remoteJid, {
+                text: categoryMenu
+            }, { quoted: m });
+        }
+
         let menuText = `— Halo, *${pushName}*! 👋\n\n` +
             `➛ *Tanggal*: ${date}\n` +
             `➛ *Waktu*: ${time}\n` +
             `➛ *Uptime*: ${uptime}\n` +
             `➛ *Database*: ${dbSizeFormatted}\n` +
-            "➛ *Library*: Baileys\n\n";
+            "➛ *Library*: @itsliaaa/baileys\n\n" +
+            "Silakan pilih kategori menu di bawah ini:";
 
-        Object.keys(categories).forEach(cat => {
-            menuText += `*${cat.toUpperCase()}*:\n`;
-            categories[cat].sort().forEach(cmd => {
-                menuText += `➛ ${prefix}${cmd}\n`;
-            });
-            menuText += "\n";
-        });
+        const sections = sortedCategories.map(cat => ({
+            title: cat.toUpperCase(),
+            rows: [{
+                title: `Lihat Menu ${cat.toUpperCase()}`,
+                description: `Menampilkan semua perintah dalam kategori ${cat}`,
+                id: `${prefix}menu ${cat}`
+            }]
+        }));
 
         await sock.sendMessage(m.key.remoteJid, {
+            title: "MAIN MENU",
             image: { url: config.wabot.thumbnail },
-            caption: menuText
+            caption: menuText,
+            footer: config.wabot.name || "SakuraBot",
+            list: [{
+                title: "Daftar Kategori",
+                sections
+            }]
         }, { quoted: m });
     }
 };

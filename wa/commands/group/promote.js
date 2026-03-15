@@ -6,7 +6,7 @@ module.exports = {
         botAdmin: true,
         group: true
     },
-    code: async (sock, m, { ctx }) => {
+    code: async (sock, m, { ctx, tools }) => {
         const target = await ctx.target(["quoted", "mentioned"]);
 
         if (!target)
@@ -17,12 +17,12 @@ module.exports = {
                 mentions: ["6281234567891@s.whatsapp.net"]
             });
 
-        if (await ctx.group().isOwner(target)) return await ctx.reply(`ⓘ ${formatter.italic("Dia adalah owner grup!")}`);
+        if (await ctx.group().isAdmin(target)) return await ctx.reply(`ⓘ ${global.formatter.italic("Dia sudah menjadi admin!")}`);
 
         try {
             await ctx.group().promote(target);
 
-            await ctx.reply(`ⓘ ${formatter.italic("Berhasil ditingkatkan dari anggota menjadi admin!")}`);
+            await ctx.reply(`ⓘ ${global.formatter.italic("Berhasil diangkat menjadi admin grup!")}`);
         } catch (error) {
             await tools.cmd.handleError(ctx, error);
         }

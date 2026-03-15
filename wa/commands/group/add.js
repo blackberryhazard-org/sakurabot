@@ -4,10 +4,9 @@ module.exports = {
     permissions: {
         admin: true,
         botAdmin: true,
-        group: true,
-        restrict: true
+        group: true
     },
-    code: async (sock, m, { ctx }) => {
+    code: async (sock, m, { ctx, tools }) => {
         const input = ctx.text || null;
 
         if (!input)
@@ -19,12 +18,12 @@ module.exports = {
         const target = await ctx.target(["text"]);
 
         const isOnWhatsApp = await ctx.core.onWhatsApp(target);
-        if (isOnWhatsApp.length === 0) return await ctx.reply(`ⓘ ${formatter.italic("Akun tidak ada di WhatsApp!")}`);
+        if (isOnWhatsApp.length === 0) return await ctx.reply(`ⓘ ${global.formatter.italic("Akun tidak ada di WhatsApp!")}`);
 
         try {
             await ctx.group().add(target);
 
-            await ctx.reply(`ⓘ ${formatter.italic("Berhasil ditambahkan!")}`);
+            await ctx.reply(`ⓘ ${global.formatter.italic("Berhasil ditambahkan!")}`);
         } catch (error) {
             await tools.cmd.handleError(ctx, error);
         }

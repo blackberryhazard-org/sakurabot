@@ -6,7 +6,7 @@ module.exports = {
         botAdmin: true,
         group: true
     },
-    code: async (sock, m, { ctx }) => {
+    code: async (sock, m, { ctx, tools }) => {
         const input = ctx.text || null;
 
         if (!input)
@@ -14,20 +14,20 @@ module.exports = {
                 `${tools.msg.generateInstruction(["send"], ["text"])}\n` +
                 `${tools.msg.generateCmdExample(ctx.used, "6281234567891")}\n` +
                 tools.msg.generateNotes([
-                    `Ketik ${formatter.inlineCode(`${ctx.used.prefix + ctx.used.command} all`)} untuk menyetujui semua anggota yang tertunda.`
+                    `Ketik ${global.formatter.inlineCode(`${ctx.used.prefix + ctx.used.command} all`)} untuk menyetujui semua anggota yang tertunda.`
                 ])
             );
 
         const pendings = await ctx.group().pendingMembers();
 
         if (input.toLowerCase() === "all") {
-            if (pendings.length === 0) return await ctx.reply(`ⓘ ${formatter.italic("Tidak ada anggota yang menunggu persetujuan.")}`);
+            if (pendings.length === 0) return await ctx.reply(`ⓘ ${global.formatter.italic("Tidak ada anggota yang menunggu persetujuan.")}`);
 
             try {
                 const allJids = pendings.map(pending => pending.jid);
-                await ctx.group().approvePendingMembers(allJids);
+                await ctx.group().approve(allJids);
 
-                return await ctx.reply(`ⓘ ${formatter.italic(`Berhasil menyetujui semua anggota (${allJids.length}).`)}`);
+                return await ctx.reply(`ⓘ ${global.formatter.italic(`Berhasil menyetujui semua anggota (${allJids.length}).`)}`);
             } catch (error) {
                 return await tools.cmd.handleError(ctx, error);
             }
@@ -36,12 +36,12 @@ module.exports = {
         const target = await ctx.target(["text"]);
 
         const isPending = pendings.some(pending => pending.jid === target);
-        if (!isPending) return await ctx.reply(`ⓘ ${formatter.italic("Akun tidak ditemukan di daftar anggota yang menunggu persetujuan.")}`);
+        if (!isPending) return await ctx.reply(`ⓘ ${global.formatter.italic("Akun tidak ditemukan di daftar anggota yang menunggu persetujuan.")}`);
 
         try {
-            await ctx.group().approvePendingMembers(target);
+            await ctx.group().approve(target);
 
-            await ctx.reply(`ⓘ ${formatter.italic("Berhasil disetujui!")}`);
+            await ctx.reply(`ⓘ ${global.formatter.italic("Berhasil disetujui!")}`);
         } catch (error) {
             await tools.cmd.handleError(ctx, error);
         }

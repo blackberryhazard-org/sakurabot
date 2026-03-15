@@ -6,43 +6,39 @@ module.exports = {
         admin: true,
         group: true
     },
-    code: async (sock, m, { ctx }) => {
+    code: async (sock, m, { ctx, tools }) => {
         const input = ctx.text || ctx.quoted?.text || null;
 
-        const [checkMedia, checkQuotedMedia] = [
-            tools.cmd.checkMedia(ctx.msg.messageType, "image", "video"),
-            tools.cmd.checkQuotedMedia(ctx.quoted?.messageType, "image", "video")
-        ];
+        const checkMedia = tools.cmd.checkMedia(ctx.msg.messageType, ["image", "video"]);
+        const checkQuotedMedia = tools.cmd.checkQuotedMedia(ctx.quoted?.messageType, ["image", "video"]);
 
-        const type = checkMedia || checkQuotedMedia;
-
-        if (!input && !type)
+        if (!input && !checkMedia && !checkQuotedMedia)
             return await ctx.reply(
                 `${tools.msg.generateInstruction(["send"], ["text"])}\n` +
                 tools.msg.generateCmdExample(ctx.used, "halo, dunia!")
             );
 
         try {
-            const type = checkMedia || checkQuotedMedia;
             let content;
-            if (["image", "video"].includes(type)) {
-                const buffer = await ctx.msg.download() || await ctx.quoted.download();
+            if (checkMedia || checkQuotedMedia) {
+                const type = (checkMedia || checkQuotedMedia).replace("Message", "");
+                const buffer = await (checkMedia ? ctx.msg.download() : ctx.quoted.download());
                 content = {
                     [type]: buffer,
-                    caption: input
+                    caption: input,
+                    groupStatus: true
                 };
             } else {
                 content = {
-                    text: input
+                    text: input,
+                    groupStatus: true
                 };
             }
-            await ctx.reply({
-                groupStatusMessage: content
-            });
+            await ctx.reply(content);
 
             await ctx.reply("ⓘ Group status berhasil dikirim!");
         } catch (error) {
-            await tools.cmd.handleError(ctx, error, false);
+            await tools.cmd.handleError(ctx, error);
         }
     }
 };

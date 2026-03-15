@@ -6,7 +6,7 @@ module.exports = {
         botAdmin: true,
         group: true
     },
-    code: async (sock, m, { ctx }) => {
+    code: async (sock, m, { ctx, tools }) => {
         const input = ctx.text || null;
 
         if (!input)
@@ -14,7 +14,7 @@ module.exports = {
                 `${tools.msg.generateInstruction(["send"], ["text"])}\n` +
                 `${tools.msg.generateCmdExample(ctx.used, "open")}\n` +
                 tools.msg.generateNotes([
-                    `Ketik ${formatter.inlineCode(`${ctx.used.prefix + ctx.used.command} list`)} untuk melihat daftar.`
+                    `Ketik ${global.formatter.inlineCode(`${ctx.used.prefix + ctx.used.command} list`)} untuk melihat daftar.`
                 ])
             );
 
@@ -25,29 +25,35 @@ module.exports = {
 
         try {
             switch (input.toLowerCase()) {
-            case "open":
-            case "close":
-            case "lock":
-            case "unlock":
-                await ctx.group()[input.toLowerCase()]();
-                break;
-            case "approve":
-                await ctx.group().joinApproval("on");
-                break;
-            case "disapprove":
-                await ctx.group().joinApproval("off");
-                break;
-            case "invite":
-                await ctx.group().membersCanAddMemberMode("on");
-                break;
-            case "restrict":
-                await ctx.group().membersCanAddMemberMode("off");
-                break;
-            default:
-                return await ctx.reply(`ⓘ ${formatter.italic(`Setelan "${input}" tidak valid!`)}`);
+                case "open":
+                    await ctx.group().setting("not_announcement");
+                    break;
+                case "close":
+                    await ctx.group().setting("announcement");
+                    break;
+                case "lock":
+                    await ctx.group().setting("locked");
+                    break;
+                case "unlock":
+                    await ctx.group().setting("unlocked");
+                    break;
+                case "approve":
+                    await ctx.group().joinApprovalMode("on");
+                    break;
+                case "disapprove":
+                    await ctx.group().joinApprovalMode("off");
+                    break;
+                case "invite":
+                    await ctx.group().memberAddMode("all_member_add");
+                    break;
+                case "restrict":
+                    await ctx.group().memberAddMode("admin_add");
+                    break;
+                default:
+                    return await ctx.reply(`ⓘ ${global.formatter.italic(`Setelan "${input}" tidak valid!`)}`);
             }
 
-            await ctx.reply(`ⓘ ${formatter.italic("Berhasil mengubah setelan grup!")}`);
+            await ctx.reply(`ⓘ ${global.formatter.italic("Berhasil mengubah setelan grup!")}`);
         } catch (error) {
             await tools.cmd.handleError(ctx, error);
         }

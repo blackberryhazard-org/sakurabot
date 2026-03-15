@@ -6,19 +6,19 @@ module.exports = {
         botAdmin: true,
         group: true
     },
-    code: async (sock, m, { ctx }) => {
+    code: async (sock, m, { ctx, tools }) => {
         const input = ctx.text || null;
 
         if (!input)
             return await ctx.reply(
                 `${tools.msg.generateInstruction(["send"], ["text"])}\n` +
-                tools.msg.generateCmdExample(ctx.used, "gaxtawu")
+                tools.msg.generateCmdExample(ctx.used, "SakuraBot Group")
             );
 
         try {
-            await ctx.group().updateSubject(input);
+            await ctx.group().setSubject(input);
 
-            await ctx.reply(`ⓘ ${formatter.italic("Berhasil mengubah nama grup!")}`);
+            await ctx.reply(`ⓘ ${global.formatter.italic("Berhasil mengubah nama grup!")}`);
         } catch (error) {
             await tools.cmd.handleError(ctx, error);
         }
