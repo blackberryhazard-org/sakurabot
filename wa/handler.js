@@ -17,7 +17,7 @@ module.exports = async (sock, m, db, waBot, items, services, config, tools, cons
     else if (type === "extendedTextMessage") body = m.message.extendedTextMessage.text;
     else if (type === "imageMessage") body = m.message.imageMessage.caption;
     else if (type === "videoMessage") body = m.message.videoMessage.caption;
-    else if (type === "interactiveResponseMessage") body = JSON.parse(m.message.interactiveResponseMessage.nativeFlowResponseMessage.paramsJson).id;
+    else if (type === "interactiveResponseMessage") body = JSON.parse(m.message.interactiveResponseMessage.nativeFlowResponseMessage.paramsJson).id || JSON.parse(m.message.interactiveResponseMessage.nativeFlowResponseMessage.paramsJson).title;
     body = body || "";
 
     const prefix = config.system.prefix || "/";

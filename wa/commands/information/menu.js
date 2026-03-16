@@ -63,7 +63,8 @@ module.exports = {
             list: [{
                 title: "Daftar Kategori",
                 sections
-            }]
+            }],
+            viewOnce: true
         }, { quoted: m });
     }
 };
