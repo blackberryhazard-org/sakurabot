@@ -46,25 +46,17 @@ module.exports = {
             "➛ *Library*: @itsliaaa/baileys\n\n" +
             "Silakan pilih kategori menu di bawah ini:";
 
-        const sections = sortedCategories.map(cat => ({
-            title: cat.toUpperCase(),
-            rows: [{
-                title: `Lihat Menu ${cat.toUpperCase()}`,
-                description: `Menampilkan semua perintah dalam kategori ${cat}`,
-                id: `${prefix}menu ${cat}`
-            }]
+        // Grouping categories for better organization in nativeFlow
+        const nativeFlow = sortedCategories.map(cat => ({
+            text: cat.toUpperCase(),
+            id: `${prefix}menu ${cat}`
         }));
 
         await sock.sendMessage(m.key.remoteJid, {
-            title: "MAIN MENU",
             image: { url: config.wabot.thumbnail },
             caption: menuText,
             footer: config.wabot.name || "SakuraBot",
-            list: [{
-                title: "Daftar Kategori",
-                sections
-            }],
-            viewOnce: true
+            nativeFlow
         }, { quoted: m });
     }
 };
