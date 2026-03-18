@@ -1,52 +1,31 @@
 const { Telegraf, Markup } = require("telegraf");
-const fs = require("fs");
-const path = require("path");
+const fs = require("node:fs");
+const path = require("node:path");
 const moment = require("moment-timezone");
 const cron = require("node-cron");
 const archiver = require("archiver");
 const didyoumean = require("didyoumean");
 const { Pakasir } = require("pakasir-sdk");
-
-// Import Services & Shared DB
-const { getDb } = require("../src/shared/database");
+const InventoryService = require("../src/services/inventory.service");
 const UserAccessService = require("../src/services/user-access.service");
 const EconomyService = require("../src/services/economy.service");
-const InventoryService = require("../src/services/inventory.service");
-const LinkingService = require("../src/services/linking.service");
-const GameService = require("../src/services/game.service");
-const MiningService = require("../src/services/mining.service");
+const { getDb } = require("../src/shared/database");
 const CooldownService = require("../src/services/cooldown.service");
+const MiningService = require("../src/services/mining.service");
 const levelling = require("../src/services/levelling");
 const items = InventoryService.items_serpulo;
 
-const db = getDb("tg");
-const waDb = getDb("wa");
+const launchTelegramBot = async (appConfig, appConsolefy, tools) => {
+    const db = getDb("tg");
+    const bot = new Telegraf(appConfig.tgbot.botfatherToken);
+    bot.games = new Map();
 
-const userCooldowns = new CooldownService();
-
-const launchTelegramBot = async (config, consolefy, tools) => {
-    const appConfig = config || global.config;
-    const appConsolefy = consolefy || global.consolefy;
-    const { formatUptime } = tools.utils;
-
-    // Initialize database keys
-    const keys = ["users", "premium", "managers", "sakuranite", "inventory", "last_daily", "links", "mining_tickets", "mining_rate"];
-    keys.forEach(key => {
-        if (!db.has(key)) db.set(key, (key === "sakuranite" || key === "inventory" || key === "last_daily" || key === "links" || key === "mining_tickets" || key === "mining_rate") ? {} : []);
-    });
-
-    // Initialize Services
+    const userCooldowns = new CooldownService();
     const userAccess = new UserAccessService(db, appConfig);
     const economy = new EconomyService(db, global.auditLog);
-    const waEconomy = new EconomyService(waDb, global.auditLog);
     const inventoryService = new InventoryService(db);
-    const linking = new LinkingService(db, waDb, economy, waEconomy);
-    const gameService = new GameService(economy);
+    const gameService = tools.game;
     const miningService = new MiningService(economy, inventoryService);
-
-    const token = appConfig.tgbot.botfatherToken;
-    const bot = new Telegraf(token);
-    bot.games = new Map();
 
     const pakasirConfig = appConfig.services?.pakasir;
     const pakasir = pakasirConfig ? new Pakasir({
@@ -58,7 +37,7 @@ const launchTelegramBot = async (config, consolefy, tools) => {
         userAccess,
         economy,
         inventory: inventoryService,
-        linking,
+        linking: tools.linking,
         game: gameService,
         mining: miningService,
         auditLog: global.auditLog,
@@ -192,7 +171,7 @@ const launchTelegramBot = async (config, consolefy, tools) => {
         }
         const date = moment().tz("Asia/Jakarta").format("dddd, DD MMMM YYYY");
         const time = moment().tz("Asia/Jakarta").format("HH:mm:ss");
-        const uptime = formatUptime(global.botStartTime);
+        const uptime = tools.utils.formatUptime(global.botStartTime);
         let dbSize = 0;
         try { dbSize = fs.statSync(path.resolve(__dirname, "../database/tg/database.json")).size; } catch (_e) { /* ignore */ }
         const welcomeText = `— Halo, *${ctx.from.first_name}*! 👋\n\n➛ *Tanggal*: ${date}\n➛ *Waktu*: ${time}\n➛ *Uptime*: ${uptime}\n➛ *Database*: ${(dbSize / 1024).toFixed(2)} KB\n➛ *Library*: Telegraf\n\nType /help to see the list of available commands.`;
