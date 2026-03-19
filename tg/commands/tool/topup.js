@@ -133,20 +133,20 @@ module.exports = {
                         );
 
                         await bot.telegram.sendMessage(userId,
-                            "✅ *PAYMENT CONFIRMED*\n\n" +
+                            "✅ <b>PAYMENT CONFIRMED</b>\n\n" +
                             `${coinAmount} coins have been added to your balance.`,
-                            { parse_mode: "Markdown" }
+                            { parse_mode: "HTML" }
                         );
 
                         const broadcastMessage = `
-✅ TRANSAKSI BERHASIL!
+✅ <b>TRANSAKSI BERHASIL!</b>
 
-ID Transaksi: \`${orderId}\`
+ID Transaksi: <code>${orderId}</code>
 Item: ${coinAmount} Koin SakuraBot
 Harga: Rp${price.toLocaleString("id-ID")}
 Metode: ${trx.payment_method}
 Waktu: ${trx.completed_at}
-Buyer: ${ctx.from.first_name} (\`${userId}\`)
+Buyer: ${ctx.from.first_name} (<code>${userId}</code>)
 
 Ketentuan:
 - Item yang sudah dibeli/dibayar tidak dapat dikembalikan
@@ -157,7 +157,7 @@ Ketentuan:
                                 await bot.telegram.sendMessage(
                                     config.tgbot.newsletterId,
                                     broadcastMessage,
-                                    { parse_mode: "Markdown" }
+                                    { parse_mode: "HTML" }
                                 );
                             } catch (e) {
                                 console.error("Broadcast error:", e);

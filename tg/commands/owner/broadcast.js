@@ -8,8 +8,8 @@ module.exports = {
         const { userAccess, db } = helpers;
         if (!userAccess.isOwner(ctx.from.id)) return;
 
-        const text = ctx.message.text.split(" ").slice(1).join(" ");
-        if (!text) return ctx.reply("❌ Please provide a message to broadcast.");
+        const args = ctx.message.text.split(" ").slice(1).join(" ");
+        if (!args) return ctx.reply("❌ Please provide a message to broadcast.");
 
         const groups = db.get("groups") || [];
         const channels = db.get("channels") || [];
@@ -17,8 +17,8 @@ module.exports = {
         const targets = [...new Set([...groups, ...channels, ...users])];
 
         const time = moment().tz("Asia/Jakarta").format("YYYY-MM-DD HH:mm:ss");
-        const footer = "\n\n––––––『 *BROADCAST* 』––––––\nDate: " + time;
-        const finalMessage = text + footer;
+        const footer = "\n\n––––––『 <b>BROADCAST</b> 』––––––\nDate: " + time;
+        const finalMessage = args + footer;
 
         ctx.reply(`📣 Broadcasting to ${targets.length} targets...`);
 
@@ -27,7 +27,7 @@ module.exports = {
 
         for (const targetId of targets) {
             try {
-                await ctx.telegram.sendMessage(targetId, finalMessage, { parse_mode: "Markdown" });
+                await ctx.telegram.sendMessage(targetId, finalMessage, { parse_mode: "HTML" });
                 success++;
             } catch (e) {
                 failure++;

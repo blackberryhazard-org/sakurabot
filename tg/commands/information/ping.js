@@ -22,21 +22,21 @@ module.exports = {
 
         const waBotStatus = global.botStatus.wa ? "Connected" : "Disconnected";
 
-        const text = "*PONG!* 🏓\n\n" +
-            `➛ *Latency*: ${latency}ms\n` +
-            `➛ *Uptime*: ${uptime}\n` +
-            "➛ *Platform*: Telegram\n" +
-            `➛ *DB Size*: ${(dbSize / 1024).toFixed(2)} KB\n` +
-            `➛ *Memory*: ${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2)} MB\n` +
-            `➛ *WA Bot Status*: ${waBotStatus}\n` +
-            `➛ *Time*: ${moment().tz("Asia/Jakarta").format("YYYY-MM-DD HH:mm:ss")}`;
+        const text = "<b>PONG!</b> 🏓\n\n" +
+            `➛ <b>Latency</b>: ${latency}ms\n` +
+            `➛ <b>Uptime</b>: ${uptime}\n` +
+            "➛ <b>Platform</b>: Telegram\n" +
+            `➛ <b>DB Size</b>: ${(dbSize / 1024).toFixed(2)} KB\n` +
+            `➛ <b>Memory</b>: ${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2)} MB\n` +
+            `➛ <b>WA Bot Status</b>: ${waBotStatus}\n` +
+            `➛ <b>Time</b>: ${moment().tz("Asia/Jakarta").format("YYYY-MM-DD HH:mm:ss")}`;
 
         await ctx.telegram.editMessageText(
             ctx.chat.id,
             sentMessage.message_id,
             null,
             text,
-            { parse_mode: "Markdown" }
+            { parse_mode: "HTML" }
         );
     }
 };

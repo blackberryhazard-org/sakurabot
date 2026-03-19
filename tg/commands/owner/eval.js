@@ -8,18 +8,16 @@ module.exports = {
             return ctx.reply(config.msg.owner);
         }
 
-        const args = ctx.message.text.split(" ").slice(1);
-        const code = args.join(" ");
+        const args = ctx.message.text.split(" ").slice(1).join(" ");
 
-        if (!code) return ctx.reply("Please provide code to evaluate.");
+        if (!args) return ctx.reply("Please provide code to evaluate.");
 
         try {
-
-            let evaled = eval(code);
+            let evaled = eval(args);
             if (typeof evaled !== "string") evaled = util.inspect(evaled);
-            ctx.reply(`\`\`\`\n${evaled}\n\`\`\``, { parse_mode: "Markdown" });
+            ctx.reply(`<pre>${evaled}</pre>`, { parse_mode: "HTML" });
         } catch (err) {
-            ctx.reply(`\`\`\`\n${err}\n\`\`\``, { parse_mode: "Markdown" });
+            ctx.reply(`<pre>${err}</pre>`, { parse_mode: "HTML" });
         }
     }
 };

@@ -5,21 +5,21 @@ module.exports = {
         const owner = config.owner;
         const coOwners = owner.co_owners || [];
 
-        let message = "*Owner Information*\n\n";
-        message += `*Name:* ${owner.name}\n`;
-        message += `*Telegram:* ${owner.telegramUsername}\n`;
-        message += `*Organization:* ${owner.organization}\n`;
+        let message = "<b>Owner Information</b>\n\n";
+        message += `<b>Name:</b> ${owner.name}\n`;
+        message += `<b>Telegram:</b> ${owner.telegramUsername}\n`;
+        message += `<b>Organization:</b> ${owner.organization}\n`;
 
         if (coOwners.length > 0) {
-            message += "\n*Co-Owners*\n";
+            message += "\n<b>Co-Owners</b>\n";
             coOwners.forEach(co => {
-                message += `\n- *Name:* ${co.name}\n`;
+                message += `\n- <b>Name:</b> ${co.name}\n`;
                 if (co.organization) {
-                    message += `  *Organization:* ${co.organization}\n`;
+                    message += `  <b>Organization:</b> ${co.organization}\n`;
                 }
             });
         }
 
-        ctx.reply(message, { parse_mode: "Markdown" });
+        ctx.reply(message, { parse_mode: "HTML" });
     }
 };
