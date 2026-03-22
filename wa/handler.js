@@ -17,11 +17,15 @@ module.exports = async (sock, m, db, waBot, items, services, config, tools, cons
     else if (type === "extendedTextMessage") body = m.message.extendedTextMessage.text;
     else if (type === "imageMessage") body = m.message.imageMessage.caption;
     else if (type === "videoMessage") body = m.message.videoMessage.caption;
+    else if (type === "buttonsResponseMessage") body = m.message.buttonsResponseMessage.selectedButtonId;
+    else if (type === "templateButtonReplyMessage") body = m.message.templateButtonReplyMessage.selectedId;
+    else if (type === "interactiveResponseMessage") body = JSON.parse(m.message.interactiveResponseMessage.nativeFlowResponseMessage.paramsJson).id || JSON.parse(m.message.interactiveResponseMessage.nativeFlowResponseMessage.paramsJson).title;
     body = body || "";
 
     const prefix = config.system.prefix || "/";
     const isCmd = body.startsWith(prefix);
     const commandName = isCmd ? body.slice(prefix.length).trim().split(" ")[0].toLowerCase() : "";
+    const fullCommand = body.trim();
     const args = body.trim().split(/ +/).slice(1);
 
     const getTarget = (m, args, types = ["quoted", "mentioned", "text"]) => {
@@ -85,15 +89,22 @@ module.exports = async (sock, m, db, waBot, items, services, config, tools, cons
             add: async (participantJid) => { if (!jid.endsWith("@g.us")) return false; return await sock.groupParticipantsUpdate(jid, [participantJid], "add"); },
             promote: async (participantJid) => { if (!jid.endsWith("@g.us")) return false; return await sock.groupParticipantsUpdate(jid, [participantJid], "promote"); },
             demote: async (participantJid) => { if (!jid.endsWith("@g.us")) return false; return await sock.groupParticipantsUpdate(jid, [participantJid], "demote"); },
+            isAdmin: async (participantJid) => { if (!jid.endsWith("@g.us")) return false; const metadata = await sock.groupMetadata(jid); return metadata.participants.some(p => p.id === participantJid && p.admin); },
             inviteCode: async () => { if (!jid.endsWith("@g.us")) return null; return await sock.groupInviteCode(jid); },
             members: async () => { if (!jid.endsWith("@g.us")) return []; const metadata = await sock.groupMetadata(jid); return metadata.participants.map(p => ({ ...p, jid: p.id })); },
             pendingMembers: async () => { if (!jid.endsWith("@g.us")) return []; return await sock.groupRequestParticipantsList(jid); },
-            approve: async (participantJid) => { if (!jid.endsWith("@g.us")) return false; return await sock.groupRequestParticipantsUpdate(jid, [participantJid], "approve"); },
-            reject: async (participantJid) => { if (!jid.endsWith("@g.us")) return false; return await sock.groupRequestParticipantsUpdate(jid, [participantJid], "reject"); },
+            approve: async (participantJid) => { if (!jid.endsWith("@g.us")) return false; return await sock.groupRequestParticipantsUpdate(jid, Array.isArray(participantJid) ? participantJid : [participantJid], "approve"); },
+            reject: async (participantJid) => { if (!jid.endsWith("@g.us")) return false; return await sock.groupRequestParticipantsUpdate(jid, Array.isArray(participantJid) ? participantJid : [participantJid], "reject"); },
             setSubject: async (subject) => { if (!jid.endsWith("@g.us")) return false; return await sock.groupUpdateSubject(jid, subject); },
             setDescription: async (description) => { if (!jid.endsWith("@g.us")) return false; return await sock.groupUpdateDescription(jid, description); },
             leave: async () => { if (!jid.endsWith("@g.us")) return false; return await sock.groupLeave(jid); },
-            setting: async (setting) => { if (!jid.endsWith("@g.us")) return false; return await sock.groupSettingUpdate(jid, setting); }
+            setting: async (setting) => { if (!jid.endsWith("@g.us")) return false; return await sock.groupSettingUpdate(jid, setting); },
+            joinApprovalMode: async (mode) => { if (!jid.endsWith("@g.us")) return false; return await sock.groupJoinApprovalMode(jid, mode); },
+            memberAddMode: async (mode) => { if (!jid.endsWith("@g.us")) return false; return await sock.groupMemberAddMode(jid, mode); },
+            toggleEphemeral: async (seconds) => { if (!jid.endsWith("@g.us")) return false; return await sock.groupToggleEphemeral(jid, seconds); },
+            revokeInvite: async () => { if (!jid.endsWith("@g.us")) return null; return await sock.groupRevokeInvite(jid); },
+            updateProfilePicture: async (buffer) => { if (!jid.endsWith("@g.us")) return false; return await sock.updateProfilePicture(jid, { url: buffer }); },
+            removeProfilePicture: async () => { if (!jid.endsWith("@g.us")) return false; return await sock.removeProfilePicture(jid); }
         }),
         text: args.join(" "),
         quoted: m.message[type]?.contextInfo?.quotedMessage ? {
@@ -119,7 +130,7 @@ module.exports = async (sock, m, db, waBot, items, services, config, tools, cons
         updateMiningTickets: (jid, amount) => mining.updateTickets(jid, amount),
         getMiningRate: (jid) => mining.getRate(jid),
         updateMiningRate: (jid, amount) => mining.updateRate(jid, amount),
-        db, waBot, items, downloadContentFromMessage, Sticker, StickerTypes, prefix, pushName, sender, from, args
+        db, waBot, items, downloadContentFromMessage, Sticker, StickerTypes, prefix, pushName, sender, from, args, body
     };
     const activeGame = waBot.games.get(from);
     if (activeGame && !isCmd) {

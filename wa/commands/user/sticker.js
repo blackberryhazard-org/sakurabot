@@ -5,26 +5,17 @@ module.exports = {
     aliases: ["s"],
     category: "user",
     code: async (sock, m, { ctx, config, tools }) => {
-        const checkMedia = [
-            tools.cmd.checkMedia(Object.keys(m.message)[0], ["image", "video"]),
-            tools.cmd.checkMedia(ctx.quoted?.messageType, ["image", "video"])
-        ];
+        const checkMedia = tools.cmd.checkMedia(ctx.msg.messageType, ["image", "video"]);
+        const checkQuotedMedia = tools.cmd.checkQuotedMedia(ctx.quoted?.messageType, ["image", "video"]);
 
-        const checkQuotedMedia = [
-            tools.cmd.checkQuotedMedia(Object.keys(m.message)[0], ["image", "video"]),
-            tools.cmd.checkQuotedMedia(ctx.quoted?.messageType, ["image", "video"])
-        ];
-
-        if (!checkMedia.some(Boolean) && !checkQuotedMedia.some(Boolean)) {
-            // Check if tools.msg exists, otherwise use fallback text
-            const instruction = tools.msg ? tools.msg.generateInstruction(["send", "reply"], ["image", "video"]) : "Send/reply an image or video to create a sticker.";
-            return await ctx.reply(instruction);
+        if (!checkMedia && !checkQuotedMedia) {
+            return await ctx.reply(tools.msg.generateInstruction(["send", "reply"], ["image", "video"]));
         }
 
         await ctx.reply(config.msg.wait);
 
         try {
-            const buffer = await ctx.msg.download() || await ctx.quoted.download();
+            const buffer = await (checkMedia ? ctx.msg.download() : ctx.quoted.download());
             const [packname, author] = ctx.text?.split("|") || [];
 
             const sticker = new Sticker(buffer, {

@@ -5,10 +5,9 @@ module.exports = {
     permissions: {
         admin: true,
         botAdmin: true,
-        group: true,
-        restrict: true
+        group: true
     },
-    code: async (sock, m, { ctx }) => {
+    code: async (sock, m, { ctx, tools }) => {
         const target = await ctx.target(["quoted", "mentioned"]);
 
         if (!target)
@@ -19,12 +18,12 @@ module.exports = {
                 mentions: ["6281234567891@s.whatsapp.net"]
             });
 
-        if (await ctx.group().isOwner(target)) return await ctx.reply(`ⓘ ${formatter.italic("Dia adalah owner grup!")}`);
+        if (await ctx.group().isOwner(target)) return await ctx.reply(`ⓘ ${global.formatter.italic("Dia adalah owner grup!")}`);
 
         try {
             await ctx.group().kick(target);
 
-            await ctx.reply(`ⓘ ${formatter.italic("Berhasil dikeluarkan!")}`);
+            await ctx.reply(`ⓘ ${global.formatter.italic("Berhasil dikeluarkan!")}`);
         } catch (error) {
             await tools.cmd.handleError(ctx, error);
         }

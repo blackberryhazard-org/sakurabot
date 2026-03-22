@@ -4,6 +4,8 @@ const http = require("node:http");
 const path = require("node:path");
 const { Consolefy } = require("consolefy");
 const AuditLogService = require("./src/services/audit-log.service");
+const { downloadContentFromMessage } = require("@whiskeysockets/baileys");
+const { Sticker, StickerTypes } = require("wa-sticker-formatter");
 
 class Config {
     constructor(filePath) {
@@ -62,6 +64,9 @@ try {
         }),
         formatter: Formatter,
         tools: tools,
+        downloadContentFromMessage,
+        Sticker,
+        StickerTypes,
         formatUptime: tools.utils.formatUptime,
         auditLog: new AuditLogService(path.resolve(__dirname, "logs")),
         escapeHTML: tools.utils.escapeHTML,

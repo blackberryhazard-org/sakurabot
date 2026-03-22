@@ -86,11 +86,11 @@ module.exports = (dependencies) => {
                 delete pendingRefs[ctx.from.id];
                 db.set("pending_referrals", pendingRefs);
 
-                economy.addBalance(referrerId, 1000, "sakuranite");
-                economy.addBalance(referrerId, 5, "gacha_tickets");
+                economy.updateBalance(referrerId, 1000, "sakuranite");
+                economy.updateBalance(referrerId, 5, "gacha_tickets");
 
                 try {
-                    await bot.telegram.sendMessage(referrerId, `Congratulations! A user you referred (${ctx.from.first_name}) has successfully joined. You received 1000 Sakuranite and 5 gacha tickets.`);
+                    await bot.telegram.sendMessage(referrerId, `<b>Selamat!</b> Pengguna yang Anda rujuk (<b>${ctx.from.first_name}</b>) telah berhasil bergabung. Anda menerima 1000 Sakuranite dan 5 tiket gacha.`, { parse_mode: "HTML" });
                 } catch (e) {
                     consolefy.error(`Failed to send referral notification to ${referrerId}:`, e);
                 }
@@ -113,7 +113,7 @@ module.exports = (dependencies) => {
             } else {
                 const chat = await ctx.telegram.getChat(newsletterId);
                 const channelLink = chat.username ? `https://t.me/${chat.username}` : "Join via link provided by admin";
-                return ctx.reply(`You must join our channel to use this bot. Please join here: ${channelLink}`);
+                return ctx.reply(`Anda harus bergabung dengan channel kami untuk menggunakan bot ini. Silakan bergabung di sini: ${channelLink}`);
             }
         } catch (error) {
             // Check if it's a 400 error (user not found or bot not admin)
@@ -133,7 +133,7 @@ module.exports = (dependencies) => {
                 try {
                     const chat = await ctx.telegram.getChat(newsletterId);
                     const channelLink = chat.username ? `https://t.me/${chat.username}` : "Join via link provided by admin";
-                    return ctx.reply(`You must join our channel to use this bot. Please join here: ${channelLink}`);
+                    return ctx.reply(`Anda harus bergabung dengan channel kami untuk menggunakan bot ini. Silakan bergabung di sini: ${channelLink}`);
                 } catch (e) {
                     // Ignore
                 }

@@ -1,52 +1,31 @@
 const { Telegraf, Markup } = require("telegraf");
-const fs = require("fs");
-const path = require("path");
+const fs = require("node:fs");
+const path = require("node:path");
 const moment = require("moment-timezone");
 const cron = require("node-cron");
 const archiver = require("archiver");
 const didyoumean = require("didyoumean");
 const { Pakasir } = require("pakasir-sdk");
-
-// Import Services & Shared DB
-const { getDb } = require("../src/shared/database");
+const InventoryService = require("../src/services/inventory.service");
 const UserAccessService = require("../src/services/user-access.service");
 const EconomyService = require("../src/services/economy.service");
-const InventoryService = require("../src/services/inventory.service");
-const LinkingService = require("../src/services/linking.service");
-const GameService = require("../src/services/game.service");
-const MiningService = require("../src/services/mining.service");
+const { getDb } = require("../src/shared/database");
 const CooldownService = require("../src/services/cooldown.service");
+const MiningService = require("../src/services/mining.service");
 const levelling = require("../src/services/levelling");
 const items = InventoryService.items_serpulo;
 
-const db = getDb("tg");
-const waDb = getDb("wa");
+const launchTelegramBot = async (appConfig, appConsolefy, tools) => {
+    const db = getDb("tg");
+    const bot = new Telegraf(appConfig.tgbot.botfatherToken);
+    bot.games = new Map();
 
-const userCooldowns = new CooldownService();
-
-const launchTelegramBot = async (config, consolefy, tools) => {
-    const appConfig = config || global.config;
-    const appConsolefy = consolefy || global.consolefy;
-    const { formatUptime } = tools.utils;
-
-    // Initialize database keys
-    const keys = ["users", "premium", "managers", "sakuranite", "inventory", "last_daily", "links", "mining_tickets", "mining_rate"];
-    keys.forEach(key => {
-        if (!db.has(key)) db.set(key, (key === "sakuranite" || key === "inventory" || key === "last_daily" || key === "links" || key === "mining_tickets" || key === "mining_rate") ? {} : []);
-    });
-
-    // Initialize Services
+    const userCooldowns = new CooldownService();
     const userAccess = new UserAccessService(db, appConfig);
     const economy = new EconomyService(db, global.auditLog);
-    const waEconomy = new EconomyService(waDb, global.auditLog);
     const inventoryService = new InventoryService(db);
-    const linking = new LinkingService(db, waDb, economy, waEconomy);
-    const gameService = new GameService(economy);
+    const gameService = tools.game;
     const miningService = new MiningService(economy, inventoryService);
-
-    const token = appConfig.tgbot.botfatherToken;
-    const bot = new Telegraf(token);
-    bot.games = new Map();
 
     const pakasirConfig = appConfig.services?.pakasir;
     const pakasir = pakasirConfig ? new Pakasir({
@@ -58,7 +37,7 @@ const launchTelegramBot = async (config, consolefy, tools) => {
         userAccess,
         economy,
         inventory: inventoryService,
-        linking,
+        linking: tools.linking,
         game: gameService,
         mining: miningService,
         auditLog: global.auditLog,
@@ -73,6 +52,8 @@ const launchTelegramBot = async (config, consolefy, tools) => {
         updateSakuranite: (id, amount) => economy.updateBalance(id, amount, "sakuranite"),
         getCoins: (id) => economy.getBalance(id, "coins"),
         updateCoins: (id, amount) => economy.updateBalance(id, amount, "coins"),
+        getGachaTickets: (id) => economy.getBalance(id, "gacha_tickets"),
+        updateGachaTickets: (id, amount) => economy.updateBalance(id, amount, "gacha_tickets"),
         getInventory: (id) => inventoryService.getInventory(id),
         updateInventory: (id, item, amount) => inventoryService.addItem(id, item, amount),
         pakasir,
@@ -106,7 +87,7 @@ const launchTelegramBot = async (config, consolefy, tools) => {
                     if (activeGame.timeoutRef) clearTimeout(activeGame.timeoutRef);
                     bot.games.delete(chatId);
                 }
-                return await ctx.reply(result.message, { parse_mode: "Markdown", reply_to_message_id: ctx.message.message_id });
+                return await ctx.reply(result.message, { parse_mode: "HTML", reply_to_message_id: ctx.message.message_id });
             }
         }
         return next();
@@ -150,7 +131,7 @@ const launchTelegramBot = async (config, consolefy, tools) => {
             const allCommands = Array.from(bot.cmd.keys());
             const suggestion = didyoumean(commandMatch, allCommands);
             if (suggestion) {
-                return ctx.reply(`Command */${commandMatch}* tidak ditemukan. Mungkin maksud Anda */${suggestion}*?`, { parse_mode: "Markdown" });
+                return ctx.reply(`Command <b>/${commandMatch}</b> tidak ditemukan. Mungkin maksud Anda <b>/${suggestion}</b>?`, { parse_mode: "HTML" });
             }
         }
         return next();
@@ -160,14 +141,14 @@ const launchTelegramBot = async (config, consolefy, tools) => {
         const categoryName = ctx.match[1];
         const commands = Array.from(bot.cmd.values())
             .filter((cmd, index, self) => cmd.category === categoryName && cmd.name !== undefined && self.findIndex(c => c.name === cmd.name) === index)
-            .map(cmd => `➡️ \`/${cmd.name}\``)
+            .map(cmd => `➡️ <code>/${cmd.name}</code>`)
             .join("\n");
-        const text = `*Kategori: ${categoryName.toUpperCase()}*\n\n${commands || "Tidak ada perintah."}`;
-        try { await ctx.editMessageCaption(text, { parse_mode: "Markdown", ...Markup.inlineKeyboard([[Markup.button.callback("⬅️ Kembali", "back_to_help")]]) }); }
+        const text = `<b>Kategori: ${categoryName.toUpperCase()}</b>\n\n${commands || "Tidak ada perintah."}`;
+        try { await ctx.editMessageCaption(text, { parse_mode: "HTML", ...Markup.inlineKeyboard([[Markup.button.callback("⬅️ Kembali", "back_to_help")]]) }); }
         catch (e) {
             const errText = "Failed to edit message caption";
             if (appConsolefy && appConsolefy.error) appConsolefy.error(errText, e);
-            try { await ctx.editMessageText(text, { parse_mode: "Markdown", ...Markup.inlineKeyboard([[Markup.button.callback("⬅️ Kembali", "back_to_help")]]) }); } catch (_err) { /* ignore */ }
+            try { await ctx.editMessageText(text, { parse_mode: "HTML", ...Markup.inlineKeyboard([[Markup.button.callback("⬅️ Kembali", "back_to_help")]]) }); } catch (_err) { /* ignore */ }
         }
     });
 
@@ -192,12 +173,12 @@ const launchTelegramBot = async (config, consolefy, tools) => {
         }
         const date = moment().tz("Asia/Jakarta").format("dddd, DD MMMM YYYY");
         const time = moment().tz("Asia/Jakarta").format("HH:mm:ss");
-        const uptime = formatUptime(global.botStartTime);
+        const uptime = tools.utils.formatUptime(global.botStartTime);
         let dbSize = 0;
         try { dbSize = fs.statSync(path.resolve(__dirname, "../database/tg/database.json")).size; } catch (_e) { /* ignore */ }
-        const welcomeText = `— Halo, *${ctx.from.first_name}*! 👋\n\n➛ *Tanggal*: ${date}\n➛ *Waktu*: ${time}\n➛ *Uptime*: ${uptime}\n➛ *Database*: ${(dbSize / 1024).toFixed(2)} KB\n➛ *Library*: Telegraf\n\nType /help to see the list of available commands.`;
-        try { await ctx.replyWithPhoto(`https://picsum.photos/500/300?random=${Date.now()}`, { caption: welcomeText, parse_mode: "Markdown" }); }
-        catch (_error) { await ctx.reply(welcomeText, { parse_mode: "Markdown" }); }
+        const welcomeText = `— Halo, <b>${ctx.from.first_name}</b>! 👋\n\n➛ <b>Tanggal</b>: ${date}\n➛ <b>Waktu</b>: ${time}\n➛ <b>Uptime</b>: ${uptime}\n➛ <b>Database</b>: ${(dbSize / 1024).toFixed(2)} KB\n➛ <b>Library</b>: Telegraf\n\nType /help to see the list of available commands.`;
+        try { await ctx.replyWithPhoto(`https://picsum.photos/500/300?random=${Date.now()}`, { caption: welcomeText, parse_mode: "HTML" }); }
+        catch (_error) { await ctx.reply(welcomeText, { parse_mode: "HTML" }); }
     });
 
     bot.on("callback_query", (ctx) => {
@@ -220,10 +201,10 @@ const launchTelegramBot = async (config, consolefy, tools) => {
             const { userId, coinAmount, method } = payload;
             if (method === "stars") {
                 helpers.updateCoins(userId, helpers.getCoins(userId) + coinAmount);
-                await ctx.reply(`✅ *PAYMENT CONFIRMED (Stars)*\n\n${coinAmount} coins have been added to your balance.`, { parse_mode: "Markdown" });
-                const broadcastMessage = `✅ TRANSAKSI BERHASIL (STARS)!\n\nItem: ${coinAmount} Koin SakuraBot\nHarga: ${ctx.message.successful_payment.total_amount} ⭐️\nWaktu: ${moment().tz("Asia/Jakarta").format("YYYY-MM-DD HH:mm:ss")}\nBuyer: ${ctx.from.first_name} (\`${userId}\`)\n\nKetentuan:\n- Item yang sudah dibeli/dibayar tidak dapat dikembalikan`;
+                await ctx.reply(`✅ <b>PAYMENT CONFIRMED (Stars)</b>\n\n${coinAmount} coins have been added to your balance.`, { parse_mode: "HTML" });
+                const broadcastMessage = `✅ TRANSAKSI BERHASIL (STARS)!\n\nItem: ${coinAmount} Koin SakuraBot\nHarga: ${ctx.message.successful_payment.total_amount} ⭐️\nWaktu: ${moment().tz("Asia/Jakarta").format("YYYY-MM-DD HH:mm:ss")}\nBuyer: ${ctx.from.first_name} (<code>${userId}</code>)\n\nKetentuan:\n- Item yang sudah dibeli/dibayar tidak dapat dikembalikan`;
                 if (appConfig.tgbot.newsletterId) {
-                    try { await bot.telegram.sendMessage(appConfig.tgbot.newsletterId, broadcastMessage, { parse_mode: "Markdown" }); } catch (e) {
+                    try { await bot.telegram.sendMessage(appConfig.tgbot.newsletterId, broadcastMessage, { parse_mode: "HTML" }); } catch (e) {
                         if (appConsolefy && appConsolefy.error) appConsolefy.error("Broadcast error:", e);
                         else console.error("Broadcast error:", e);
                     }

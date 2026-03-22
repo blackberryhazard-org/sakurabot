@@ -51,7 +51,7 @@ module.exports = {
                 caption += "\n\nTerima kasih telah menyediakan key mu sendiri. Ini sangat membantu bagi owner untuk menghemat token penggunaan.";
             }
 
-            await ctx.replyWithPhoto({ source: Buffer.from(response.data) }, { caption, parse_mode: "Markdown" });
+            await ctx.replyWithPhoto({ source: Buffer.from(response.data) }, { caption, parse_mode: "HTML" });
         } catch (err) {
             await ctx.reply(`Gagal mengambil screenshot: ${err.message}`);
         }

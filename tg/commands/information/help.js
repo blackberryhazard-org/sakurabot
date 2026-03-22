@@ -29,12 +29,12 @@ module.exports = {
         try {
             await ctx.replyWithPhoto(randomImageUrl, {
                 caption: helpText,
-                parse_mode: "Markdown",
+                parse_mode: "HTML",
                 ...Markup.inlineKeyboard(buttons)
             });
         } catch (_error) {
             await ctx.reply(helpText, {
-                parse_mode: "Markdown",
+                parse_mode: "HTML",
                 ...Markup.inlineKeyboard(buttons)
             });
         }
