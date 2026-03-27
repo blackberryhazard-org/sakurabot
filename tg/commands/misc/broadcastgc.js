@@ -42,14 +42,21 @@ module.exports = {
 
         await ctx.reply(`Starting broadcast to ${groups.length} groups...`);
 
-        for (const groupId of groups) {
-            try {
-                await ctx.telegram.sendMessage(groupId, message, { parse_mode: "HTML" });
-                successCount++;
-            } catch (error) {
-                console.error(`Failed to send message to group ${groupId}:`, error);
-                failureCount++;
-            }
+        const CONCURRENCY_LIMIT = 5;
+        for (let i = 0; i < groups.length; i += CONCURRENCY_LIMIT) {
+            const chunk = groups.slice(i, i + CONCURRENCY_LIMIT);
+            const promises = chunk.map(async (groupId) => {
+                try {
+                    await ctx.telegram.sendMessage(groupId, message, { parse_mode: "HTML" });
+                    successCount++;
+                } catch (error) {
+                    console.error(`Failed to send message to group ${groupId}:`, error);
+                    failureCount++;
+                }
+            });
+
+            // Wait for the current chunk to finish before moving to the next
+            await Promise.all(promises);
         }
 
         let feedback = `Broadcast finished.\n✅ Sent to ${successCount} groups.\n❌ Failed for ${failureCount} groups.`;
