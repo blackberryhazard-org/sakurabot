@@ -57,6 +57,9 @@ module.exports = {
 
             // Wait for the current chunk to finish before moving to the next
             await Promise.all(promises);
+
+            // Rate limiting protection between chunks
+            await new Promise(resolve => setTimeout(resolve, 200));
         }
 
         let feedback = `Broadcast finished.\n✅ Sent to ${successCount} groups.\n❌ Failed for ${failureCount} groups.`;
