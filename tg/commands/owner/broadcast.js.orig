@@ -25,20 +25,15 @@ module.exports = {
         let success = 0;
         let failure = 0;
 
-        const CONCURRENCY_LIMIT = 5;
-        for (let i = 0; i < targets.length; i += CONCURRENCY_LIMIT) {
-            const chunk = targets.slice(i, i + CONCURRENCY_LIMIT);
-            const promises = chunk.map(async (targetId) => {
-                try {
-                    await ctx.telegram.sendMessage(targetId, finalMessage, { parse_mode: "HTML" });
-                    success++;
-                } catch (e) {
-                    failure++;
-                }
-            });
-            await Promise.all(promises);
-
-            await new Promise(resolve => setTimeout(resolve, 200));
+        for (const targetId of targets) {
+            try {
+                await ctx.telegram.sendMessage(targetId, finalMessage, { parse_mode: "HTML" });
+                success++;
+            } catch (e) {
+                failure++;
+            }
+            // Rate limiting protection
+            await new Promise(resolve => setTimeout(resolve, 50));
         }
 
         ctx.reply(`✅ Broadcast finished.\nSuccess: ${success}\nFailure: ${failure}`);

@@ -157,19 +157,15 @@ module.exports = {
             const newUsers = [];
             let purgedCount = 0;
 
-            const CONCURRENCY_LIMIT = 5;
-            for (let i = 0; i < userIds.length; i += CONCURRENCY_LIMIT) {
-                const chunk = userIds.slice(i, i + CONCURRENCY_LIMIT);
-                const promises = chunk.map(async (userId) => {
-                    try {
-                        await ctx.telegram.getChat(userId);
-                        newUsers.push(userId);
-                    } catch (_e) {
-                        purgedCount++;
-                    }
-                });
-                await Promise.all(promises);
-                await new Promise(resolve => setTimeout(resolve, 200));
+            for (const userId of userIds) {
+                try {
+                    await ctx.telegram.getChat(userId);
+                    newUsers.push(userId);
+                    // Sleep 100ms to avoid rate limiting
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                } catch (_e) {
+                    purgedCount++;
+                }
             }
 
             db.set("users", newUsers);

@@ -16,10 +16,15 @@ class UserAccessService {
 
     isLeader(userId) {
         const leaderTele = (this.config.owner.telegramId || "").toString();
-        const leaderWa = (this.config.owner.whatsappNumber || "").toString();
+        const leaderWa = (this.config.owner.whatsappNumber || "").toString().replace(/[^0-9]/g, "");
 
         const cleanId = this.normalizeUserId(userId);
-        return cleanId === leaderTele || cleanId === leaderWa;
+        let altLeaderWa = leaderWa;
+        if (leaderWa.startsWith("0")) {
+            altLeaderWa = "62" + leaderWa.slice(1);
+        }
+
+        return cleanId === leaderTele || cleanId === leaderWa || cleanId === altLeaderWa;
     }
 
     isManager(userId) {

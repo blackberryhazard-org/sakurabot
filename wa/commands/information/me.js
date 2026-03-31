@@ -1,33 +1,37 @@
 module.exports = {
     name: "me",
     aliases: ["profil"],
-    code: async (sock, m, { sender, pushName, isOwner, isPremium, getSakuranite, getInventory, getMiningTickets, getMiningRate, linking }) => {
+    code: async (sock, m, { sender, pushName, isLeader, isManager, isPremium, getCoins, getGachaTickets, getSakuranite, getMiningTickets, getMiningRate, linking }) => {
+        const coins = getCoins(sender);
         const sakuranite = getSakuranite(sender);
-        const inv = getInventory(sender);
+        const tickets = getGachaTickets(sender);
         const miningTickets = getMiningTickets(sender);
         const miningRate = getMiningRate(sender);
-        const role = isOwner(sender) ? "Owner" : (isPremium(sender) ? "Premium" : "User");
 
-        const link = linking.getTgId(sender);
-        const linkStatus = link ? `✅ Terhubung (${link})` : "❌ Tidak Terhubung";
+        let status = "Pengguna";
+        if (isLeader(sender)) status = "Leader";
+        else if (isManager(sender)) status = "Manager";
+        else if (isPremium(sender)) status = "Premium";
 
-        let invText = "";
-        Object.keys(inv).forEach(item => {
-            invText += `➛ *${item}*: ${inv[item]}\n`;
-        });
-        if (!invText) invText = "Kosong\n";
+        const tgId = linking.getTgId(sender);
+        const linkStatus = tgId ? `✅ Terhubung (${tgId})` : "❌ Tidak Terhubung";
 
-        const text = "— *USER INFO* —\n\n" +
-            `➛ *Nama*: ${pushName}\n` +
-            `➛ *Tag*: @${sender.split("@")[0]}\n` +
-            `➛ *Role*: ${role}\n` +
-            `➛ *Sakuranite*: ${sakuranite}\n\n` +
-            "*Mining*:\n" +
-            `➛ *Tiket Mining*: ${miningTickets}\n` +
-            `➛ *Rate Mining*: ${miningRate}\n\n` +
-            "*Integrasi Telegram*:\n" +
-            `➛ *Status*: ${linkStatus}\n\n` +
-            `*Inventory*:\n${invText}`;
+        const text = `👤 *Info Pengguna*
+
+*Nama:* ${pushName}
+*Tag:* @${sender.split("@")[0]}
+*Status:* ${status}
+*Koin:* ${coins}
+*Sakuranite:* ${sakuranite}
+*Tiket Gacha:* ${tickets}
+
+⛏️ *Mining*
+*Tiket Mining:* ${miningTickets}
+*Rate Mining:* ${miningRate}
+
+🔗 *Integrasi Telegram*
+*Status:* ${linkStatus}
+`;
 
         await sock.sendMessage(m.key.remoteJid, {
             text: text,

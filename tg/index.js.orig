@@ -57,7 +57,6 @@ const launchTelegramBot = async (appConfig, appConsolefy, tools) => {
         getInventory: (id) => inventoryService.getInventory(id),
         updateInventory: (id, item, amount) => inventoryService.addItem(id, item, amount),
         pakasir,
-        escapeHTML: tools.utils.escapeHTML,
         db,
         items,
         levelling
