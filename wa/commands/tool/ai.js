@@ -1,4 +1,4 @@
-const NeoxrApi = require('@neoxr/api');
+const axios = require('axios');
 const config = require('../../../config.json');
 
 module.exports = {
@@ -25,16 +25,21 @@ module.exports = {
                 return ctx.reply('API Key Neoxr belum dikonfigurasi di config.json (services.neoxr.apikey).');
             }
 
-            const Api = new NeoxrApi('https://api.neoxr.eu/api', apikey);
-
             await ctx.reply('⏳ Sedang memproses...');
 
-            const json = await Api.neoxr('/gptPro', { "q": query });
+            try {
+                // Use axios as requested
+                const url = `https://api.neoxr.eu/api/gpt-pro?q=${encodeURIComponent(query)}&apikey=${encodeURIComponent(apikey)}`;
+                const response = await axios.get(url);
 
-            if (json && json.status && json.data && json.data.message) {
-                return ctx.reply(json.data.message);
-            } else {
-                return ctx.reply('Gagal mendapatkan respon dari AI. Coba lagi nanti.');
+                if (response.data && response.data.status && response.data.data && response.data.data.message) {
+                    return ctx.reply(response.data.data.message);
+                } else {
+                    return ctx.reply('Gagal mendapatkan respon dari AI. Format tidak sesuai.');
+                }
+            } catch (apiError) {
+                console.error('Neoxr API Error:', apiError.message);
+                return ctx.reply('Terjadi kesalahan saat menghubungi API AI. Coba lagi nanti.');
             }
         } catch (error) {
             console.error('Error in /ai command:', error);
