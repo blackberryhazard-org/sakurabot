@@ -17,6 +17,7 @@
   "author": "Indra Sah Noeldy (indra87g)",
   "license": "MIT",
   "dependencies": {
+    "@neoxr/api": "^1.5.3",
     "@whiskeysockets/baileys": "npm:@itsliaaa/baileys@^0.1.7",
     "archiver": "^7.0.1",
     "axios": "^1.13.2",
