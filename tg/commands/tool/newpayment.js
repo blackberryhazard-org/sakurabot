@@ -1,5 +1,6 @@
 const { Pakasir } = require("pakasir-sdk");
 const config = require("../../../config.json");
+const crypto = require("crypto");
 
 module.exports = {
     name: "newpayment",
@@ -29,8 +30,9 @@ module.exports = {
             // Initialize Pakasir SDK
             const pakasir = new Pakasir({ slug, apikey });
 
-            // Generate a random part for the Order ID
-            const randomPart = `TRX-${Math.floor(10000 + Math.random() * 90000)}${String.fromCharCode(65 + Math.floor(Math.random() * 26))}`;
+            // Generate a secure random part for the Order ID using crypto
+            const randomBytes = crypto.randomBytes(3).toString("hex").toUpperCase();
+            const randomPart = `TRX-${randomBytes}`;
             const orderId = `${randomPart}-${nominal}`; // Embed amount in the order ID
 
             // Create payment
