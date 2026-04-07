@@ -37,7 +37,7 @@ class Config {
         if (missing.length > 0) {
             console.error("\x1b[31m[ERROR] Konfigurasi tidak valid atau belum diset:\x1b[0m");
             missing.forEach(m => console.error(` - ${m}`));
-            console.error("\x1b[33mSilakan periksa config.json dan pastikan semua field wajib telah diisi.\x1b[0m");
+            console.error("\x1b[33mSilakan periksa config.js dan pastikan semua field wajib telah diisi.\x1b[0m");
             process.exit(1);
         }
     }
@@ -54,7 +54,7 @@ global.botStartTime = Date.now();
 const tools = require("./src/exports.js");
 
 try {
-    const configPath = path.resolve(__dirname, "config.json");
+    const configPath = path.resolve(__dirname, "config.js");
     const appConfig = new Config(configPath);
 
     Object.assign(global, {
@@ -194,5 +194,5 @@ const isWaBotConfigValid = wabot && (wabot.usePairingCode ? (wabot.phoneNumber &
 const isTgBotConfigValid = global.config.tgbot && global.config.tgbot.botfatherToken && !global.config.tgbot.botfatherToken.startsWith("BOTFATHER_TOKEN");
 
 if (!isWaBotConfigValid && !isTgBotConfigValid) {
-    global.consolefy.error("Both WhatsApp and Telegram bot configurations are invalid. Check your config.json");
+    global.consolefy.error("Both WhatsApp and Telegram bot configurations are invalid. Check your config.js");
 }

@@ -6,7 +6,7 @@ SakuraBot adalah bot multi-platform (WhatsApp dan Telegram) yang dibangun menggu
 ## Komponen Utama
 1.  **Entry Point (`index.js`)**:
     - Mengatur siklus hidup aplikasi.
-    - Memuat konfigurasi dari `config.json` dan menginisialisasi state global.
+    - Memuat konfigurasi dari `config.js` dan menginisialisasi state global.
     - Meluncurkan adapter untuk masing-masing platform (WA & TG).
     - **Global State Touchpoints**:
         - `global.config`: Akses konfigurasi aplikasi.

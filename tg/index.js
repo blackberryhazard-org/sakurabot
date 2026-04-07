@@ -252,7 +252,7 @@ const launchTelegramBot = async (appConfig, appConsolefy, tools) => {
                 try {
                     await bot.telegram.sendDocument(appConfig.owner.telegramId, { source: outputPath, filename: path.basename(outputPath) });
                     if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
-                    await bot.telegram.sendDocument(appConfig.owner.telegramId, { source: path.resolve(__dirname, "../config.json"), filename: "config.json" });
+                    await bot.telegram.sendDocument(appConfig.owner.telegramId, { source: path.resolve(__dirname, "../config.js"), filename: "config.js" });
                 } catch (error) {
                     if (appConsolefy && appConsolefy.error) appConsolefy.error("Failed to send scheduled backup:", error);
                     else console.error("Failed to send scheduled backup:", error);

@@ -20,7 +20,7 @@ module.exports = {
                 return ctx.reply(`Failed to post testimonial: ${e.message}`);
             }
         } else {
-            return ctx.reply("Telegram newsletter channel ID (<code>newsletterId</code>) is not set in config.json.");
+            return ctx.reply("Telegram newsletter channel ID (<code>newsletterId</code>) is not set in config.js.");
         }
     }
 };

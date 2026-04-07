@@ -1,4 +1,4 @@
-{
+module.exports = {
     "wabot": {
         "name": "BOT_NAME",
         "phoneNumber": "WHATSAPP_PHONE_NUMBER",
