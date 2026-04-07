@@ -1,20 +1,22 @@
 import { spawn } from 'child_process';
 import { fileURLToPath } from 'url';
 import config from './config.js';
-import { createRequire } from 'module';
-
-const require = createRequire(import.meta.url);
-const startTelegramBot = require('./tg/index.js');
+import startTelegramBot from './tg/index.js';
 
 // Start the telegram bot
-startTelegramBot(config);
+try {
+    startTelegramBot(config);
+} catch (error) {
+    console.error("Failed to initialize Telegram Bot:", error);
+}
 
 // Start Starseed (WhatsApp)
 const SETUP_PATH = fileURLToPath(new URL('./socket.js', import.meta.url));
+const CONFIG_PATH = fileURLToPath(new URL('./config.js', import.meta.url));
 
 const StartStarseed = () => {
     const instance = spawn(process.execPath, [
-       '--import', './config.js',
+       '--import', CONFIG_PATH,
        ...process.execArgv,
        SETUP_PATH,
        ...process.argv.slice(2)

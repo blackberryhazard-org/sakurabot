@@ -1,4 +1,4 @@
-const { Telegraf } = require('telegraf');
+import { Telegraf } from 'telegraf';
 
 const startTelegramBot = (config) => {
     if (!config.tgbot || !config.tgbot.botfatherToken || config.tgbot.botfatherToken === "BOTFATHER_TOKEN") {
@@ -28,4 +28,4 @@ const startTelegramBot = (config) => {
     return bot;
 };
 
-module.exports = startTelegramBot;
+export default startTelegramBot;
