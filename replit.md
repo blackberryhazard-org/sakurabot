@@ -8,12 +8,12 @@ SakuraBot is a multi-function WhatsApp and Telegram chatbot that runs both platf
 - `wa/` - WhatsApp bot logic (using @whiskeysockets/baileys)
 - `tg/` - Telegram bot logic (using telegraf)
 - `tools/` - Shared utilities and helper functions
-- `config.json` - Bot configuration (phone number, tokens, system settings)
+- `config.js` - Bot configuration (phone number, tokens, system settings)
 
 ## Key Configuration
 - HTTP keep-alive server enabled on port 5000 (bound to 0.0.0.0)
-- WhatsApp bot requires valid phone number in `config.json`
-- Telegram bot requires valid BotFather token in `config.json`
+- WhatsApp bot requires valid phone number in `config.js`
+- Telegram bot requires valid BotFather token in `config.js`
 
 ## Running
 - Workflow: `node .` starts the bot

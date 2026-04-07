@@ -1,5 +1,5 @@
 const { GoogleGenAI } = require("@google/genai");
-const config = require("../../../config.json");
+const config = require("../../../config.js");
 
 module.exports = {
     name: "gemini",
@@ -22,7 +22,7 @@ module.exports = {
 
             const apikey = config.services?.misc?.gemini;
             if (!apikey || apikey === "your-api-key-here") {
-                return ctx.reply("API Key Gemini belum dikonfigurasi di config.json (services.misc.gemini).");
+                return ctx.reply("API Key Gemini belum dikonfigurasi di config.js (services.misc.gemini).");
             }
 
             await ctx.reply("⏳ Sedang memproses...");

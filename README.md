@@ -13,8 +13,8 @@ Multi-platform Bot (WhatsApp & Telegram) built with Node.js.
 
 ### Persiapan
 1. Pastikan Anda memiliki Node.js v18+.
-2. Salin `config.example.json` menjadi `config.json`.
-3. Isi `config.json` dengan token dan kredensial Anda.
+2. Salin `config.example.js` menjadi `config.js`.
+3. Isi `config.js` dengan token dan kredensial Anda.
 
 ### Instalasi
 ```bash
