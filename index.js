@@ -1,5 +1,6 @@
 import { spawn } from 'child_process';
 import { fileURLToPath } from 'url';
+import path from 'path';
 import config from './config.js';
 import startTelegramBot from './tg/index.js';
 
@@ -11,7 +12,8 @@ try {
 }
 
 // Start Starseed (WhatsApp)
-const SETUP_PATH = fileURLToPath(new URL('./socket.js', import.meta.url));
+const WA_CWD = fileURLToPath(new URL('./wa', import.meta.url));
+const SETUP_PATH = fileURLToPath(new URL('./wa/socket.js', import.meta.url));
 const CONFIG_PATH = fileURLToPath(new URL('./config.js', import.meta.url));
 
 const StartStarseed = () => {
@@ -21,6 +23,7 @@ const StartStarseed = () => {
        SETUP_PATH,
        ...process.argv.slice(2)
     ], {
+       cwd: WA_CWD,
        stdio: ['inherit', 'inherit', 'inherit', 'ipc']
     });
 
