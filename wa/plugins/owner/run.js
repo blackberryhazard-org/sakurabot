@@ -4,13 +4,16 @@ import { format } from 'util'
 export default {
    command: ['run'],
    category: 'owner',
-   async run(m, { isPrefix, command, args, text }) {
-      if (!args.length) {
+   async run(m, { isPrefix, command, text }) {
+      const trimmed = text.trimStart()
+      const firstSpace = trimmed.indexOf(' ')
+
+      if (firstSpace === -1) {
          return m.reply(`👉🏻 *Example*:\n${isPrefix + command} code console.log('hello')\n${isPrefix + command} shell ls -la`)
       }
 
-      const type = args[0].toLowerCase()
-      const content = text.slice(type.length).trim()
+      const type = trimmed.slice(0, firstSpace).toLowerCase()
+      const content = trimmed.slice(firstSpace + 1).trimStart()
 
       if (!content) {
          return m.reply(`👉🏻 *Example*:\n${isPrefix + command} code console.log('hello')\n${isPrefix + command} shell ls -la`)
@@ -18,14 +21,26 @@ export default {
 
       if (type === 'code') {
          try {
-            let evaled = await eval(`(async () => { ${content} })()`)
+            // Attempt to wrap as return if it's an expression
+            let codeToEval = content
+            if (!content.includes('return') && !content.includes('await')) {
+               codeToEval = `return ${content}`
+            }
+            let evaled = await eval(`(async () => { ${codeToEval} })()`)
             if (typeof evaled !== 'string') evaled = format(evaled)
             m.reply(`*RESULT*\n\n\`\`\`${evaled}\`\`\``)
          } catch (e) {
-            m.reply(`*ERROR*\n\n\`\`\`${format(e)}\`\`\``)
+            // Fallback if the return wrapping failed (e.g. for variable declarations)
+            try {
+               let evaled = await eval(`(async () => { ${content} })()`)
+               if (typeof evaled !== 'string') evaled = format(evaled)
+               m.reply(`*RESULT*\n\n\`\`\`${evaled}\`\`\``)
+            } catch (err) {
+               m.reply(`*ERROR*\n\n\`\`\`${format(err)}\`\`\``)
+            }
          }
       } else if (type === 'shell') {
-         exec(content, (err, stdout, stderr) => {
+         exec(content, { timeout: 30000, maxBuffer: 5 * 1024 * 1024 }, (err, stdout, stderr) => {
             if (err) return m.reply(`*ERROR*\n\n\`\`\`${format(err)}\`\`\``)
             if (stderr) return m.reply(`*STDERR*\n\n\`\`\`${stderr}\`\`\``)
             m.reply(`*STDOUT*\n\n\`\`\`${stdout}\`\`\``)
