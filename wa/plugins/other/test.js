@@ -11,7 +11,7 @@ const getPingEmojis = (ms) => {
 }
 
 export default {
-   command: ['disk', 'ping', 'ram', 'run', 'server', 'statistic'],
+   command: ['disk', 'ping', 'ram', 'runtime', 'server', 'statistic'],
    category: 'other',
    async run (m, {
       setting,
@@ -34,7 +34,7 @@ export default {
       }
       else if (command === 'ram')
          m.reply('💾 *RAM Usage*: ' + formatSize(process.memoryUsage().rss) + ' / ' + formatSize(totalmem()))
-      else if (command === 'run')
+      else if (command === 'runtime')
          m.reply('🕒 *Runtime*: ' + toTime(process.uptime() * SECOND))
       else if (command === 'server') {
          const cpu = cpus()
