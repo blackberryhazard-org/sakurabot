@@ -3,43 +3,23 @@
   "version": "0.1.0",
   "description": "Super Useless WhatsApp Bot",
   "main": "index.js",
-  "directories": {
-    "commands": "commands",
-    "events": "events",
-    "tools": "tools"
-  },
+  "type": "module",
   "scripts": {
-    "start": "node .",
-    "lint": "eslint .",
-    "test": "vitest run",
-    "check": "npm run lint && npm test"
+    "start": "NODE_ENV=production MALLOC_ARENA_MAX=2 node --max-old-space-size=320 --expose-gc index.js"
   },
-  "author": "Indra Sah Noeldy (indra87g)",
-  "license": "MIT",
   "dependencies": {
     "@google/genai": "^1.48.0",
-    "@whiskeysockets/baileys": "npm:@itsliaaa/baileys@^0.1.7",
-    "archiver": "^7.0.1",
-    "axios": "^1.13.2",
-    "consolefy": "^1.0.3",
-    "didyoumean": "^1.2.2",
-    "jimp": "^1.6.0",
-    "link-preview-js": "^3.2.0",
-    "moment-timezone": "^0.6.0",
-    "node-cron": "^3.0.3",
-    "node-fetch": "^2.7.0",
-    "pakasir-sdk": "^1.0.5",
-    "pino": "^10.3.0",
-    "qrcode-terminal": "^0.12.0",
-    "sawit-utils": "^0.1.1",
-    "simpl.db": "^2.13.0",
+    "@hapi/boom": "^10.0.1",
+    "@itsliaaa/baileys": "^0.1.16",
+    "@napi-rs/image": "^1.12.0",
+    "awesome-phonenumber": "~2.59.0",
+    "fflate": "^0.8.2",
+    "file-type": "21.3.4",
+    "lru-cache": "^11.3.2",
+    "p-queue": "^9.1.2",
+    "pino": "^10.3.1",
+    "qrcode": "~1.5.4",
     "telegraf": "^4.16.3",
-    "wa-sticker-formatter": "^4.4.4"
-  },
-  "devDependencies": {
-    "@eslint/js": "^10.0.1",
-    "eslint": "^10.0.0",
-    "globals": "^17.3.0",
-    "vitest": "^4.0.18"
+    "yt-search": "^2.13.1"
   }
 }
