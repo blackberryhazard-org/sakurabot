@@ -1,4 +1,4 @@
-import { isMimeAudio, isMimeVideo } from '../../lib/Utilities.js'
+import { isMimeAudio, isMimeVideo } from '../../../src/lib/Utilities.js'
 
 export default {
    command: ['toaudio', 'tovn'],

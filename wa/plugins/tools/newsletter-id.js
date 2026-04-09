@@ -1,5 +1,5 @@
-import { NEWSLETTER_URL_REGEX } from '../../lib/Constants.js'
-import { fetchAsBuffer, formatNumber, frame, greeting } from '../../lib/Utilities.js'
+import { NEWSLETTER_URL_REGEX } from '../../../src/lib/Constants.js'
+import { fetchAsBuffer, formatNumber, frame, greeting } from '../../../src/lib/Utilities.js'
 
 export default {
    command: 'channelid',

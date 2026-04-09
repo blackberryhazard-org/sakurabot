@@ -1,4 +1,4 @@
-import { isMimeAudio, isMimeImage, randomHex } from '../../lib/Utilities.js'
+import { isMimeAudio, isMimeImage, randomHex } from '../../../src/lib/Utilities.js'
 
 export default {
    command: ['closegc', 'opengc', 'delete', 'setgcdesc', 'setgcname', 'setgcpp', 'setleft', 'setwelcome', 'upgcsw'],

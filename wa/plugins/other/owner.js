@@ -1,4 +1,4 @@
-import { OWNER_VCARD } from '../../lib/Constants.js'
+import { OWNER_VCARD } from '../../../src/lib/Constants.js'
 
 export default {
    command: 'owner',

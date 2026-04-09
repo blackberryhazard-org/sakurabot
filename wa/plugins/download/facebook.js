@@ -1,5 +1,5 @@
-import { nexray } from '../../lib/Request.js'
-import { isURL } from '../../lib/Utilities.js'
+import { nexray } from '../../../src/lib/Request.js'
+import { isURL } from '../../../src/lib/Utilities.js'
 
 export default {
    command: ['facebook', 'fbmp3', 'fbvn'],

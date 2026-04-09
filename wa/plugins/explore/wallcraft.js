@@ -1,5 +1,5 @@
-import { nexray } from '../../lib/Request.js'
-import { frame } from '../../lib/Utilities.js'
+import { nexray } from '../../../src/lib/Request.js'
+import { frame } from '../../../src/lib/Utilities.js'
 
 export default {
    command: 'wallcraft',

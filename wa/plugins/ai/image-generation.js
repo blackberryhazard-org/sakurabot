@@ -1,5 +1,5 @@
-import { nekolabs } from '../../lib/Request.js'
-import { resizeImage } from '../../lib/Utilities.js'
+import { nekolabs } from '../../../src/lib/Request.js'
+import { resizeImage } from '../../../src/lib/Utilities.js'
 
 export default {
    command: ['animagine', 'cartoony', 'dreamshaper', 'newreality'],

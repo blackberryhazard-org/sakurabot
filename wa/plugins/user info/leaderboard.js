@@ -1,6 +1,6 @@
 import { areJidsSameUser } from '@itsliaaa/baileys'
 
-import { frame, medal } from '../../lib/Utilities.js'
+import { frame, medal } from '../../../src/lib/Utilities.js'
 
 export default {
    command: ['limit', 'leaderboard'],

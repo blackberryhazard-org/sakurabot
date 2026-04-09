@@ -1,4 +1,4 @@
-import { isMimeAudio, randomHex } from '../../lib/Utilities.js'
+import { isMimeAudio, randomHex } from '../../../src/lib/Utilities.js'
 
 export default {
    command: 'upsw',

@@ -1,7 +1,7 @@
 import { isJidNewsletter } from '@itsliaaa/baileys'
 
-import { zenzxz } from '../../lib/Request.js'
-import { fetchAsBuffer } from '../../lib/Utilities.js'
+import { zenzxz } from '../../../src/lib/Request.js'
+import { fetchAsBuffer } from '../../../src/lib/Utilities.js'
 
 export default {
    command: 'suno',

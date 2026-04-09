@@ -1,5 +1,5 @@
-import { meloboom } from '../../lib/Scraper.js'
-import { frame } from '../../lib/Utilities.js'
+import { meloboom } from '../../../src/lib/Scraper.js'
+import { frame } from '../../../src/lib/Utilities.js'
 
 export default {
    command: 'meloboom',

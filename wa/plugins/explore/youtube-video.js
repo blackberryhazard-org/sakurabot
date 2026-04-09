@@ -1,6 +1,6 @@
 import ytsearch from 'yt-search'
 
-import { nexray } from '../../lib/Request.js'
+import { nexray } from '../../../src/lib/Request.js'
 
 export default {
    command: ['playvideo', 'ptv'],

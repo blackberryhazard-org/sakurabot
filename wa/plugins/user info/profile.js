@@ -1,6 +1,6 @@
 import { areJidsSameUser } from '@itsliaaa/baileys'
 
-import { fetchAsBuffer, frame, greeting } from '../../lib/Utilities.js'
+import { fetchAsBuffer, frame, greeting } from '../../../src/lib/Utilities.js'
 
 export default {
    command: 'profile',

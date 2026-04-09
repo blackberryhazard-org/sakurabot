@@ -1,4 +1,4 @@
-import { frame, isURL, isWhatsAppURL } from '../../lib/Utilities.js'
+import { frame, isURL, isWhatsAppURL } from '../../../src/lib/Utilities.js'
 
 export const handleWarning = async (m, {
    sock,

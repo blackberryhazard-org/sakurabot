@@ -1,7 +1,7 @@
 import { hostname, cpus, totalmem, freemem, platform, arch, release, uptime } from 'os'
 
-import { SECOND } from '../../lib/Constants.js'
-import { fetchThumbnail, formatNumber, formatSize, formatTime, frame, getDiskStats, greeting, toTime } from '../../lib/Utilities.js'
+import { SECOND } from '../../../src/lib/Constants.js'
+import { fetchThumbnail, formatNumber, formatSize, formatTime, frame, getDiskStats, greeting, toTime } from '../../../src/lib/Utilities.js'
 
 const getPingEmojis = (ms) => {
    if (ms < 30) return '🚀'

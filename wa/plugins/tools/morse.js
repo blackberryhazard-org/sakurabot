@@ -1,4 +1,4 @@
-import { DE_MORSE, MORSE } from '../../lib/Constants.js'
+import { DE_MORSE, MORSE } from '../../../src/lib/Constants.js'
 
 export default {
    command: ['morse', 'dmorse'],

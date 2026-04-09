@@ -1,5 +1,5 @@
-import { deline } from '../../lib/Request.js'
-import { frame } from '../../lib/Utilities.js'
+import { deline } from '../../../src/lib/Request.js'
+import { frame } from '../../../src/lib/Utilities.js'
 
 export default {
    command: 'lyric',

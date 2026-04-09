@@ -1,4 +1,4 @@
-import { zenzxz } from '../../lib/Request.js'
+import { zenzxz } from '../../../src/lib/Request.js'
 
 export default {
    command: 'fakedana',

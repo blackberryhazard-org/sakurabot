@@ -1,4 +1,4 @@
-import { isMimeWebP, isMimeAudio } from '../../lib/Utilities.js'
+import { isMimeWebP, isMimeAudio } from '../../../src/lib/Utilities.js'
 
 export default {
    command: 'rvo',

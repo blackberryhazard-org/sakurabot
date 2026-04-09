@@ -1,4 +1,4 @@
-import { parseCommand } from '../../lib/Serialize.js'
+import { parseCommand } from '../../../src/lib/Serialize.js'
 
 export default {
    command: ['+cmdstic', '-cmdstic'],

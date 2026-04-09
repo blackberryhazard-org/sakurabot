@@ -1,4 +1,4 @@
-import { frame } from '../../lib/Utilities.js'
+import { frame } from '../../../src/lib/Utilities.js'
 
 export default {
    command: 'gclink',

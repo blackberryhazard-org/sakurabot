@@ -1,4 +1,4 @@
-import AntiSpam from '../../lib/Components/AntiSpam.js'
+import AntiSpam from '../../../src/lib/Components/AntiSpam.js'
 
 import { handleWarning } from './_anti-link.js'
 

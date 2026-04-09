@@ -1,5 +1,5 @@
-import { catbox, uguu } from '../../lib/Scraper.js'
-import { frame } from '../../lib/Utilities.js'
+import { catbox, uguu } from '../../../src/lib/Scraper.js'
+import { frame } from '../../../src/lib/Utilities.js'
 
 export default {
    command: 'tourl',

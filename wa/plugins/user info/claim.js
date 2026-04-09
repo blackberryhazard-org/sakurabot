@@ -1,5 +1,5 @@
-import { HOUR } from '../../lib/Constants.js'
-import { randomInteger, toTime } from '../../lib/Utilities.js'
+import { HOUR } from '../../../src/lib/Constants.js'
+import { randomInteger, toTime } from '../../../src/lib/Utilities.js'
 
 export default {
    command: 'claim',

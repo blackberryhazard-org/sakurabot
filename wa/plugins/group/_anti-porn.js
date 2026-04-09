@@ -1,6 +1,6 @@
-import { isMimeImage, isMimeVideo, isMimeWebP, persistToFile, resizeImage } from '../../lib/Utilities.js'
+import { isMimeImage, isMimeVideo, isMimeWebP, persistToFile, resizeImage } from '../../../src/lib/Utilities.js'
 
-import SightEngine from '../../lib/Components/SightEngine.js'
+import SightEngine from '../../../src/lib/Components/SightEngine.js'
 
 import { handleWarning } from './_anti-link.js'
 
