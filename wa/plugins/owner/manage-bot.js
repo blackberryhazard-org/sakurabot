@@ -4,9 +4,9 @@ import { createWriteStream, createReadStream } from 'fs'
 import { mkdir, readdir, readFile, rename, unlink, writeFile } from 'fs/promises'
 import { basename, dirname, join, relative, resolve } from 'path'
 
-import { AVAILABLE_MODELS } from '../../../src/lib/Constants.js'
-import { createFileName, isMimeAudio, isMimeImage, persistToFile, resizeImage, toArray } from '../../../src/lib/Utilities.js'
-import { ModuleCache } from '../../../src/lib/Watcher.js'
+import { AVAILABLE_MODELS } from '../../lib/Constants.js'
+import { createFileName, isMimeAudio, isMimeImage, persistToFile, resizeImage, toArray } from '../../lib/Utilities.js'
+import { ModuleCache } from '../../lib/Watcher.js'
 
 const TOP_PATH = 'starseed-main/'
 

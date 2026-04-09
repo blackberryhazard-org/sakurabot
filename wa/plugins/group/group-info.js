@@ -1,4 +1,4 @@
-import { fetchAsBuffer, frame, greeting } from '../../../src/lib/Utilities.js'
+import { fetchAsBuffer, frame, greeting } from '../../lib/Utilities.js'
 
 export default {
    command: 'gcinfo',

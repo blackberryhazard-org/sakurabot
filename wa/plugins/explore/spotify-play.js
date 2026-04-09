@@ -1,7 +1,7 @@
 import { isJidNewsletter } from '@itsliaaa/baileys'
 
-import { zenzxz } from '../../../src/lib/Request.js'
-import { fetchAsBuffer, frame, toTime } from '../../../src/lib/Utilities.js'
+import { zenzxz } from '../../lib/Request.js'
+import { fetchAsBuffer, frame, toTime } from '../../lib/Utilities.js'
 
 export default {
    command: 'spotplay',

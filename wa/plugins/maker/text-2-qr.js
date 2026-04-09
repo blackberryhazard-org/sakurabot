@@ -1,4 +1,4 @@
-import { faa } from '../../../src/lib/Request.js'
+import { faa } from '../../lib/Request.js'
 
 export default {
    command: 'text2qr',

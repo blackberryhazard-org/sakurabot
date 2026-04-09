@@ -1,4 +1,4 @@
-import { isMimeImage, isMimeVideo, isMimeWebP } from '../../../src/lib/Utilities.js'
+import { isMimeImage, isMimeVideo, isMimeWebP } from '../../lib/Utilities.js'
 
 export default {
    async run(m, {

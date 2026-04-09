@@ -1,7 +1,7 @@
 import { hostname, cpus, totalmem, freemem, platform, arch, release, uptime } from 'os'
 
-import { SECOND } from '../../../src/lib/Constants.js'
-import { fetchThumbnail, formatNumber, formatSize, formatTime, frame, getDiskStats, greeting, toTime } from '../../../src/lib/Utilities.js'
+import { SECOND } from '../../lib/Constants.js'
+import { fetchThumbnail, formatNumber, formatSize, formatTime, frame, getDiskStats, greeting, toTime } from '../../lib/Utilities.js'
 
 const getPingEmojis = (ms) => {
    if (ms < 30) return '🚀'
@@ -11,7 +11,7 @@ const getPingEmojis = (ms) => {
 }
 
 export default {
-   command: ['disk', 'ping', 'ram', 'runtime', 'server', 'statistic'],
+   command: ['disk', 'ping', 'ram', 'run', 'server', 'statistic'],
    category: 'other',
    async run (m, {
       setting,
@@ -34,7 +34,7 @@ export default {
       }
       else if (command === 'ram')
          m.reply('💾 *RAM Usage*: ' + formatSize(process.memoryUsage().rss) + ' / ' + formatSize(totalmem()))
-      else if (command === 'runtime')
+      else if (command === 'run')
          m.reply('🕒 *Runtime*: ' + toTime(process.uptime() * SECOND))
       else if (command === 'server') {
          const cpu = cpus()

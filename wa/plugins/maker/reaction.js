@@ -1,5 +1,5 @@
-import { REACTION_TEXTS } from '../../../src/lib/Constants.js'
-import { request } from '../../../src/lib/Request.js'
+import { REACTION_TEXTS } from '../../lib/Constants.js'
+import { request } from '../../lib/Request.js'
 
 export default {
    command: Object.keys(REACTION_TEXTS),

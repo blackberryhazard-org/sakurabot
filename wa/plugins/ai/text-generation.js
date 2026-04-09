@@ -1,4 +1,4 @@
-import { nexray } from '../../../src/lib/Request.js'
+import { nexray } from '../../lib/Request.js'
 
 export default {
    command: ['ai', 'claude', 'copilot', 'deepsearch', 'deepseek', 'dgaf', 'dolphin', 'dreamanalyze', 'gita', 'glm', 'hammer', 'nexray', 'perplexity'],

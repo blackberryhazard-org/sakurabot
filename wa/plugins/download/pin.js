@@ -1,4 +1,4 @@
-import { nekolabs } from '../../../src/lib/Request.js'
+import { nekolabs } from '../../lib/Request.js'
 
 export default {
    command: 'pin',

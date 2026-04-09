@@ -1,5 +1,5 @@
-import { stickerLy } from '../../../src/lib/Scraper.js'
-import { createSticker, frame, shuffleArray } from '../../../src/lib/Utilities.js'
+import { stickerLy } from '../../lib/Scraper.js'
+import { createSticker, frame, shuffleArray } from '../../lib/Utilities.js'
 
 export default {
    command: 'stickerly',

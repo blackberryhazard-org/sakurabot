@@ -1,6 +1,6 @@
-import { faa } from '../../../src/lib/Request.js'
-import { uguu } from '../../../src/lib/Scraper.js'
-import { isMimeImage } from '../../../src/lib/Utilities.js'
+import { faa } from '../../lib/Request.js'
+import { uguu } from '../../lib/Scraper.js'
+import { isMimeImage } from '../../lib/Utilities.js'
 
 export default {
    command: 'qr2text',

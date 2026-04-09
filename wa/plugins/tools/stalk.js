@@ -1,5 +1,5 @@
-import { zenzxz } from '../../../src/lib/Request.js'
-import { fetchAsBuffer, formatNumber, formatTime, frame } from '../../../src/lib/Utilities.js'
+import { zenzxz } from '../../lib/Request.js'
+import { fetchAsBuffer, formatNumber, formatTime, frame } from '../../lib/Utilities.js'
 
 export default {
    command: ['dcstalk', 'ffstalk', 'igstalk', 'robloxstalk', 'ttstalk'],

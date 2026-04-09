@@ -1,8 +1,8 @@
 import { isJidNewsletter } from '@itsliaaa/baileys'
 import ytsearch from 'yt-search'
 
-import { nexray } from '../../../src/lib/Request.js'
-import { fetchAsBuffer, formatNumber, frame, isMimeAudio, isMimeWebP } from '../../../src/lib/Utilities.js'
+import { nexray } from '../../lib/Request.js'
+import { fetchAsBuffer, formatNumber, frame, isMimeAudio, isMimeWebP } from '../../lib/Utilities.js'
 
 import { isMeNewsletterAdmin } from '../owner/manage-newsletter.js'
 

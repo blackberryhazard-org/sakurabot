@@ -1,4 +1,4 @@
-import { isMimeImage, isMimeVideo } from '../../../src/lib/Utilities.js'
+import { isMimeImage, isMimeVideo } from '../../lib/Utilities.js'
 
 export default {
    command: 'sticker',

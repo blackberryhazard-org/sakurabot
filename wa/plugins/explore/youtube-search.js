@@ -1,8 +1,8 @@
 import { isJidNewsletter } from '@itsliaaa/baileys'
 import ytsearch from 'yt-search'
 
-import { nexray } from '../../../src/lib/Request.js'
-import { frame, formatNumber } from '../../../src/lib/Utilities.js'
+import { nexray } from '../../lib/Request.js'
+import { frame, formatNumber } from '../../lib/Utilities.js'
 
 export default {
    command: 'ytsearch',

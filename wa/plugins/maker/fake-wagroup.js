@@ -1,6 +1,6 @@
-import { zenzxz } from '../../../src/lib/Request.js'
-import { uguu } from '../../../src/lib/Scraper.js'
-import { fetchAsBuffer, randomInteger } from '../../../src/lib/Utilities.js'
+import { zenzxz } from '../../lib/Request.js'
+import { uguu } from '../../lib/Scraper.js'
+import { fetchAsBuffer, randomInteger } from '../../lib/Utilities.js'
 
 export default {
    command: 'fakewagroup',

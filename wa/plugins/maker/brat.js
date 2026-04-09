@@ -1,4 +1,4 @@
-import { bratSticker, bratVideoSticker } from '../../../src/lib/Utilities.js'
+import { bratSticker, bratVideoSticker } from '../../lib/Utilities.js'
 
 export default {
    command: ['brat', 'bratvid'],

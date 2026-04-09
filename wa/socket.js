@@ -10,8 +10,8 @@
  * - This file may ONLY be used within the Starseed project.
  */
 
-import '../src/lib/Components/ErrorHandler.js'
-import '../src/lib/Components/Dispatcher.js'
+import './lib/Components/ErrorHandler.js'
+import './lib/Components/Dispatcher.js'
 
 import { Boom } from '@hapi/boom'
 import { delay, DisconnectReason, jidNormalizedUser, makeCacheableSignalKeyStore, makeWASocket, useMultiFileAuthState } from '@itsliaaa/baileys'
@@ -19,13 +19,13 @@ import { mkdir, unlink, readdir, stat } from 'fs/promises'
 import { join } from 'path'
 import pino from 'pino'
 
-import { BOT, INACTIVE_THRESHOLD, TEMP_THRESHOLD } from '../src/lib/Constants.js'
-import { Database, Store } from '../src/lib/Database.js'
-import { cleanUpFolder, getNextMidnight, toTime } from '../src/lib/Utilities.js'
-import { CommandIndex, ModuleCache, scanDirectory } from '../src/lib/Watcher.js'
-import Listener from '../src/lib/Listener.js'
+import { BOT, INACTIVE_THRESHOLD, TEMP_THRESHOLD } from './lib/Constants.js'
+import { Database, Store } from './lib/Database.js'
+import { cleanUpFolder, getNextMidnight, toTime } from './lib/Utilities.js'
+import { CommandIndex, ModuleCache, scanDirectory } from './lib/Watcher.js'
+import Listener from './lib/Listener.js'
 
-import SholatReminder from '../src/lib/Components/SholatReminder.js'
+import SholatReminder from './lib/Components/SholatReminder.js'
 
 const DATABASE_PATH = join(process.cwd(), databaseFilename)
 const STORE_PATH = join(process.cwd(), storeFilename)
@@ -132,7 +132,7 @@ const Socket = async () => {
          isRestarting = true
 
          const reason = new Boom(update.lastDisconnect?.error)?.output?.statusCode
-                  switch (reason) {
+         switch (reason) {
             case DisconnectReason.connectionLost:
                console.error('❌ Connection to WhatsApp lost, restarting...')
                break
@@ -154,7 +154,8 @@ const Socket = async () => {
                console.error('❌ Device logged out, please re-pair')
                break
             case DisconnectReason.forbidden:
-               console.error('❌ Connection failed (forbidden), restarting without cleaning session...')
+               await cleanUpFolder(authFolder)
+               console.error('❌ Connection failed, please re-pair')
                break
             case DisconnectReason.multideviceMismatch:
                await cleanUpFolder(authFolder)
@@ -164,7 +165,8 @@ const Socket = async () => {
                console.log('✅ Successfully connected to WhatsApp')
                break
             default:
-               console.error('❌ Connection lost with unknown reason', ':', reason, 'Restarting without cleaning session...')
+               await cleanUpFolder(authFolder)
+               console.error('❌ Connection lost with unknown reason', ':', reason)
          }
 
          listener.unbind()

@@ -1,5 +1,5 @@
-import { getStickerPack } from '../../../src/lib/Scraper.js'
-import { createSticker, frame, shuffleArray } from '../../../src/lib/Utilities.js'
+import { getStickerPack } from '../../lib/Scraper.js'
+import { createSticker, frame, shuffleArray } from '../../lib/Utilities.js'
 
 const CDN_URL = 'https://s3.getstickerpack.com/'
 

@@ -1,6 +1,6 @@
-import { CATEGORY_EMOJIS } from '../../../src/lib/Constants.js'
-import { frame, toArray, toTitleCase } from '../../../src/lib/Utilities.js'
-import { CommandIndex, ModuleCache } from '../../../src/lib/Watcher.js'
+import { CATEGORY_EMOJIS } from '../../lib/Constants.js'
+import { frame, toArray, toTitleCase } from '../../lib/Utilities.js'
+import { CommandIndex, ModuleCache } from '../../lib/Watcher.js'
 
 export default {
    command: 'commands',
