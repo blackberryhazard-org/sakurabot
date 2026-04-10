@@ -73,19 +73,24 @@ export default {
          if (!body && !mimetype)
             return m.reply('💭 Provide text or media you would like to send to the group status.')
          m.react('🕒')
-         let context
-         if (mimetype)
-            context = await sock.sendMedia(m.chat, await q.download(), body, null, {
-               ptt: isMimeAudio(mimetype),
-               groupStatus: true
-            })
-         else if (body)
-            context = await sock.sendText(m.chat, body, null, {
-               groupStatus: true
-            }, {
+         let content
+         if (mimetype) {
+            const type = mimetype.split('/')[0]
+            content = {
+               [type]: await q.download(),
+               caption: body,
+               ptt: isMimeAudio(mimetype)
+            }
+         } else if (body) {
+            content = {
+               text: body,
                backgroundColor: randomHex()
-            })
-         sock.sendText(m.chat, '✅ Successfully sent group status.', context)
+            }
+         }
+         await sock.sendMessage(m.chat, {
+            groupStatusMessage: content
+         })
+         m.reply('✅ Successfully sent group status.')
       }
    },
    group: true,
