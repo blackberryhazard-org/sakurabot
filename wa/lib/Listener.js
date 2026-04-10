@@ -166,7 +166,8 @@ export default (db, store) => {
             setting.byteIngress += fileSize
          }
 
-         const isOwner = m.fromMe || m.sender === ownerNumber + '@s.whatsapp.net'
+         const senderPn = m.sender.includes('@') ? m.sender.split('@')[0] : m.sender;
+         const isOwner = m.fromMe || senderPn === ownerNumber.toString();
          const isPartner = isOwner || setting.partner.includes(m.sender)
          const isBanned = user.banned
          const isAdmin = m.isGroup &&

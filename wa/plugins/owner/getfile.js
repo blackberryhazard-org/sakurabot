@@ -9,14 +9,19 @@ export default {
          return m.reply(`👉🏻 *Example*:\n${isPrefix + command} package.json`)
       }
 
-      const filePath = path.resolve(text.trim())
+      const repoRoot = path.resolve(process.cwd(), '..')
+      const filePath = path.resolve(repoRoot, text.trim())
 
-      if (!fs.existsSync(filePath)) {
-         return m.reply(`❌ File not found: ${text.trim()}`)
-      }
-
-      if (fs.statSync(filePath).isDirectory()) {
-         return m.reply(`❌ Target is a directory: ${text.trim()}`)
+      try {
+         const stat = fs.statSync(filePath)
+         if (stat.isDirectory()) {
+            return m.reply(`❌ Target is a directory: ${text.trim()}`)
+         }
+      } catch (err) {
+         if (err.code === 'ENOENT') {
+            return m.reply(`❌ File not found: ${text.trim()}`)
+         }
+         return m.reply(`❌ Failed to read file status: ${err.message}`)
       }
 
       try {
