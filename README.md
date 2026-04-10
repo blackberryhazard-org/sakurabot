@@ -1,19 +1,11 @@
-# ✴️ @itsliaaa/starseed
+# Sakurabot
 
-![Logo](https://files.catbox.moe/75q4r7.jpg)
+[![DeepSource](https://app.deepsource.com/gh/indra87g/sakurabot.svg/?label=active+issues&show_trend=false&token=m7kgoYuFrGoUySJ9diJ7Zwix)](https://app.deepsource.com/gh/indra87g/sakurabot/)
 
-Starseed is a simple WhatsApp bot designed for quick setup and efficient use. It offers essential features such as sticker creation, social media content downloading, basic group management tools, and various general-purpose utilities, all accessible directly through WhatsApp.
 
 > [!CAUTION]
-This project is a direct implementation of [`@itsliaaa/baileys`](https://github.com/itsliaaa/baileys#readme). If you choose to replace it with any other fork, all resulting issues or bugs are entirely your responsibility.
+This project is a fork of [`@itsliaaa/starseed`](https://github.com/itsliaaa/starseed#readme).
 
-### ⚙️ Architecture Overview
-
-| Principle | Implementation |
-|------------|----------------|
-| ⚡ Native ESM Architecture | Fully structured using modern ECMAScript Modules (`type: module`) and designed for Node.js >=20.18.1 environments. |
-| 🪶 Lean Dependency Strategy | Minimal, purpose-specific dependencies to keep the runtime lightweight. |
-| 🧩 Runtime Minimalism | No obfuscation or bundling layers are used, ensuring predictable execution and optimal performance. |
 
 ### 📄 System Requirements
 
@@ -42,31 +34,9 @@ To run the bot, I highly recommend the following services. They are not only aff
 2. Select **Download ZIP**.
 3. Extract the downloaded file.
 
-### 📥 Installation & Run
-
-> [!IMPORTANT]
-Check this repository regularly for updates. The project is still under development. If you encounter any issues, please open an issue. Thank you!
-
-> [!NOTE]
-The installer supports Linux, macOS (Darwin), and Android (Termux).
->
-> I’m not familiar with Windows because I primarily use Linux, so no Windows installation files are provided.
-
-Make sure your system meets the required dependencies. Then run:
-
-```bash
-bash install.sh
-```
-
-After installation completes, start the bot using pm2:
-
-```bash
-pm2 start app.config.cjs && pm2 logs bot
-```
-
 ### 🔧 Configuration
 
-Edit [config.json](https://github.com/itsliaaa/starseed/blob/main/config.js) to customize the bot:
+Edit [config.js](https://github.com/indra87g/sakurabot/blob/main/config.js) to customize the bot:
 
 ```javascript
 Object.assign(global, {
@@ -139,13 +109,7 @@ See the documentation in [`@itsliaaa/baileys`](https://github.com/itsliaaa/baile
 
 ### 👤 Credits
 
-Starseed is an independent project built and maintained by:
-
-- [itsliaaa](https://github.com/itsliaaa) — Project Maintainer & Creator
-
-Support this project:
-
-- [Saweria](https://saweria.co/itsliaaa)
+- [itsliaaa](https://github.com/itsliaaa) — Original Creator
 
 #### 🌐 Third-Party Services
 
@@ -158,11 +122,3 @@ Starseed utilizes the following external APIs:
 - [ZenzzXD](https://github.com/ZenzzXD) — Zennz API
 
 These services are used as external integrations and are not directly affiliated with the development of Starseed.
-
-#### 🧪 Testers & Community
-
-Special thanks to:
-- Starseed Group Members
-- And of course… **You** ✨
-
-Your feedback and support help this project continue to grow 🌱
