@@ -1,6 +1,19 @@
 # Sakurabot
 
+<div align="center">
+   
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
+![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
+![Baileys](https://img.shields.io/badge/@itsliaaa/baileys-25D366?style=for-the-badge&logo=whatsapp&logoColor=white)
+<!--![License](https://img.shields.io/badge/License-MIT-red?style=for-the-badge)-->
+
+[![Stars](https://img.shields.io/github/stars/indra87g/sakurabot?style=for-the-badge)](https://github.com/indra87g/sakurabot/stargazers)
+[![Forks](https://img.shields.io/github/forks/indra87g/sakurabot?style=for-the-badge)](https://github.com/indra87g/sakurabot/network/members)
+[![Issues](https://img.shields.io/github/issues/indra87g/sakurabot?style=for-the-badge)](https://github.com/indra87g/sakurabot/issues)
+
 [![DeepSource](https://app.deepsource.com/gh/indra87g/sakurabot.svg/?label=active+issues&show_trend=false&token=m7kgoYuFrGoUySJ9diJ7Zwix)](https://app.deepsource.com/gh/indra87g/sakurabot/)
+
+</div>
 
 
 > [!CAUTION]
