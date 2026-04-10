@@ -15,7 +15,7 @@
     "awesome-phonenumber": "~2.59.0",
     "fflate": "^0.8.2",
     "file-type": "21.3.4",
-    "lru-cache": "^11.3.2",
+    "lru-cache": "^11.3.3",
     "p-queue": "^9.1.2",
     "pino": "^10.3.1",
     "qrcode": "~1.5.4",

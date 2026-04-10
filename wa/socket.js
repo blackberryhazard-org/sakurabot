@@ -132,7 +132,7 @@ const Socket = async () => {
          isRestarting = true
 
          const reason = new Boom(update.lastDisconnect?.error)?.output?.statusCode
-         switch (reason) {
+                  switch (reason) {
             case DisconnectReason.connectionLost:
                console.error('❌ Connection to WhatsApp lost, restarting...')
                break
@@ -154,8 +154,7 @@ const Socket = async () => {
                console.error('❌ Device logged out, please re-pair')
                break
             case DisconnectReason.forbidden:
-               await cleanUpFolder(authFolder)
-               console.error('❌ Connection failed, please re-pair')
+               console.error('❌ Connection failed (forbidden), restarting without cleaning session...')
                break
             case DisconnectReason.multideviceMismatch:
                await cleanUpFolder(authFolder)
@@ -165,8 +164,7 @@ const Socket = async () => {
                console.log('✅ Successfully connected to WhatsApp')
                break
             default:
-               await cleanUpFolder(authFolder)
-               console.error('❌ Connection lost with unknown reason', ':', reason)
+               console.error('❌ Connection lost with unknown reason', ':', reason, 'Restarting without cleaning session...')
          }
 
          listener.unbind()
