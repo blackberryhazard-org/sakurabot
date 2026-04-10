@@ -15,12 +15,12 @@ import { DONATE_URL } from '@itsliaaa/baileys'
 import { fetchThumbnail, frame, greeting } from '../../lib/Utilities.js'
 
 export default {
-   command: ['credits', 'script', 'thanksto'],
+   command: ['credits', 'thanksto'],
    hidden: 'sc',
    category: 'other',
    async run(m) {
       const printCredits = frame('CREDITS', [
-         'itsliaaa — Project Maintainer & Creator'
+         'itsliaaa — Original Creator'
       ], '👤')
       const printDonateUrl = frame('DONATE', [
          DONATE_URL
@@ -33,7 +33,7 @@ export default {
          'ZenzzXD — Zennz API'
       ], '🌐')
       const printSourceCode = frame('SOURCE CODE', [
-         'https://github.com/itsliaaa/starseed#readme'
+         'https://github.com/indra87g/sakurabot#readme'
       ], '🧩')
       m.reply(printCredits + '\n\n' +
          printDonateUrl + '\n\n' +
