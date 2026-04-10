@@ -5,7 +5,7 @@
 ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
 ![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
 ![Baileys](https://img.shields.io/badge/@itsliaaa/baileys-25D366?style=for-the-badge&logo=whatsapp&logoColor=white)
-<!--![License](https://img.shields.io/badge/License-MIT-red?style=for-the-badge)-->
+![License](https://img.shields.io/badge/License-Apache%202.0-violet?style=for-the-badge)
 
 [![Stars](https://img.shields.io/github/stars/indra87g/sakurabot?style=for-the-badge)](https://github.com/indra87g/sakurabot/stargazers)
 [![Forks](https://img.shields.io/github/forks/indra87g/sakurabot?style=for-the-badge)](https://github.com/indra87g/sakurabot/network/members)
@@ -52,45 +52,33 @@ To run the bot, I highly recommend the following services. They are not only aff
 Edit [config.js](https://github.com/indra87g/sakurabot/blob/main/config.js) to customize the bot:
 
 ```javascript
-Object.assign(global, {
-   // Owner name
-   ownerName: 'Lia Wynn',
-
-   // Owner phone number
-   ownerNumber: '6281111',
-
-   // Bot name
-   botName: 'Starseed',
-
-   // Footer text
-   footer: '✦ Starseed',
-
-   // [IMPORTANT] Bot phone number for pairing code
-   botNumber: '6281111',
-
-   // Pairing using code method (set to true for pairing code, false for QR pairing)
-   pairingCode: false,
-
-   // User default limit (used for reset too)
+const wabot = {
+   ownerName: 'OWNER_NAME',
+   ownerNumber: 'OWNER_NUMBER',
+   botName: 'BOT_NAME',
+   footer: '✦ Sakurabot',
+   botNumber: 'BOT_NUMBER',
+   pairingCode: true,
    defaultLimit: 15,
-
-   // Sticker pack name
-   stickerPackName: '📦 Starseed Sticker',
-
-   // Sticker pack publisher
-   stickerPackPublisher: 'GitHub: itsliaaa',
-
-   // ********** API KEYS ********** //
-
-   // Google AI Studio for Chat Bot @ https://aistudio.google.com/
-   googleApiKey: '',
-
-   // SightEngine for Anti Porn @ https://sightengine.com/
-   apiUser: '',
-   apiSecret: '',
-
+   stickerPackName: '📦 Sakurabot Sticker',
+   stickerPackPublisher: 'GitHub: indra87g',
    // ...
-})
+};
+
+const tgbot = {
+    ownerId: "OWNER_ID",
+    newsletterId: "NEWSLETTER_ID",
+    botname: "BOT_NAME",
+    botfatherToken: "BOTFATHER_TOKEN"
+};
+
+const misc = {
+    temporaryFolder: 'temp',
+    pluginsFolder: 'plugins',
+    storeFilename: 'store.json',
+    databaseFilename: 'database.json',
+    geminiApiKey: 'GEMINI_APIKEY'
+};
 ```
 
 ### 📁 Plugins
