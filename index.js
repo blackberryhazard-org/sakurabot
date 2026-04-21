@@ -12,7 +12,7 @@ try {
 }
 
 // Start Starseed (WhatsApp)
-const WA_CWD = fileURLToPath(new URL('./wa', import.meta.url));
+const WA_CWD = fileURLToPath(new URL('.', import.meta.url));
 const SETUP_PATH = fileURLToPath(new URL('./wa/socket.js', import.meta.url));
 const LOAD_GLOBALS_PATH = fileURLToPath(new URL('./load_globals.js', import.meta.url));
 

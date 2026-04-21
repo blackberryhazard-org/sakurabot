@@ -29,7 +29,8 @@ export default {
       const profilePicture = await sock.profilePicture(userData.jid)
       const printUserInfo = frame('USER INFO', [
          `*Name*: ${userData.name}`,
-         `*Limit*: ${isPartner ? '`ꝏ Unlimited`' : userData.limit}`
+         `*Limit*: ${isPartner ? '\`ꝏ Unlimited\`' : userData.limit}`,
+         `*Sakuranite*: ${userData.sakuranite || 0}`
       ], '👤')
       const printUserStats = frame('USER STATS', [
          `*Hit Command*: ${userData.commandUsage}x`,

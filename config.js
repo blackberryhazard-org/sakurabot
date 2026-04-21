@@ -18,7 +18,7 @@ const wabot = {
    localTimezone: 'Asia/Jakarta',
    botThumbnail: './lib/Media/thumbnail.jpg',
    botMenuMusic: './lib/Media/music.mp3',
-   authFolder: 'session',
+   authFolder: 'session/wa',
    temporaryFileInterval: 1_000 * 60 * 30,
    dataInterval: 1_000 * 60 * 10,
    gcInterval: 1_000 * 60 * 60,
@@ -50,8 +50,8 @@ const tgbot = {
 const misc = {
     temporaryFolder: 'temp',
     pluginsFolder: 'plugins',
-    storeFilename: 'store.json',
-    databaseFilename: 'database.json',
+    storeFilename: 'database/wa/store.json',
+    databaseFilename: 'database/wa/database.json',
     geminiApiKey: 'GEMINI_APIKEY'
 };
 

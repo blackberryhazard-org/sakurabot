@@ -10,8 +10,8 @@
  * - This file may ONLY be used within the Starseed project.
  */
 
-import './lib/Components/ErrorHandler.js'
-import './lib/Components/Dispatcher.js'
+import '../lib/Components/ErrorHandler.js'
+import '../lib/Components/Dispatcher.js'
 
 import { Boom } from '@hapi/boom'
 import { delay, DisconnectReason, jidNormalizedUser, makeCacheableSignalKeyStore, makeWASocket, useMultiFileAuthState } from '@itsliaaa/baileys'
@@ -19,13 +19,13 @@ import { mkdir, unlink, readdir, stat } from 'fs/promises'
 import { join } from 'path'
 import pino from 'pino'
 
-import { BOT, INACTIVE_THRESHOLD, TEMP_THRESHOLD } from './lib/Constants.js'
-import { Database, Store } from './lib/Database.js'
-import { cleanUpFolder, getNextMidnight, toTime } from './lib/Utilities.js'
-import { CommandIndex, ModuleCache, scanDirectory } from './lib/Watcher.js'
-import Listener from './lib/Listener.js'
+import { BOT, INACTIVE_THRESHOLD, TEMP_THRESHOLD } from '../lib/Constants.js'
+import { Database, Store } from '../lib/Database.js'
+import { cleanUpFolder, getNextMidnight, toTime } from '../lib/Utilities.js'
+import { CommandIndex, ModuleCache, scanDirectory } from '../lib/Watcher.js'
+import Listener from '../lib/Listener.js'
 
-import SholatReminder from './lib/Components/SholatReminder.js'
+import SholatReminder from '../lib/Components/SholatReminder.js'
 
 const DATABASE_PATH = join(process.cwd(), databaseFilename)
 const STORE_PATH = join(process.cwd(), storeFilename)

@@ -5,7 +5,8 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "NODE_ENV=production MALLOC_ARENA_MAX=2 node --max-old-space-size=320 --expose-gc index.js"
+    "start": "NODE_ENV=production MALLOC_ARENA_MAX=2 node --max-old-space-size=320 --expose-gc index.js",
+    "test": "node --import ./load_globals.js --test"
   },
   "dependencies": {
     "@google/genai": "^1.48.0",
