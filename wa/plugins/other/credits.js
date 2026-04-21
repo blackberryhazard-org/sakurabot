@@ -12,7 +12,7 @@
 
 import { DONATE_URL } from '@itsliaaa/baileys'
 
-import { fetchThumbnail, frame, greeting } from '../../lib/Utilities.js'
+import { fetchThumbnail, frame, greeting } from '../../../lib/Utilities.js'
 
 export default {
    command: ['credits', 'thanksto'],

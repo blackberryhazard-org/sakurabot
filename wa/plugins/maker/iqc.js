@@ -1,4 +1,4 @@
-import { nexray } from '../../lib/Request.js'
+import { nexray } from '../../../lib/Request.js'
 
 export default {
    command: 'iqc',

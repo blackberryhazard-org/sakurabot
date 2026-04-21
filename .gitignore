@@ -141,3 +141,4 @@ node_modules/
 database/
 temp/
 session/
+node_modules

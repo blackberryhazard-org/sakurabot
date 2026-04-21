@@ -1,6 +1,6 @@
 import { isJidNewsletter } from '@itsliaaa/baileys'
 
-import { isMimeImage } from '../../lib/Utilities.js'
+import { isMimeImage } from '../../../lib/Utilities.js'
 
 export const isMeNewsletterAdmin = (id, data) =>
    data.find(newsletter => newsletter.id === id)

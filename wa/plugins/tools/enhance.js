@@ -1,6 +1,6 @@
-import { faa, nexray } from '../../lib/Request.js'
-import { uguu } from '../../lib/Scraper.js'
-import { isMimeImage, isMimeVideo } from '../../lib/Utilities.js'
+import { faa, nexray } from '../../../lib/Request.js'
+import { uguu } from '../../../lib/Scraper.js'
+import { isMimeImage, isMimeVideo } from '../../../lib/Utilities.js'
 
 export default {
    command: 'hd',

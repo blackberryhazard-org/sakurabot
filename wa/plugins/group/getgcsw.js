@@ -1,4 +1,4 @@
-import { isMimeAudio } from '../../lib/Utilities.js'
+import { isMimeAudio } from '../../../lib/Utilities.js'
 
 export default {
    command: 'getgcsw',

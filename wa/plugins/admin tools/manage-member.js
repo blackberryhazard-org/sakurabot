@@ -1,7 +1,7 @@
 import { isLidUser } from '@itsliaaa/baileys'
 
-import { INACTIVE_THRESHOLD, SCHEMA } from '../../lib/Constants.js'
-import { frame } from '../../lib/Utilities.js'
+import { INACTIVE_THRESHOLD, SCHEMA } from '../../../lib/Constants.js'
+import { frame } from '../../../lib/Utilities.js'
 
 export default {
    command: ['+warn', '-warn', 'add', 'kick', 'promote', 'demote', 'sider'],

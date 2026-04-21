@@ -1,7 +1,7 @@
 import { delay, isPnUser } from '@itsliaaa/baileys'
 
-import { FAKE_QUOTE } from '../../lib/Constants.js'
-import { fetchAsBuffer, frame, greeting, isMimeWebP, randomHex } from '../../lib/Utilities.js'
+import { FAKE_QUOTE } from '../../../lib/Constants.js'
+import { fetchAsBuffer, frame, greeting, isMimeWebP, randomHex } from '../../../lib/Utilities.js'
 
 const DEFAULT_BROADCAST_COOLDOWN = 10000
 

@@ -1,7 +1,7 @@
 import { isJidNewsletter } from '@itsliaaa/baileys'
 
-import { nexray } from '../../lib/Request.js'
-import { isURL } from '../../lib/Utilities.js'
+import { nexray } from '../../../lib/Request.js'
+import { isURL } from '../../../lib/Utilities.js'
 
 export default {
    command: ['ytmp3', 'ytmp4'],

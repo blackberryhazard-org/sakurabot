@@ -1,5 +1,5 @@
-import { instagram } from '../../lib/Scraper.js'
-import { isURL, resizeImage } from '../../lib/Utilities.js'
+import { instagram } from '../../../lib/Scraper.js'
+import { isURL, resizeImage } from '../../../lib/Utilities.js'
 
 export default {
    command: 'instagram',

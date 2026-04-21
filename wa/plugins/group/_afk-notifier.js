@@ -1,6 +1,6 @@
 import { delay } from '@itsliaaa/baileys'
 
-import { frame, isEmptyObject, toTime } from '../../lib/Utilities.js'
+import { frame, isEmptyObject, toTime } from '../../../lib/Utilities.js'
 
 const notifySender = async (m, {
    sock,

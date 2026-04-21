@@ -1,4 +1,4 @@
-import { isURL, isWhatsAppURL } from '../../lib/Utilities.js'
+import { isURL, isWhatsAppURL } from '../../../lib/Utilities.js'
 
 export default {
    command: 'afk',

@@ -1,6 +1,6 @@
 import { isJidNewsletter } from '@itsliaaa/baileys'
 
-import { nexray } from '../../lib/Request.js'
+import { nexray } from '../../../lib/Request.js'
 
 export default {
    command: ['douyin', 'doump3', 'douvn'],

@@ -1,4 +1,4 @@
-import { deline, nexray } from '../../lib/Request.js'
+import { deline, nexray } from '../../../lib/Request.js'
 
 export default {
    command: ['attp', 'ttp'],

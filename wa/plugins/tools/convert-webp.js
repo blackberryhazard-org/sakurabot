@@ -1,6 +1,6 @@
-import { nexray } from '../../lib/Request.js'
-import { uguu } from '../../lib/Scraper.js'
-import { isMimeWebP, resizeImage } from '../../lib/Utilities.js'
+import { nexray } from '../../../lib/Request.js'
+import { uguu } from '../../../lib/Scraper.js'
+import { isMimeWebP, resizeImage } from '../../../lib/Utilities.js'
 
 export default {
    command: ['toimage', 'tovideo'],

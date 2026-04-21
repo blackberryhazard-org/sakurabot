@@ -1,6 +1,6 @@
-import { persistToFile } from '../../lib/Utilities.js'
+import { persistToFile } from '../../../lib/Utilities.js'
 
-import Gemini from '../../lib/Components/Gemini.js'
+import Gemini from '../../../lib/Components/Gemini.js'
 
 const MAX_SIZE = 1024 * 1024 * 3
 

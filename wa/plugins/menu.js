@@ -12,9 +12,9 @@
 
 import { DONATE_URL } from '@itsliaaa/baileys'
 
-import { CATEGORY_DESCRIPTIONS, CATEGORY_EMOJIS, FAKE_QUOTE, POPULAR_CATEGORIES } from '../lib/Constants.js'
-import { fetchThumbnail, frame, greeting, resizeImage, toArray, toTitleCase } from '../lib/Utilities.js'
-import { CommandIndex, ModuleCache } from '../lib/Watcher.js'
+import { CATEGORY_DESCRIPTIONS, CATEGORY_EMOJIS, FAKE_QUOTE, POPULAR_CATEGORIES } from '../../lib/Constants.js'
+import { fetchThumbnail, frame, greeting, resizeImage, toArray, toTitleCase } from '../../lib/Utilities.js'
+import { CommandIndex, ModuleCache } from '../../lib/Watcher.js'
 
 const OFFER_EXPIRATION = Date.now() * 2
 

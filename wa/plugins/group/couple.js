@@ -1,4 +1,4 @@
-import { shuffleArray } from '../../lib/Utilities.js'
+import { shuffleArray } from '../../../lib/Utilities.js'
 
 export default {
    command: 'couple',

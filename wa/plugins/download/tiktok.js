@@ -1,6 +1,6 @@
 import { isJidNewsletter } from '@itsliaaa/baileys'
 
-import { zenzxz } from '../../lib/Request.js'
+import { zenzxz } from '../../../lib/Request.js'
 
 export default {
    command: ['tiktok', 'tikwm', 'ttmp3', 'ttvn'],

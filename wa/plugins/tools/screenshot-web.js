@@ -1,5 +1,5 @@
-import { zenzxz } from '../../lib/Request.js'
-import { isURL } from '../../lib/Utilities.js'
+import { zenzxz } from '../../../lib/Request.js'
+import { isURL } from '../../../lib/Utilities.js'
 
 export default {
    command: 'ssweb',

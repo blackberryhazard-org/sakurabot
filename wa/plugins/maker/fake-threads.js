@@ -1,6 +1,6 @@
-import { nexray } from '../../lib/Request.js'
-import { uguu } from '../../lib/Scraper.js'
-import { fetchAsBuffer, randomInteger } from '../../lib/Utilities.js'
+import { nexray } from '../../../lib/Request.js'
+import { uguu } from '../../../lib/Scraper.js'
+import { fetchAsBuffer, randomInteger } from '../../../lib/Utilities.js'
 
 export default {
    command: 'fakethreads',

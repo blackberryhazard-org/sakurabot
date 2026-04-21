@@ -1,5 +1,5 @@
-import { deline } from '../../lib/Request.js'
-import { randomInteger } from '../../lib/Utilities.js'
+import { deline } from '../../../lib/Request.js'
+import { randomInteger } from '../../../lib/Utilities.js'
 
 export default {
    command: 'fakexnxx',

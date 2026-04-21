@@ -1,4 +1,4 @@
-import { isMimeAudio, isMimeWebP, frame } from '../../lib/Utilities.js'
+import { isMimeAudio, isMimeWebP, frame } from '../../../lib/Utilities.js'
 
 export default {
    command: ['everyone', 'hidetag', 'tagall', 'totag'],

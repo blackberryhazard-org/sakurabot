@@ -1,7 +1,7 @@
-import { URL_EXTRACT_REGEX } from '../../lib/Constants.js'
-import { nekolabs, nexray, zenzxz } from '../../lib/Request.js'
-import { instagram } from '../../lib/Scraper.js'
-import { isURL, resizeImage } from '../../lib/Utilities.js'
+import { URL_EXTRACT_REGEX } from '../../../lib/Constants.js'
+import { nekolabs, nexray, zenzxz } from '../../../lib/Request.js'
+import { instagram } from '../../../lib/Scraper.js'
+import { isURL, resizeImage } from '../../../lib/Utilities.js'
 
 export default {
    command: 'aio',

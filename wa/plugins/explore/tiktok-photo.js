@@ -1,5 +1,5 @@
-import { nexray } from '../../lib/Request.js'
-import { frame, resizeImage } from '../../lib/Utilities.js'
+import { nexray } from '../../../lib/Request.js'
+import { frame, resizeImage } from '../../../lib/Utilities.js'
 
 export default {
    command: 'ttphoto',

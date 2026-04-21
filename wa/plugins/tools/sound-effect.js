@@ -1,4 +1,4 @@
-import { ffmpeg, isMimeAudio, persistToFile } from '../../lib/Utilities.js'
+import { ffmpeg, isMimeAudio, persistToFile } from '../../../lib/Utilities.js'
 
 export default {
    command: ['bass', 'blown', 'chipmunk', 'deep', 'earrape', 'fast', 'fat', 'nightcore', 'reverse', 'robot', 'slow', 'smooth', 'vibrato', 'echo', 'tremolo', 'cave', 'haunted', 'underwater', 'cursed', 'dizzy', 'demonic', 'alien', 'ghost', 'glitch', 'vintage', 'telephone', '8d', 'drunk', 'helium', 'muted', 'underworld', 'squirrel', 'boostbass', 'boosttreble', 'whisper', 'darthvader', 'chipdemon', 'megaphone', 'immersive', 'reverb'],

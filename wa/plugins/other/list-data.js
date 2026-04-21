@@ -1,4 +1,4 @@
-import { frame } from '../../lib/Utilities.js'
+import { frame } from '../../../lib/Utilities.js'
 
 export default {
    command: ['listbanned', 'listtoxic'],
