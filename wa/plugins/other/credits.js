@@ -10,53 +10,41 @@
  * - This file may ONLY be used within the Starseed project.
  */
 
-import { DONATE_URL } from "@itsliaaa/baileys";
+import { DONATE_URL } from '@itsliaaa/baileys'
 
-import { fetchThumbnail, frame, greeting } from "../../../lib/Utilities.js";
+import { fetchThumbnail, frame, greeting } from '../../../lib/Utilities.js'
 
 export default {
-  command: ["credits", "thanksto"],
-  hidden: "sc",
-  category: "other",
-  async run(m) {
-    const printCredits = frame(
-      "CREDITS",
-      ["itsliaaa — Original Creator"],
-      "👤",
-    );
-    const printDonateUrl = frame("DONATE", [DONATE_URL], "💰");
-    const printAPIs = frame(
-      "THIRD-PARTY SERVICES",
-      [
-        "rynn-k — Nekolabs API",
-        "elrayyxml — Nexray API",
-        "faa — Faa API",
-        "Deline Clarissa — Deline API",
-        "ZenzzXD — Zennz API",
-      ],
-      "🌐",
-    );
-    const printSourceCode = frame(
-      "SOURCE CODE",
-      ["https://github.com/indra87g/sakurabot#readme"],
-      "🧩",
-    );
-    m.reply(
-      printCredits +
-        "\n\n" +
-        printDonateUrl +
-        "\n\n" +
-        printAPIs +
-        "\n\n" +
-        printSourceCode,
-      {
-        externalAdReply: {
-          title: botName,
-          body: greeting(),
-          thumbnail: await fetchThumbnail(),
-          largeThumbnail: true,
-        },
-      },
-    );
-  },
-};
+   command: ['credits', 'thanksto'],
+   hidden: 'sc',
+   category: 'other',
+   async run(m) {
+      const printCredits = frame('CREDITS', [
+         'itsliaaa — Original Creator'
+      ], '👤')
+      const printDonateUrl = frame('DONATE', [
+         DONATE_URL
+      ], '💰')
+      const printAPIs = frame('THIRD-PARTY SERVICES', [
+         'rynn-k — Nekolabs API',
+         'elrayyxml — Nexray API',
+         'faa — Faa API',
+         'Deline Clarissa — Deline API',
+         'ZenzzXD — Zennz API'
+      ], '🌐')
+      const printSourceCode = frame('SOURCE CODE', [
+         'https://github.com/indra87g/sakurabot#readme'
+      ], '🧩')
+      m.reply(printCredits + '\n\n' +
+         printDonateUrl + '\n\n' +
+         printAPIs + '\n\n' +
+         printSourceCode, {
+         externalAdReply: {
+            title: botName,
+            body: greeting(),
+            thumbnail: await fetchThumbnail(),
+            largeThumbnail: true
+         }
+      })
+   }
+}
