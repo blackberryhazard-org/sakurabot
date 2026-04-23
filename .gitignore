@@ -138,3 +138,7 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 node_modules/
+database/
+temp/
+session/
+node_modules
