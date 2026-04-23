@@ -4,21 +4,19 @@ import path from "path";
 import config from "./config.js";
 import startTelegramBot from "./tg/index.js";
 
-// Start the telegram bot
 try {
   startTelegramBot(config);
 } catch (error) {
   console.error("Failed to initialize Telegram Bot:", error);
 }
 
-// Start Starseed (WhatsApp)
 const WA_CWD = fileURLToPath(new URL(".", import.meta.url));
 const SETUP_PATH = fileURLToPath(new URL("./wa/socket.js", import.meta.url));
 const LOAD_GLOBALS_PATH = fileURLToPath(
   new URL("./load_globals.js", import.meta.url),
 );
 
-const StartStarseed = () => {
+const StartSakurabot = () => {
   const instance = spawn(
     process.execPath,
     [
@@ -47,8 +45,8 @@ const StartStarseed = () => {
 
   instance.once("exit", (code) => {
     console.error(`⚠️ Exited with code ${code}`);
-    if (code !== 0) setTimeout(StartStarseed, 2000);
+    if (code !== 0) setTimeout(StartSakurabot, 2000);
   });
 };
 
-StartStarseed();
+StartSakurabot();
