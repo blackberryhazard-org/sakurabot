@@ -3,7 +3,7 @@ import {
   isMimeVideo,
   isMimeImage,
   randomHex,
-} from "../../lib/Utilities.js";
+} from "../../../lib/Utilities.js";
 
 export default {
   command: "upgcsw",
