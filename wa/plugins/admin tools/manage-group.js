@@ -1,4 +1,4 @@
-import { isMimeAudio, isMimeImage, randomHex } from "../../lib/Utilities.js";
+import { isMimeAudio, isMimeImage, randomHex } from "../../../lib/Utilities.js";
 
 export default {
   command: [
