@@ -6,9 +6,9 @@ export default {
       return m.reply(
         "❌ Please specify the amount of limit you want to buy. Example: `/buy 10`",
       );
-
-    const amount = parseInt(text);
-    if (isNaN(amount) || amount <= 0)
+    const input = text.trim().split(" ")[1];
+    const amount = parseInt(input);
+    if (!input || isNaN(amount) || amount <= 0)
       return m.reply("❌ Invalid amount. Please enter a valid number.");
 
     const cost = amount; // 1 Sakuranite = 1 Limit
