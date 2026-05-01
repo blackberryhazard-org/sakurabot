@@ -1,4 +1,4 @@
-import { isLidUser } from "@whiskeysockets/baileys";
+import { isLidUser } from "@itsliaaa/baileys";
 
 import { DAY } from "../../../lib/Constants.js";
 import { extractNumber } from "../../../lib/Serialize.js";
