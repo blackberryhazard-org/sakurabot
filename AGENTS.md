@@ -1,35 +1,26 @@
-# CLAUDE.md — [Nama Project]
-
-> Catatan penting: Sebaiknya tulis isi CLAUDE.md dalam Bahasa Inggris.
-> Claude Code memproses instruksi Bahasa Inggris lebih optimal.
-> Template ini ditulis dalam Bahasa Indonesia untuk kemudahan pemahaman.
-
----
+# AGENTS.md — Sakurabot
 
 ## 1. Project Overview
 
-- Name : [Nama project kamu]
-- Description : [Deskripsi singkat, project ini tentang apa]
-- Goal : [Tujuan utama, problem apa yang diselesaikan]
-- Target Users: [Siapa pengguna project ini]
-- Version : [Versi saat ini, contoh: v1.0.0]
-- Status : [Active development / Maintenance / Production]
+- Name : Sakurabot
+- Description : Bot whatsapp dan telegram yang berjalan secara berdampingan
+- Goal : 
+- Target Users: User whatsapp dan telegram
+- Version : v0.1.0
+- Status : Active development
 
 ---
 
 ## 2. Tech Stack
 
-- Language : [TypeScript / JavaScript / Python / Go / dll]
-- Framework : [Next.js / React / Express / Laravel / dll]
-- Styling : [Tailwind CSS / CSS Modules / Styled Components / dll]
-- UI Library : [shadcn/ui / MUI / Ant Design / dll]
-- Database : [PostgreSQL / MySQL / MongoDB / SQLite / dll]
-- ORM : [Prisma / Drizzle / TypeORM / Eloquent / dll]
-- Auth : [NextAuth / Better Auth / Passport.js / dll]
-- State Management: [Zustand / Redux / Pinia / Jotai / dll]
-- Data Fetching : [SWR / React Query / Axios / fetch / dll]
-- Package Manager : [npm / yarn / pnpm / bun]
-- Deployment : [Vercel / Railway / VPS / AWS / dll]
+- Language : JavaScript
+- Framework : @itsliaaa/baileys (Bot Whatsapp), telegraf (Bot Telegram)
+- Database : JSON
+- ORM: belum ditentukan
+- Data Fetching : Axios
+- Package Manager : npm
+- Testing: vitest
+- Deployment : HidenCloud (pterodactyl)
 
 ---
 
@@ -37,35 +28,24 @@
 
 ```bash
 # Development
-[pm] run dev          # Jalankan dev server
-[pm] run build        # Build untuk production
-[pm] run start        # Jalankan production build
-[pm] run lint         # Jalankan linter
-[pm] run format       # Format kode
+npm run start        # Jalankan production build
+npm run lint         # Jalankan linter
+npm run format       # Format kode
 
 # Package Management
-[pm] add [package]    # Install package baru
+npm add [package]    # Install package baru
 
 # Testing
-[pm] run test         # Jalankan semua test
-[pm] run test:unit    # Jalankan unit test saja
-[pm] run test:e2e     # Jalankan e2e test saja
-
-# Database
-[pm] run db:migrate   # Jalankan migrasi
-[pm] run db:seed      # Seed data awal
-[pm] run db:reset     # Reset database
+npm run test         # Jalankan semua test
+npm run test:unit    # Jalankan unit test saja
+npm run test:e2e     # Jalankan e2e test saja
 ```
-
-> [pm] = package manager yang kamu pakai: npm / yarn / pnpm / bun
-> Jika ada package manager yang TIDAK boleh dipakai, tulis juga di sini.
-> Contoh: Never use npm — always use bun.
 
 ---
 
 ## 4. Project Structure
 
-Architecture: [clean architecture / by feature / MVC / dll]
+Architecture: clean architecture
 
 ```
 [root]/
@@ -91,12 +71,10 @@ Aturan penempatan file:
 
 ```
 # File dan Folder
-- Komponen      : PascalCase    contoh: UserCard.tsx
-- Non-komponen  : camelCase     contoh: useAuth.ts, getUserById.ts
+- Komponen      : PascalCase    contoh: UserCard.js
+- Non-komponen  : camelCase     contoh: useAuth.js, getUserById.js
 - Folder        : kebab-case    contoh: user-profile/
-- Halaman       : page.tsx atau index.tsx
-- Layout        : layout.tsx
-- Test file     : [nama].test.ts atau [nama].spec.ts
+- Test file     : [nama].test.js atau [nama].spec.js
 
 # Di dalam Kode
 - Variabel      : camelCase     contoh: userData, isLoading
@@ -104,7 +82,6 @@ Aturan penempatan file:
 - Fungsi        : camelCase     contoh: getUserById, formatDate
 - Tipe/Interface: PascalCase    contoh: UserType, ApiResponse
 - Enum          : PascalCase    contoh: UserRole, OrderStatus
-- CSS Class     : kebab-case    contoh: user-card, nav-item
 
 # Git Branch
 - Fitur baru    : feat/[nama-fitur]
@@ -130,7 +107,7 @@ Aturan penempatan file:
 - Gunakan interface untuk object, type untuk union atau intersection
 
 # Urutan Import
-1. Library eksternal (React, Next.js, dll)
+1. Library eksternal (telegraf, axios, sawit-utils)
 2. Internal absolut (@/components, @/utils, dll)
 3. Internal relatif (./Component, ../utils)
 4. Tipe dan Interface
