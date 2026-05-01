@@ -1,9 +1,4 @@
-# AGENTS.md — Sakurabot (Panduan untuk Jules)
-
-Dokumen ini adalah pedoman kerja untuk **AI Agent Jules** saat mengubah kode di repository Sakurabot.
-Semua instruksi di bawah difokuskan untuk proyek **bot WhatsApp + Telegram**, bukan aplikasi web.
-
----
+# AGENTS.md — Sakurabot
 
 ## 1) Project Overview
 
@@ -23,7 +18,7 @@ Semua instruksi di bawah difokuskan untuk proyek **bot WhatsApp + Telegram**, bu
 - **WhatsApp framework**: `@itsliaaa/baileys`
 - **Telegram framework**: `telegraf`
 - **HTTP client**: `axios`
-- **Storage utama**: JSON file-based
+- **Storage utama**: JSON
 - **Package manager**: npm
 - **Testing**: vitest
 - **Deployment**: HidenCloud (pterodactyl)
@@ -59,8 +54,11 @@ Contoh struktur yang saat ini digunakan:
   lib/
     Components/        # Modul fitur bot (economy, anti-spam, quiz, AI integration, dll)
     *.js               # Utility inti (database, listener, watcher, serializer, scraper, dll)
-  session/             # Data sesi login bot (jangan diubah sembarangan)
-  *.js                 # Entry / bootstrap / konfigurasi runtime
+  tg/             # Bot telegram (implementasi command, middleware, runtime event)
+  wa/             # Bot whatsapp (implementasi command, middleware, runtime event)
+  index.js                 # Entrypoint
+  config.js                # Konfigurasi
+  load_gglbals.js          # Load config secara global
 ```
 
 Aturan penempatan file:
@@ -85,7 +83,7 @@ Konsistensi dengan file sekitar lebih penting daripada memaksa pola baru.
 
 ---
 
-## 6) Code Conventions (Bot-Oriented)
+## 6) Code Conventions
 
 - Utamakan **clean code**, keterbacaan, dan minim duplikasi.
 - Untuk async flow (handler command, request API, operasi file): gunakan `try/catch`.
@@ -198,6 +196,7 @@ Jika instruksi user ambigu, **klarifikasi dulu** sebelum implementasi.
 Jules dilarang:
 
 - Membuat folder baru tanpa konfirmasi.
+- Menggunakan framework bot whatsapp lain selain @itsliaaa/baileys
 - Menghapus/memindahkan file tanpa konfirmasi.
 - Menginstal package baru tanpa konfirmasi.
 - Mengubah fitur yang sudah berjalan tanpa instruksi jelas.
@@ -206,27 +205,7 @@ Jules dilarang:
 
 ---
 
-## 14) Environment Variables
-
-- Gunakan `.env` untuk konfigurasi sensitif.
-- Jangan commit `.env`.
-- Nama variabel harus deskriptif dan konsisten.
-
-Contoh:
-
-```bash
-BOT_TELEGRAM_TOKEN=
-BOT_WHATSAPP_OWNER=
-OPENAI_API_KEY=
-GEMINI_API_KEY=
-BASE_API_URL=
-```
-
-Semua akses env gunakan wrapper/helper config bila tersedia agar validasi terpusat.
-
----
-
-## 15) Definition of Done (DoD) untuk Jules
+## 14) Definition of Done (DoD) untuk Jules
 
 Task dianggap selesai jika:
 
@@ -237,5 +216,3 @@ Task dianggap selesai jika:
 5. Ringkasan perubahan jelas dan dapat ditelusuri.
 
 ---
-
-Dokumen ini boleh diperbarui seiring evolusi arsitektur Sakurabot agar Jules selalu bekerja sesuai konteks proyek bot.
