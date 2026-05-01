@@ -95,6 +95,7 @@ Konsistensi dengan file sekitar lebih penting daripada memaksa pola baru.
 - Jangan menambahkan dependency baru tanpa persetujuan user.
 
 Urutan import yang disarankan:
+
 1. External libraries
 2. Internal modules absolut/alias (jika ada)
 3. Internal relative modules
