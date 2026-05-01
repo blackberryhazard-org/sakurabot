@@ -310,7 +310,23 @@ const Setup = async () => {
         const isProtected =
           user.banned || user.premiumExpiry > 0 || user.limit >= 128;
 
-        if (!isProtected && user.lastSeen < threshold) db.deleteUser(id);
+        if (!isProtected && user.lastSeen < threshold) {
+          db.deleteUser(id);
+        } else {
+          user.limit = Math.max(user.limit, user.maxLimit);
+          user.energy = 100;
+          if (user.premiumExpiry > 0 && user.premiumExpiry < timestampMs) {
+            user.premiumExpiry = 0;
+            user._notifiedPremium = false;
+          }
+        }
+      }
+
+      for (const [id, group] of db.groups) {
+        if (group.rentExpiry > 0 && group.rentExpiry < timestampMs) {
+          group.rentExpiry = 0;
+          group._notifiedRent = false;
+        }
       }
 
       for (const [id, group] of db.groups)

@@ -142,3 +142,5 @@ database/
 temp/
 session/
 node_modules
+starseed_temp/
+starseed.zip
