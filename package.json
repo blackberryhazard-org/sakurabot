@@ -11,10 +11,11 @@
   "dependencies": {
     "@google/genai": "^1.48.0",
     "@hapi/boom": "^10.0.1",
-    "@itsliaaa/baileys": "^0.2.4",
+    "@itsliaaa/baileys": "^0.2.6",
     "@napi-rs/image": "^1.12.0",
     "awesome-phonenumber": "~2.59.0",
     "axios": "^1.15.0",
+    "sawit-utils": "^0.1.0",
     "fflate": "^0.8.2",
     "file-type": "21.3.4",
     "lru-cache": "^11.3.3",
