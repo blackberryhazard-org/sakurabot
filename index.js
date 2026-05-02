@@ -2,7 +2,7 @@ import { spawn } from "child_process";
 import { fileURLToPath } from "url";
 import path from "path";
 import config from "./config.js";
-import startTelegramBot from "./tg/index.js";
+import startTelegramBot from "./tg/socket.js";
 
 try {
   startTelegramBot(config);
