@@ -1,5 +1,6 @@
 import { areJidsSameUser } from "@itsliaaa/baileys";
 
+import { extractNumber } from '../../../lib/Serialize.js';
 import { fetchAsBuffer, frame, greeting } from "../../../lib/Utilities.js";
 
 export default {
@@ -7,7 +8,7 @@ export default {
   hidden: "me",
   category: "user info",
   async run(m, { sock, db, setting }) {
-    const userId = m.quoted ? m.quoted.sender : m.mentionedJid[0] || m.sender;
+    const userId = extractNumber(m) || m.sender;
     const userData = db.getUser(userId);
     if (!userData) return m.reply("❌ User not found.");
     const isPartnerOrOwner = (user) =>
