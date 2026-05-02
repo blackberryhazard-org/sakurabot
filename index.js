@@ -5,7 +5,7 @@ import config from "./config.js";
 import startTelegramBot from "./tg/socket.js";
 
 try {
-  startTelegramBot(config);
+  await startTelegramBot(config);
 } catch (error) {
   console.error("Failed to initialize Telegram Bot:", error);
 }
