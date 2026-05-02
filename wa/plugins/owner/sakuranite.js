@@ -1,3 +1,5 @@
+import { extractNumber } from "../../../lib/Serialize.js";
+
 export default {
   command: "sakuranite",
   category: "owner",
@@ -18,7 +20,7 @@ export default {
       return m.reply("❌ Invalid amount. Please provide a number.");
     }
 
-    let targetId = m.quoted ? m.quoted.sender : m.mentionedJid[0];
+    let targetId = extractNumber(m);
 
     if (!targetId && args.length >= 3) {
       // Maybe the user is tagged without mention array populated correctly, but typically mentionedJid has it
