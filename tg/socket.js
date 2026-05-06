@@ -22,14 +22,7 @@ const startTelegramBot = async (config) => {
       console.error(`Ooops, encountered an error for ${ctx.updateType}`, err);
   });
 
-  // Owner check middleware
-  bot.use(async (ctx, next) => {
-    const userId = ctx.from?.id?.toString();
-    if (userId && userId !== config.tgbot.ownerId) {
-      return;
-    }
-    await next();
-  });
+  // Global Owner check middleware removed to allow plugin-level restrictions
 
   // Command loading logic
   const pluginsPath = path.join(process.cwd(), "tg", "plugins");
