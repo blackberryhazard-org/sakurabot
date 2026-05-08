@@ -1,7 +1,7 @@
 export default (bot) => {
     bot.on('message', async (ctx, next) => {
         try {
-            const { db, saveDB, ownerState, config: coinbotConfig } = ctx.coinbot;
+            const { db, saveDB, ownerState, config: tgbotConfig } = ctx.tgbot;
             const userId = ctx.from.id;
             const text = ctx.message?.text;
 
@@ -19,7 +19,7 @@ export default (bot) => {
 
             if (state.step === 'waiting_id_gratis' && text) {
                 const userTargetId = text.trim();
-                await bot.telegram.sendPhoto(coinbotConfig.ownerId, state.fotoBukti, {
+                await bot.telegram.sendPhoto(tgbotConfig.ownerId, state.fotoBukti, {
                     caption: `<b>🚨 LAPORAN MISI</b>\n\n👤 Pengirim: <code>${userId}</code>\n🆔 ID Target: <code>${userTargetId}</code>`,
                     parse_mode: 'HTML',
                     reply_markup: { inline_keyboard: [[{ text: "✅ ACC", callback_data: `acc_share_${userTargetId}` }, { text: "❌ TOLAK", callback_data: `tolak_share_${userTargetId}` }]] }
@@ -29,13 +29,13 @@ export default (bot) => {
             }
 
             // Owner: Broadcast Link
-            if (state.step === 'create_misi_link' && userId === coinbotConfig.ownerId) {
+            if (state.step === 'create_misi_link' && userId === tgbotConfig.ownerId) {
                 state.linkMisi = text;
                 state.step = 'create_misi_reward';
                 return ctx.reply("💰 <b>Berapa hadiah coin untuk misi ini?</b>", { parse_mode: 'HTML' });
             }
 
-            if (state.step === 'create_misi_reward' && userId === coinbotConfig.ownerId) {
+            if (state.step === 'create_misi_reward' && userId === tgbotConfig.ownerId) {
                 const reward = parseInt(text);
                 if (!Number.isFinite(reward) || reward <= 0) {
                     return ctx.reply("❌ Hadiah harus berupa angka positif! Coba masukkan kembali jumlah hadiah:", { parse_mode: 'HTML' });
@@ -71,8 +71,8 @@ export default (bot) => {
                 db.getRedeemCode(state.code) = { reward: reward, limit: 5, claimedBy: [] };
                 await saveDB();
 
-                if (coinbotConfig.notifChannel) {
-                    bot.telegram.sendMessage(coinbotConfig.notifChannel, `<b>🎁 KODE REDEEM BARU!</b>\n🔑 <b>Kode :</b> <code>${state.code}</code>\n💰 <b>Hadiah :</b> ${reward} Koin`, { parse_mode: 'HTML' })
+                if (tgbotConfig.newsletter) {
+                    bot.telegram.sendMessage(tgbotConfig.newsletter, `<b>🎁 KODE REDEEM BARU!</b>\n🔑 <b>Kode :</b> <code>${state.code}</code>\n💰 <b>Hadiah :</b> ${reward} Koin`, { parse_mode: 'HTML' })
                         .then(() => ctx.reply(`✅ Berhasil! Kode <b>${state.code}</b> aktif.`, { parse_mode: 'HTML' }))
                         .catch((e) => { ctx.reply(`✅ Kode aktif di DB, tapi <b>GAGAL</b> kirim ke channel!`); (global.consolefy?.error || console.error)(e); });
                 } else {
