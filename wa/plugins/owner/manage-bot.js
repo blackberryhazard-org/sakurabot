@@ -77,9 +77,9 @@ const ExcludeForWrap = new Set([
   "package-lock.json",
   "session",
   "yarn.lock",
-  databaseFilename,
-  storeFilename,
-  temporaryFolder,
+
+
+
 ]);
 const ExcludeForUnzip = new Set([
   ".git",
@@ -153,7 +153,7 @@ const addStream = async (zip, fullPath, relPath, outputStream) => {
 };
 
 const wrapScript = () => {
-  const filePath = join(temporaryFolder, `Starseed-${createFileName()}.zip`);
+  const filePath = join( `Starseed-${createFileName()}.zip`);
   const output = createWriteStream(filePath);
 
   return new Promise((resolve, reject) => {
@@ -285,11 +285,11 @@ export default {
       await atomicWrite(db, store);
       sock.sendMedia(
         m.chat,
-        resolve(databaseFilename),
+        resolve(global.databaseFilename),
         "✅ Backup completed.",
         m,
         {
-          fileName: databaseFilename,
+          fileName:
         },
       );
     } else if (command === "backupsc") {
@@ -335,7 +335,7 @@ export default {
       const q = m.quoted ? m.quoted : m;
       if (
         !q.type.startsWith("document") ||
-        !q.fileName.includes(databaseFilename)
+        !q.fileName.includes(global.databaseFilename)
       )
         return m.reply("❌ Reply to the backup file first.");
       m.react("🕒");
@@ -477,11 +477,11 @@ export default {
       await atomicWrite(db, store);
       await sock.sendMedia(
         m.chat,
-        resolve(databaseFilename),
+        resolve(global.databaseFilename),
         "✅ *(1/3)* Backup database completed.",
         m,
         {
-          fileName: databaseFilename,
+          fileName:
         },
       );
       const filePath = await wrapScript();

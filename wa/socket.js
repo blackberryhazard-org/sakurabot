@@ -34,9 +34,9 @@ import Listener from "../lib/Listener.js";
 
 import SholatReminder from "../lib/Components/SholatReminder.js";
 
-const DATABASE_PATH = join(process.cwd(), databaseFilename);
-const STORE_PATH = join(process.cwd(), storeFilename);
-const TEMPORARY_FOLDER_PATH = join(process.cwd(), temporaryFolder);
+const DATABASE_PATH = join(process.cwd(), global.databaseFilename);
+const STORE_PATH = join(process.cwd(), global.storeFilename);
+const TEMPORARY_FOLDER_PATH = join(process.cwd(), global.temporaryFolder);
 
 const db = Database(DATABASE_PATH);
 const store = Store(STORE_PATH);
@@ -49,7 +49,7 @@ const sholatReminder = SholatReminder(db);
 let isRestarting = false;
 
 const Socket = async () => {
-  const { state, saveCreds } = await useMultiFileAuthState(authFolder);
+  const { state, saveCreds } = await useMultiFileAuthState(global.authFolder);
 
   const sock = listener.bind(
     makeWASocket({
@@ -155,14 +155,14 @@ const Socket = async () => {
           console.error("❌ Connection timed out to WhatsApp, restarting...");
           break;
         case DisconnectReason.badSession:
-          await cleanUpFolder(authFolder);
+          await cleanUpFolder(global.authFolder);
           console.error("❌ Invalid session, please re-pair");
           break;
         case DisconnectReason.connectionReplaced:
           console.error("❌ Connection overlapping, restarting...");
           break;
         case DisconnectReason.loggedOut:
-          await cleanUpFolder(authFolder);
+          await cleanUpFolder(global.authFolder);
           console.error("❌ Device logged out, please re-pair");
           break;
         case DisconnectReason.forbidden:
@@ -171,7 +171,7 @@ const Socket = async () => {
           );
           break;
         case DisconnectReason.multideviceMismatch:
-          await cleanUpFolder(authFolder);
+          await cleanUpFolder(global.authFolder);
           console.error("❌ Please re-pair");
           break;
         case DisconnectReason.restartRequired:
