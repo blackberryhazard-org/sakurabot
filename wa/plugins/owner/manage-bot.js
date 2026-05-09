@@ -77,9 +77,6 @@ const ExcludeForWrap = new Set([
   "package-lock.json",
   "session",
   "yarn.lock",
-
-
-
 ]);
 const ExcludeForUnzip = new Set([
   ".git",
@@ -153,7 +150,7 @@ const addStream = async (zip, fullPath, relPath, outputStream) => {
 };
 
 const wrapScript = () => {
-  const filePath = join( `Starseed-${createFileName()}.zip`);
+  const filePath = join(`Starseed-${createFileName()}.zip`);
   const output = createWriteStream(filePath);
 
   return new Promise((resolve, reject) => {
@@ -289,7 +286,7 @@ export default {
         "✅ Backup completed.",
         m,
         {
-          fileName: global.databaseFilename
+          fileName: global.databaseFilename,
         },
       );
     } else if (command === "backupsc") {
@@ -481,7 +478,7 @@ export default {
         "✅ *(1/3)* Backup database completed.",
         m,
         {
-          fileName: global.databaseFilename
+          fileName: global.databaseFilename,
         },
       );
       const filePath = await wrapScript();
