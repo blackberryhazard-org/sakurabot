@@ -289,7 +289,7 @@ export default {
         "✅ Backup completed.",
         m,
         {
-          fileName:
+          fileName: global.databaseFilename
         },
       );
     } else if (command === "backupsc") {
@@ -481,7 +481,7 @@ export default {
         "✅ *(1/3)* Backup database completed.",
         m,
         {
-          fileName:
+          fileName: global.databaseFilename
         },
       );
       const filePath = await wrapScript();
